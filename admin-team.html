@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quản lý tài khoản - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="section-header"><div><p class="eyebrow">Chỉ dành cho admin</p><h1>Quản lý tài khoản</h1></div></div>
+            <p class="muted">Admin quản lý tài khoản; Owner quản lý cửa hàng; Staff xử lý đơn và kho; User mua hàng. Nhân sự cần đăng ký và xác minh email trước, sau đó admin gán role.</p>
+            <details class="panel-card own-password">
+                <summary><b>Đổi mật khẩu của tôi</b></summary>
+                <form id="passwordForm" class="narrow-form" novalidate>
+                    <label>Mật khẩu hiện tại <input type="password" name="currentPassword" autocomplete="current-password" required></label>
+                    <label>Mã xác nhận (OTP) gửi về email
+                        <span class="otp-row"><input type="text" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 số"><button type="button" class="btn btn-sm btn-outline" data-send-code>Gửi mã</button></span>
+                        <small class="muted" data-code-hint>Nhập mật khẩu hiện tại rồi bấm "Gửi mã". Mã có hiệu lực 10 phút.</small>
+                    </label>
+                    <label>Mật khẩu mới
+                        <input type="password" name="newPassword" autocomplete="new-password" maxlength="64" required>
+                        <ul id="pwRules" class="pw-rules"></ul>
+                    </label>
+                    <label>Nhập lại mật khẩu mới <input type="password" name="confirmPassword" autocomplete="new-password" required></label>
+                    <button type="submit" class="btn">Đổi mật khẩu</button>
+                    <p id="passwordMessage" class="error-message" role="alert"></p>
+                </form>
+            </details>
+            <div class="filter-bar">
+                <input type="search" id="teamSearch" placeholder="Tìm tên hoặc email" aria-label="Tìm tài khoản">
+                <select id="roleFilter" aria-label="Lọc vai trò">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="admin">Admin</option><option value="owner">Owner</option>
+                    <option value="staff">Staff</option><option value="user">User</option>
+                </select>
+            </div>
+            <p id="message" class="msg" role="status"></p>
+            <div id="loading" class="loading">Đang tải tài khoản...</div>
+            <div id="error" class="error hidden"></div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Tài khoản</th><th>Email</th><th>Vai trò</th><th>Ngày tạo</th><th>Số đơn</th><th>Cập nhật role</th><th>Thao tác</th></tr></thead>
+                    <tbody id="teamBody"></tbody>
+                </table>
+            </div>
+            <p id="empty" class="empty hidden">Không có tài khoản phù hợp.</p>
+        </main>
+        <script type="module" src="./src/js/pages/admin-team-page.js"></script>
+    </body>
+</html>

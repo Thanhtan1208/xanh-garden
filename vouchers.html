@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Voucher - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <h1>Voucher</h1>
+            <div class="tabs" id="voucherTabs" role="tablist">
+                <button type="button" class="tab active" data-tab="hall" role="tab">Kho voucher</button>
+                <button type="button" class="tab" data-tab="wallet" role="tab">Ví của tôi</button>
+            </div>
+
+            <section id="birthdayBox" class="form-section birthday-box hidden">
+                <h2>Quà sinh nhật</h2>
+                <p class="muted">Khai ngày sinh để nhận voucher tặng đúng ngày sinh nhật mỗi năm. Ngày sinh chỉ khai được một lần.</p>
+                <div class="voucher-input">
+                    <input type="date" id="birthdayInput" aria-label="Ngày sinh">
+                    <button type="button" id="birthdayBtn" class="btn btn-sm">Lưu ngày sinh</button>
+                </div>
+                <p id="birthdayMessage" class="error-message" role="alert"></p>
+            </section>
+
+            <div id="loading" class="loading">Đang tải voucher...</div>
+            <div id="error" class="error hidden"></div>
+            <div id="voucherBox" class="voucher-grid"></div>
+        </main>
+        <script type="module" src="./src/js/pages/vouchers-page.js"></script>
+    </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Phản ánh và góp ý - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <h1 id="pageTitle">Phản ánh và góp ý</h1>
+
+            <div class="feedback-layout">
+                <form id="feedbackForm" class="form-section hidden">
+                    <h2>Gửi phản hồi cho cửa hàng</h2>
+                    <div class="form-grid">
+                        <label>Loại phản hồi
+                            <select name="type" required>
+                                <option value="suggestion">Góp ý</option>
+                                <option value="complaint">Phản ánh / khiếu nại</option>
+                                <option value="praise">Khen ngợi</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </label>
+                        <label>Mã đơn hàng (nếu có)
+                            <input type="text" name="orderCode" maxlength="40" placeholder="VD: XG261007-ABCDE">
+                        </label>
+                        <label class="full-column">Tiêu đề
+                            <input type="text" name="subject" minlength="5" maxlength="120" required>
+                        </label>
+                        <label class="full-column">Nội dung
+                            <textarea name="content" rows="5" minlength="10" maxlength="1000" placeholder="Tối thiểu 10 ký tự" required></textarea>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-block">Gửi phản hồi</button>
+                    <p id="formMessage" class="error-message" role="alert"></p>
+                </form>
+
+                <section>
+                    <div id="statusTabs" class="tabs"></div>
+                    <div id="loading" class="loading">Đang tải phản hồi...</div>
+                    <div id="error" class="error hidden"></div>
+                    <div id="feedbackList"></div>
+                </section>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/feedback-page.js"></script>
+    </body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quản lý voucher - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="section-header">
+                <h1>Voucher</h1>
+                <button type="button" id="newBtn" class="btn btn-sm">Tạo voucher</button>
+            </div>
+            <p class="muted">Quy tắc: mỗi đơn dùng tối đa 1 voucher giảm đơn + 1 voucher phí vận chuyển. Giảm theo % bắt buộc có mức giảm tối đa. Voucher đã có người nhận thì chỉ đổi được tên, ngày kết thúc, tổng số lượng và bật/tắt.</p>
+
+            <form id="voucherForm" class="form-section hidden" novalidate>
+                <h2 id="formTitle">Voucher mới</h2>
+                <div class="form-grid">
+                    <label>Mã voucher (chữ in hoa/số) <input type="text" name="code" maxlength="20" placeholder="SALE25"></label>
+                    <label>Tên hiển thị <input type="text" name="name" maxlength="80" placeholder="Giảm 25% đơn từ 500k"></label>
+                    <label>Loại
+                        <select name="kind">
+                            <option value="order">Giảm giá đơn hàng</option>
+                            <option value="shipping">Giảm phí vận chuyển</option>
+                        </select>
+                    </label>
+                    <label>Đối tượng
+                        <select name="audience">
+                            <option value="all">Mọi khách (khách tự nhận trong Kho voucher)</option>
+                            <option value="newUser">Người dùng mới (tự tặng khi xác minh tài khoản, dùng cho đơn đầu tiên)</option>
+                            <option value="birthday">Sinh nhật (tự tặng đúng ngày sinh nhật)</option>
+                        </select>
+                    </label>
+                    <label>Kiểu giảm
+                        <select name="type">
+                            <option value="percent">Theo phần trăm</option>
+                            <option value="fixed">Số tiền cố định</option>
+                        </select>
+                    </label>
+                    <label>Mức giảm <span class="muted" id="valueHint">(%)</span>
+                        <input type="number" name="value" min="1" list="percentTiers">
+                        <datalist id="percentTiers"><option value="10"><option value="15"><option value="25"><option value="30"><option value="35"></datalist>
+                    </label>
+                    <label id="maxField">Giảm tối đa (₫) <input type="number" name="maxDiscount" min="1000" step="1000"></label>
+                    <label>Đơn tối thiểu (₫) <input type="number" name="minOrder" min="0" step="1000" value="0"></label>
+                    <label>Phạm vi
+                        <select name="scope">
+                            <option value="all">Toàn bộ sản phẩm</option>
+                            <option value="newProduct">Chỉ sản phẩm mới</option>
+                            <option value="category">Theo danh mục</option>
+                            <option value="product">Theo sản phẩm</option>
+                        </select>
+                    </label>
+                    <fieldset class="full-column spec-box hidden" id="scopeBox"><legend>Chọn mục áp dụng</legend><div id="scopeList" class="check-grid"></div></fieldset>
+                    <label>Bắt đầu <input type="datetime-local" name="startAt"></label>
+                    <label>Kết thúc <input type="datetime-local" name="endAt"></label>
+                    <label>Tổng số lượng (0 = không giới hạn) <input type="number" name="totalQuantity" min="0" value="0"></label>
+                    <label>Mỗi người được nhận <input type="number" name="perUserLimit" min="1" max="5" value="1"></label>
+                    <label>Hiệu lực sau khi tặng (ngày, voucher tự tặng) <input type="number" name="validDays" min="1" max="365" value="30"></label>
+                    <label class="check-inline"><input type="checkbox" name="active" checked> Đang bật</label>
+                </div>
+                <p id="formMessage" class="error-message" role="alert"></p>
+                <div class="button-row">
+                    <button type="submit" class="btn btn-sm">Lưu</button>
+                    <button type="button" id="cancelBtn" class="btn btn-sm btn-outline">Hủy</button>
+                </div>
+            </form>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Voucher</th><th>Mức giảm</th><th>Điều kiện</th><th>Thời gian</th><th>Đã nhận / đã dùng</th><th>Trạng thái</th><th></th></tr></thead>
+                    <tbody id="body"></tbody>
+                </table>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/admin-vouchers-page.js"></script>
+    </body>
+</html>

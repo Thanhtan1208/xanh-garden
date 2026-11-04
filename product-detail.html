@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chi tiết sản phẩm - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <nav class="breadcrumb" id="breadcrumb" aria-label="Đường dẫn"><a href="./index.html">Trang chủ</a><span>›</span><a href="./products.html">Sản phẩm</a></nav>
+            <div id="loading" class="loading">Đang tải sản phẩm...</div>
+            <div id="error" class="error hidden"></div>
+            <div id="productDetail" class="product-detail"></div>
+
+            <div id="detailTabs" class="detail-tabs hidden">
+                <div class="detail-tab-buttons" role="tablist">
+                    <button type="button" role="tab" data-tab="desc" class="active">Mô tả & chăm sóc</button>
+                    <button type="button" role="tab" data-tab="specs">Thông số</button>
+                    <button type="button" role="tab" data-tab="reviews" id="reviewTabBtn">Đánh giá</button>
+                </div>
+                <div class="detail-panel" data-panel="desc" id="descPanel"></div>
+                <div class="detail-panel hidden" data-panel="specs" id="specPanel"></div>
+                <section class="detail-panel hidden review-section" data-panel="reviews" id="reviewSection">
+                    <div id="reviewSummary" class="review-summary"></div>
+                    <form id="reviewForm" class="review-form hidden">
+                        <h3>Viết đánh giá của bạn</h3>
+                        <div class="star-input" id="starInput">
+                            <button type="button" data-star="1" aria-label="1 sao">★</button><button type="button" data-star="2" aria-label="2 sao">★</button><button type="button" data-star="3" aria-label="3 sao">★</button><button type="button" data-star="4" aria-label="4 sao">★</button><button type="button" data-star="5" aria-label="5 sao">★</button>
+                        </div>
+                        <textarea name="comment" rows="3" minlength="5" maxlength="500" placeholder="Cây nhận được thế nào? Đóng gói, chất lượng cây... (5 – 500 ký tự)" required></textarea>
+                        <div class="media-picker">
+                            <label class="btn btn-sm btn-outline media-add">+ Thêm ảnh / video
+                                <input type="file" id="mediaInput" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" multiple hidden>
+                            </label>
+                            <small class="muted">Tối đa 5 ảnh (mỗi ảnh ≤ 5 MB) và 1 video MP4/WebM (≤ 25 MB).</small>
+                        </div>
+                        <div id="mediaPreview" class="media-preview"></div>
+                        <button type="submit" class="btn">Gửi đánh giá</button>
+                        <p id="reviewMessage" class="error-message" role="alert"></p>
+                    </form>
+                    <p id="reviewNotice" class="muted"></p>
+                    <div id="reviewList" class="review-list"></div>
+                </section>
+            </div>
+
+            <section id="relatedSection" class="section hidden">
+                <div class="section-head"><h2>Sản phẩm tương tự</h2></div>
+                <div id="relatedList" class="product-grid"></div>
+            </section>
+        </main>
+        <script type="module" src="./src/js/pages/product-detail-page.js"></script>
+    </body>
+</html>

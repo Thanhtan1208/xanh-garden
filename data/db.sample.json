@@ -1,0 +1,935 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "name": "Cây để bàn",
+      "specFields": [
+        {
+          "key": "color",
+          "label": "Màu sắc"
+        },
+        {
+          "key": "size",
+          "label": "Kích thước"
+        },
+        {
+          "key": "scent",
+          "label": "Hương thơm"
+        },
+        {
+          "key": "pot",
+          "label": "Chậu đi kèm"
+        },
+        {
+          "key": "difficulty",
+          "label": "Độ khó chăm sóc"
+        },
+        {
+          "key": "gift",
+          "label": "Tặng kèm"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Cây phong thủy",
+      "specFields": [
+        {
+          "key": "color",
+          "label": "Màu sắc"
+        },
+        {
+          "key": "size",
+          "label": "Kích thước"
+        },
+        {
+          "key": "scent",
+          "label": "Hương thơm"
+        },
+        {
+          "key": "pot",
+          "label": "Chậu đi kèm"
+        },
+        {
+          "key": "meaning",
+          "label": "Ý nghĩa"
+        },
+        {
+          "key": "placement",
+          "label": "Vị trí đặt gợi ý"
+        },
+        {
+          "key": "difficulty",
+          "label": "Độ khó chăm sóc"
+        },
+        {
+          "key": "gift",
+          "label": "Tặng kèm"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Cây lọc không khí",
+      "specFields": [
+        {
+          "key": "color",
+          "label": "Màu sắc"
+        },
+        {
+          "key": "size",
+          "label": "Kích thước"
+        },
+        {
+          "key": "scent",
+          "label": "Hương thơm"
+        },
+        {
+          "key": "pot",
+          "label": "Chậu đi kèm"
+        },
+        {
+          "key": "air",
+          "label": "Khả năng lọc khí"
+        },
+        {
+          "key": "pet",
+          "label": "Lưu ý thú cưng"
+        },
+        {
+          "key": "difficulty",
+          "label": "Độ khó chăm sóc"
+        },
+        {
+          "key": "gift",
+          "label": "Tặng kèm"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "name": "Sen đá & xương rồng",
+      "specFields": [
+        {
+          "key": "color",
+          "label": "Màu sắc"
+        },
+        {
+          "key": "size",
+          "label": "Kích thước"
+        },
+        {
+          "key": "scent",
+          "label": "Hương thơm"
+        },
+        {
+          "key": "pot",
+          "label": "Chậu đi kèm"
+        },
+        {
+          "key": "sun",
+          "label": "Nhu cầu ánh nắng"
+        },
+        {
+          "key": "gift",
+          "label": "Tặng kèm"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "name": "Chậu & phụ kiện",
+      "specFields": [
+        {
+          "key": "material",
+          "label": "Chất liệu"
+        },
+        {
+          "key": "color",
+          "label": "Màu sắc"
+        },
+        {
+          "key": "size",
+          "label": "Kích thước"
+        },
+        {
+          "key": "scent",
+          "label": "Mùi"
+        },
+        {
+          "key": "drain",
+          "label": "Thoát nước"
+        },
+        {
+          "key": "spec",
+          "label": "Quy cách"
+        },
+        {
+          "key": "note",
+          "label": "Lưu ý"
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "1",
+      "name": "Lưỡi hổ",
+      "price": 120000,
+      "categoryId": 3,
+      "image": "p1.png",
+      "description": "Lá cứng, viền vàng, hấp thụ khí độc và nhả oxy cả ban đêm.",
+      "care": [
+        "Ánh sáng: Chịu bóng, ánh sáng yếu",
+        "Tưới nước: 1 lần/tuần"
+      ],
+      "stock": 21,
+      "specs": {
+        "color": "Lá xanh sẫm, viền vàng",
+        "size": "Cao 40–50 cm, chậu Ø15 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu sứ Ø15 cm",
+        "difficulty": "Rất dễ",
+        "gift": "Đĩa lót chậu",
+        "air": "Lọc benzen, formaldehyde; nhả oxy cả ban đêm",
+        "pet": "Không nên để thú cưng gặm lá"
+      },
+      "createdAt": "2026-11-03T03:22:01.484Z"
+    },
+    {
+      "id": "2",
+      "name": "Trầu bà đế vương",
+      "price": 180000,
+      "categoryId": 3,
+      "image": "p2.png",
+      "description": "Lá to bản màu đỏ rượu vang, sang trọng, rất dễ chăm.",
+      "care": [
+        "Ánh sáng: Ánh sáng tán xạ",
+        "Tưới nước: 2 lần/tuần"
+      ],
+      "stock": 0,
+      "specs": {
+        "color": "Lá đỏ rượu vang, mặt dưới tím đỏ",
+        "size": "Cao 35–45 cm, chậu Ø17 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu nhựa cao cấp Ø17 cm",
+        "difficulty": "Dễ",
+        "gift": "Gói phân bón nhỏ",
+        "air": "Tốt, giúp giảm hóa chất trong không khí phòng",
+        "pet": "Có độc nếu thú cưng nhai lá"
+      },
+      "createdAt": "2026-10-28T03:22:01.484Z"
+    },
+    {
+      "id": "3",
+      "name": "Kim tiền",
+      "price": 250000,
+      "categoryId": 2,
+      "image": "p3.png",
+      "description": "Biểu tượng của tài lộc, lá bóng, thích hợp đặt bàn làm việc, quầy thu ngân.",
+      "care": [
+        "Ánh sáng: Ánh sáng nhẹ",
+        "Tưới nước: 1 lần/tuần"
+      ],
+      "stock": 20,
+      "specs": {
+        "color": "Lá xanh bóng, thân mập",
+        "size": "Cao 40–60 cm, chậu Ø18 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu sứ Ø18 cm",
+        "meaning": "Tài lộc, thịnh vượng",
+        "placement": "Bàn làm việc, quầy thu ngân",
+        "difficulty": "Dễ",
+        "gift": "Bao lì xì may mắn"
+      },
+      "createdAt": "2026-10-22T03:22:01.484Z"
+    },
+    {
+      "id": "4",
+      "name": "Kim ngân",
+      "price": 320000,
+      "categoryId": 2,
+      "image": "p4.png",
+      "description": "Thân bện 5 nhánh, mang ý nghĩa tiền vào như nước.",
+      "care": [
+        "Ánh sáng: Nắng nhẹ",
+        "Tưới nước: 2 lần/tuần"
+      ],
+      "stock": 20,
+      "specs": {
+        "color": "Lá xanh, thân bện màu nâu",
+        "size": "Cao 45–55 cm, thân 5 nhánh bện",
+        "scent": "Không mùi",
+        "pot": "Chậu sứ Ø18 cm",
+        "meaning": "Tiền vào như nước",
+        "placement": "Phòng khách, gần cửa chính",
+        "difficulty": "Dễ",
+        "gift": "Dây đỏ may mắn"
+      },
+      "createdAt": "2026-10-16T03:22:01.484Z"
+    },
+    {
+      "id": "5",
+      "name": "Phát tài",
+      "price": 450000,
+      "categoryId": 2,
+      "image": "p5.png",
+      "description": "Thân thẳng, lá xanh mướt, thường dùng làm quà tân gia, khai trương.",
+      "care": [
+        "Ánh sáng: Ánh sáng tán xạ",
+        "Tưới nước: 1-2 lần/tuần"
+      ],
+      "stock": 18,
+      "specs": {
+        "color": "Lá xanh mướt, thân thẳng",
+        "size": "Cao 60–80 cm, 3 thân",
+        "scent": "Không mùi (hoa nếu nở có hương nhẹ)",
+        "pot": "Chậu xi măng Ø25 cm",
+        "meaning": "Phát tài, khai trương, tân gia",
+        "placement": "Phòng khách, văn phòng",
+        "difficulty": "Dễ",
+        "gift": "Ruy băng chúc mừng"
+      },
+      "createdAt": "2026-10-10T03:22:01.484Z"
+    },
+    {
+      "id": "6",
+      "name": "Lan ý",
+      "price": 150000,
+      "categoryId": 3,
+      "image": "p6.png",
+      "description": "Hoa trắng thanh nhã, lọc khí tốt, hợp phòng khách và phòng ngủ.",
+      "care": [
+        "Ánh sáng: Bóng râm",
+        "Tưới nước: Giữ ẩm đất"
+      ],
+      "stock": 6,
+      "specs": {
+        "color": "Lá xanh đậm, hoa trắng",
+        "size": "Cao 40–50 cm, chậu Ø17 cm",
+        "scent": "Hương nhẹ khi ra hoa",
+        "pot": "Chậu sứ trắng Ø17 cm",
+        "air": "Rất tốt, lọc amoniac và benzen",
+        "pet": "Có độc nếu thú cưng nhai lá",
+        "difficulty": "Trung bình (cần giữ ẩm)",
+        "gift": "Phân bón dạng viên"
+      },
+      "createdAt": "2026-10-04T03:22:01.484Z"
+    },
+    {
+      "id": "7",
+      "name": "Sen đá nhỏ",
+      "price": 35000,
+      "categoryId": 4,
+      "image": "p7.png",
+      "description": "Hình hoa sen xinh xắn, nhỏ gọn, cực hợp trang trí bàn học.",
+      "care": [
+        "Ánh sáng: Nắng nhiều",
+        "Tưới nước: 2 tuần/lần"
+      ],
+      "stock": 23,
+      "specs": {
+        "color": "Xanh lục, chuyển hồng khi nắng nhiều",
+        "size": "Đường kính 4–6 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu đất nung mini Ø7 cm",
+        "sun": "Nắng nhiều, 4–6 giờ mỗi ngày",
+        "gift": "Sỏi và 1 nấm trang trí"
+      },
+      "createdAt": "2026-09-28T03:22:01.484Z"
+    },
+    {
+      "id": "8",
+      "name": "Xương rồng tai thỏ",
+      "price": 45000,
+      "categoryId": 4,
+      "image": "p8.png",
+      "description": "Dáng đáng yêu như tai thỏ, ít cần chăm sóc.",
+      "care": [
+        "Ánh sáng: Nắng đầy đủ",
+        "Tưới nước: 2-3 tuần/lần"
+      ],
+      "stock": 3,
+      "specs": {
+        "color": "Xanh lục, gai lông vàng nâu",
+        "size": "Cao 12–18 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu nhựa Ø10 cm",
+        "sun": "Nắng đầy đủ",
+        "gift": "Sỏi trang trí"
+      },
+      "createdAt": "2026-09-22T03:22:01.484Z"
+    },
+    {
+      "id": "9",
+      "name": "Sen đá kim cương",
+      "price": 60000,
+      "categoryId": 4,
+      "image": "p9.png",
+      "description": "Lá xếp tầng, đổi màu hồng tím khi gặp nắng sớm.",
+      "care": [
+        "Ánh sáng: Nắng sớm",
+        "Tưới nước: 2 tuần/lần"
+      ],
+      "stock": 28,
+      "specs": {
+        "color": "Xanh phấn, chuyển hồng tím khi gặp nắng sớm",
+        "size": "Đường kính 6–8 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu đất nung Ø9 cm",
+        "sun": "Nắng sớm 3–4 giờ mỗi ngày",
+        "gift": "Nấm trang trí"
+      },
+      "createdAt": "2026-09-16T03:22:01.484Z"
+    },
+    {
+      "id": "10",
+      "name": "Cỏ may mắn mini",
+      "price": 55000,
+      "categoryId": 1,
+      "image": "p10.png",
+      "description": "Chậu nhỏ xinh, lá 3 cánh, dễ nhân giống, hợp tặng bạn bè.",
+      "care": [
+        "Ánh sáng: Ánh sáng tán xạ",
+        "Tưới nước: 2 lần/tuần"
+      ],
+      "stock": 30,
+      "specs": {
+        "color": "Lá xanh 3 cánh, hoa tím nhạt",
+        "size": "Cao 10–15 cm",
+        "scent": "Không mùi",
+        "pot": "Chậu sứ mini Ø8 cm",
+        "difficulty": "Rất dễ",
+        "gift": "Thiệp chúc may mắn"
+      },
+      "createdAt": "2026-09-10T03:22:01.484Z"
+    },
+    {
+      "id": "11",
+      "name": "Chậu sứ trắng",
+      "price": 90000,
+      "categoryId": 5,
+      "image": "p11.png",
+      "description": "Chậu sứ tối giản, có đĩa lót, đường kính 15cm.",
+      "care": [],
+      "stock": 11,
+      "specs": {
+        "material": "Sứ men trắng",
+        "color": "Trắng",
+        "size": "Ø18 × cao 16 cm",
+        "scent": "Không mùi",
+        "drain": "Có lỗ thoát nước và đĩa lót",
+        "spec": "1 chậu",
+        "note": "Không kèm cây"
+      },
+      "createdAt": "2026-09-04T03:22:01.484Z"
+    },
+    {
+      "id": "12",
+      "name": "Chậu xi măng vân đá",
+      "price": 75000,
+      "categoryId": 5,
+      "image": "p12.png",
+      "description": "Chậu xi măng mộc mạc, phong cách Bắc Âu, đường kính 14cm.",
+      "care": [],
+      "stock": 12,
+      "specs": {
+        "material": "Xi măng",
+        "color": "Xám vân đá",
+        "size": "Ø20 × cao 18 cm",
+        "scent": "Không mùi",
+        "drain": "Có lỗ thoát nước",
+        "spec": "1 chậu",
+        "note": "Nên ngâm nước 1 ngày trước khi trồng để giảm kiềm"
+      },
+      "createdAt": "2026-08-29T03:22:01.484Z"
+    },
+    {
+      "id": "13",
+      "name": "Đất trồng hữu cơ 2kg",
+      "price": 40000,
+      "categoryId": 5,
+      "image": "p13.png",
+      "description": "Hỗn hợp đất, xơ dừa và phân hữu cơ, thoát nước tốt.",
+      "care": [],
+      "stock": 1,
+      "specs": {
+        "material": "Hỗn hợp trấu hun, mụn dừa, phân hữu cơ",
+        "color": "Nâu đen",
+        "size": "Túi 2 kg (khoảng 3 lít)",
+        "scent": "Mùi đất tự nhiên, không hôi",
+        "drain": "Tơi xốp, thoát nước tốt",
+        "spec": "Đủ cho 2–3 chậu Ø15 cm",
+        "note": "Dùng cho cây trồng chậu"
+      },
+      "createdAt": "2026-08-23T03:22:01.484Z"
+    }
+  ],
+  "user": [
+    {
+      "id": "demo-admin",
+      "name": "admin",
+      "email": "admin@xanhgarden.test",
+      "role": "admin",
+      "verified": true,
+      "passwordHash": "b3148075d6ed1c7dbf34c015cd67ce03:595cebd9b0f8ee8b02f798d64fd5d2f811b9f493bada7b1c41a07fa8b42f267e",
+      "addresses": [],
+      "createdAt": "2026-11-04T03:22:01.484Z"
+    }
+  ],
+  "orders": [],
+  "reviews": [],
+  "feedbacks": [],
+  "payments": [],
+  "uploads": [],
+  "stockLogs": [],
+  "events": [
+    {
+      "id": "t5XetivO",
+      "name": "Tết Nguyên Đán",
+      "recurrence": "lunar",
+      "month": 1,
+      "day": 1,
+      "daysBefore": 21,
+      "daysAfter": 6,
+      "startAt": null,
+      "endAt": null,
+      "priority": 50,
+      "active": true,
+      "theme": {
+        "primary": "#9b1c1c",
+        "accent": "#d97706",
+        "slogan": "Rước lộc đầu xuân – cây phong thủy giảm đến 35%",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "O-ylliWG",
+      "name": "Tết Dương lịch",
+      "recurrence": "yearly",
+      "month": 1,
+      "day": 1,
+      "daysBefore": 5,
+      "daysAfter": 1,
+      "startAt": null,
+      "endAt": null,
+      "priority": 20,
+      "active": true,
+      "theme": {
+        "primary": "#1e1b4b",
+        "accent": "#ca8a04",
+        "slogan": "Năm mới xanh tươi – nhận voucher đầu năm",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "QSvuOBxM",
+      "name": "Valentine",
+      "recurrence": "yearly",
+      "month": 2,
+      "day": 14,
+      "daysBefore": 7,
+      "daysAfter": 0,
+      "startAt": null,
+      "endAt": null,
+      "priority": 30,
+      "active": true,
+      "theme": {
+        "primary": "#9d174d",
+        "accent": "#db2777",
+        "slogan": "Tặng nhau một chậu cây thay lời yêu thương",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "zq4xoVEX",
+      "name": "Quốc tế Phụ nữ 8/3",
+      "recurrence": "yearly",
+      "month": 3,
+      "day": 8,
+      "daysBefore": 7,
+      "daysAfter": 0,
+      "startAt": null,
+      "endAt": null,
+      "priority": 30,
+      "active": true,
+      "theme": {
+        "primary": "#86198f",
+        "accent": "#db2777",
+        "slogan": "Gửi tặng một nửa thế giới chút xanh dịu dàng",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "D2Jr97fw",
+      "name": "Tết Trung thu",
+      "recurrence": "lunar",
+      "month": 8,
+      "day": 15,
+      "daysBefore": 14,
+      "daysAfter": 1,
+      "startAt": null,
+      "endAt": null,
+      "priority": 40,
+      "active": true,
+      "theme": {
+        "primary": "#1e3a8a",
+        "accent": "#d97706",
+        "slogan": "Trăng rằm sum họp – quà tặng xanh cho cả nhà",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "laZS_I7S",
+      "name": "Phụ nữ Việt Nam 20/10",
+      "recurrence": "yearly",
+      "month": 10,
+      "day": 20,
+      "daysBefore": 7,
+      "daysAfter": 0,
+      "startAt": null,
+      "endAt": null,
+      "priority": 30,
+      "active": true,
+      "theme": {
+        "primary": "#9d174d",
+        "accent": "#ea580c",
+        "slogan": "Mừng 20/10 – quà xanh tặng người phụ nữ của bạn",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "uaFg2u9b",
+      "name": "Halloween",
+      "recurrence": "yearly",
+      "month": 10,
+      "day": 31,
+      "daysBefore": 10,
+      "daysAfter": 0,
+      "startAt": null,
+      "endAt": null,
+      "priority": 30,
+      "active": true,
+      "theme": {
+        "primary": "#3b0764",
+        "accent": "#ea580c",
+        "slogan": "Không ma quỷ, chỉ có cây xanh giảm giá",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "UzSCpIEa",
+      "name": "Nhà giáo Việt Nam 20/11",
+      "recurrence": "yearly",
+      "month": 11,
+      "day": 20,
+      "daysBefore": 7,
+      "daysAfter": 0,
+      "startAt": null,
+      "endAt": null,
+      "priority": 30,
+      "active": true,
+      "theme": {
+        "primary": "#1e40af",
+        "accent": "#059669",
+        "slogan": "Tri ân thầy cô bằng một mầm xanh",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "IEzifPzs",
+      "name": "Giáng sinh",
+      "recurrence": "yearly",
+      "month": 12,
+      "day": 25,
+      "daysBefore": 14,
+      "daysAfter": 1,
+      "startAt": null,
+      "endAt": null,
+      "priority": 30,
+      "active": true,
+      "theme": {
+        "primary": "#14532d",
+        "accent": "#dc2626",
+        "slogan": "Giáng sinh an lành – trang trí nhà với cây xanh",
+        "heroTitle": "",
+        "heroText": ""
+      },
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    }
+  ],
+  "banners": [
+    {
+      "id": "7ckUAOlu",
+      "name": "Đón Tết sum vầy – cây phong thủy rước lộc vào nhà",
+      "image": "tet",
+      "link": "./products.html?category=2",
+      "eventId": "t5XetivO",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "Aasu8dzJ",
+      "name": "Chào năm mới – thêm chút xanh cho góc làm việc",
+      "image": "nam-moi",
+      "link": "./vouchers.html",
+      "eventId": "O-ylliWG",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "aS6FR5MP",
+      "name": "Valentine xanh – món quà tình yêu lớn lên mỗi ngày",
+      "image": "valentine",
+      "link": "./products.html?category=1",
+      "eventId": "QSvuOBxM",
+      "order": 0,
+      "active": false,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "0vfH2cdQ",
+      "name": "Mừng 8/3 – quà tặng xanh cho người phụ nữ bạn yêu thương",
+      "image": "phu-nu",
+      "link": "./products.html?category=1",
+      "eventId": "zq4xoVEX",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "wy8zM7bA",
+      "name": "Trung thu đoàn viên – tặng nhau mầm xanh may mắn",
+      "image": "trung-thu",
+      "link": "./products.html",
+      "eventId": "D2Jr97fw",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "GuWjZI7a",
+      "name": "Mừng ngày Phụ nữ Việt Nam 20/10 – quà tặng xanh ý nghĩa",
+      "image": "phu-nu",
+      "link": "./products.html?category=1",
+      "eventId": "laZS_I7S",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "bfTX47BL",
+      "name": "Halloween rộn ràng – sen đá, xương rồng đáng yêu chờ bạn",
+      "image": "halloween",
+      "link": "./products.html?category=4",
+      "eventId": "uaFg2u9b",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "Yoa2n7cT",
+      "name": "Tri ân thầy cô 20/11 – món quà xanh thay lời cảm ơn",
+      "image": "nha-giao",
+      "link": "./products.html?category=1",
+      "eventId": "UzSCpIEa",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    },
+    {
+      "id": "S-z2rbW8",
+      "name": "Merry Christmas – cây xanh và chậu xinh cho mùa lễ hội",
+      "image": "noel",
+      "link": "./products.html",
+      "eventId": "IEzifPzs",
+      "order": 0,
+      "active": true,
+      "startAt": null,
+      "endAt": null,
+      "createdAt": "2026-10-15T05:57:23.101Z"
+    }
+  ],
+  "vouchers": [
+    {
+      "id": "dZ6NZPOq",
+      "kind": "order",
+      "audience": "all",
+      "scope": "all",
+      "scopeIds": [],
+      "startAt": "2026-10-13T06:20:40.649Z",
+      "endAt": "2027-02-11T06:20:40.650Z",
+      "totalQuantity": 500,
+      "perUserLimit": 1,
+      "validDays": 30,
+      "claimable": true,
+      "active": true,
+      "claimedCount": 0,
+      "usedCount": 0,
+      "createdAt": "2026-10-13T06:20:40.649Z",
+      "code": "SALE10",
+      "name": "Giảm 10% đơn từ 150k",
+      "type": "percent",
+      "value": 10,
+      "maxDiscount": 30000,
+      "minOrder": 150000
+    },
+    {
+      "id": "cNWwQmXC",
+      "kind": "order",
+      "audience": "all",
+      "scope": "all",
+      "scopeIds": [],
+      "startAt": "2026-10-13T06:20:40.649Z",
+      "endAt": "2027-02-11T06:20:40.650Z",
+      "totalQuantity": 300,
+      "perUserLimit": 1,
+      "validDays": 30,
+      "claimable": true,
+      "active": true,
+      "claimedCount": 0,
+      "usedCount": 0,
+      "createdAt": "2026-10-13T06:20:40.649Z",
+      "code": "SALE15",
+      "name": "Giảm 15% đơn từ 300k",
+      "type": "percent",
+      "value": 15,
+      "maxDiscount": 50000,
+      "minOrder": 300000
+    },
+    {
+      "id": "UlokT7Vq",
+      "kind": "order",
+      "audience": "all",
+      "scope": "all",
+      "scopeIds": [],
+      "startAt": "2026-10-13T06:20:40.649Z",
+      "endAt": "2027-02-11T06:20:40.650Z",
+      "totalQuantity": 200,
+      "perUserLimit": 1,
+      "validDays": 30,
+      "claimable": true,
+      "active": true,
+      "claimedCount": 0,
+      "usedCount": 0,
+      "createdAt": "2026-10-13T06:20:40.649Z",
+      "code": "SALE25",
+      "name": "Giảm 25% đơn từ 500k",
+      "type": "percent",
+      "value": 25,
+      "maxDiscount": 80000,
+      "minOrder": 500000
+    },
+    {
+      "id": "G7VYReuY",
+      "kind": "order",
+      "audience": "all",
+      "scope": "all",
+      "scopeIds": [],
+      "startAt": "2026-10-13T06:20:40.649Z",
+      "endAt": "2027-02-11T06:20:40.650Z",
+      "totalQuantity": 100,
+      "perUserLimit": 1,
+      "validDays": 30,
+      "claimable": true,
+      "active": true,
+      "claimedCount": 0,
+      "usedCount": 0,
+      "createdAt": "2026-10-13T06:20:40.649Z",
+      "code": "SALE35",
+      "name": "Giảm 35% đơn từ 800k",
+      "type": "percent",
+      "value": 35,
+      "maxDiscount": 120000,
+      "minOrder": 800000
+    },
+    {
+      "id": "j5X_AP_B",
+      "kind": "shipping",
+      "audience": "all",
+      "scope": "all",
+      "scopeIds": [],
+      "startAt": "2026-10-13T06:20:40.649Z",
+      "endAt": "2027-02-11T06:20:40.650Z",
+      "totalQuantity": 1000,
+      "perUserLimit": 1,
+      "validDays": 30,
+      "claimable": true,
+      "active": true,
+      "claimedCount": 0,
+      "usedCount": 0,
+      "createdAt": "2026-10-13T06:20:40.649Z",
+      "code": "FREESHIP30",
+      "name": "Giảm 30.000 ₫ phí vận chuyển",
+      "type": "fixed",
+      "value": 30000,
+      "maxDiscount": 30000,
+      "minOrder": 200000
+    },
+    {
+      "id": "JONwXB45",
+      "code": "SALELON29102026",
+      "name": "sale 50%",
+      "kind": "shipping",
+      "type": "percent",
+      "value": 50,
+      "maxDiscount": 500000,
+      "minOrder": 800000,
+      "audience": "all",
+      "scope": "all",
+      "scopeIds": [],
+      "startAt": "2026-10-29T09:32:00.000Z",
+      "endAt": "2026-10-29T09:34:00.000Z",
+      "totalQuantity": 1,
+      "perUserLimit": 1,
+      "validDays": 1,
+      "claimable": true,
+      "active": true,
+      "claimedCount": 0,
+      "usedCount": 0,
+      "createdAt": "2026-10-29T09:34:45.901Z"
+    }
+  ],
+  "userVouchers": [],
+  "carts": [],
+  "chats": [],
+  "seeded": {
+    "vouchers": true,
+    "events": true
+  },
+  "settings": {}
+}

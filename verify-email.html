@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Xác minh email - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="auth-wrap">
+                <div class="auth-aside"><img src="./src/static/IMAGES/bg/bg2.jpg" alt=""><div><b>Sắp xong rồi!</b><ul><li>Nhập mã 6 số đã gửi tới email</li><li>Mã có hiệu lực 10 phút</li><li>Không thấy email? Xem thư mục Spam</li></ul></div></div>
+                <form id="verifyForm" class="auth-form" novalidate>
+                <h1>Xác minh email</h1>
+                <p id="intro" class="muted"></p>
+                <label>Mã xác minh (6 chữ số)
+                    <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="\d{6}" class="code-input" required autofocus>
+                </label>
+                <button type="submit" class="btn btn-block btn-lg">Xác minh</button>
+                <button type="button" id="resendBtn" class="btn btn-outline btn-block">Gửi lại mã</button>
+                <p id="message" class="error-message" role="alert"></p>
+                <p><a href="./login.html">Quay lại đăng nhập</a></p>
+            </form>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/verify-email-page.js"></script>
+    </body>
+</html>

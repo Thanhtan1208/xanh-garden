@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quản lý đơn hàng - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <h1>Quản lý đơn hàng</h1>
+            <div class="period-bar">
+                <span class="period-title">Thống kê theo</span>
+                <div class="pill-seg" id="scopeSeg" role="group" aria-label="Khoảng thời gian">
+                    <button type="button" data-scope="all" class="active">Tất cả</button>
+                    <button type="button" data-scope="year">Năm</button>
+                    <button type="button" data-scope="quarter">Quý</button>
+                    <button type="button" data-scope="month">Tháng</button>
+                </div>
+                <select id="yearSelect" class="hidden" aria-label="Năm"></select>
+                <select id="quarterSelect" class="hidden" aria-label="Quý">
+                    <option value="1">Quý 1</option><option value="2">Quý 2</option>
+                    <option value="3">Quý 3</option><option value="4">Quý 4</option>
+                </select>
+                <select id="monthSelect" class="hidden" aria-label="Tháng"></select>
+            </div>
+            <section id="stats" class="bank-hero"></section>
+
+            <div class="filter-bar">
+                <input type="search" id="orderSearch" placeholder="Tìm mã đơn, tên khách, số điện thoại" aria-label="Tìm đơn hàng">
+                <select id="statusFilter" aria-label="Lọc trạng thái"></select>
+                <select id="sortSelect" aria-label="Sắp xếp">
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="highest">Giá trị cao nhất</option>
+                </select>
+                <button type="button" id="exportBtn" class="btn btn-sm btn-outline">Xuất CSV</button>
+                <button type="button" id="exportXlsxBtn" class="btn btn-sm">Xuất Excel</button>
+            </div>
+            <p id="actionMessage" class="msg" role="status"></p>
+
+            <div id="loading" class="loading">Đang tải đơn hàng...</div>
+            <div id="error" class="error hidden"></div>
+            <div class="table-wrap">
+                <table class="data-table" id="orderTable" hidden>
+                    <thead>
+                        <tr><th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                    </thead>
+                    <tbody id="orderBody"></tbody>
+                </table>
+            </div>
+            <p id="emptyMessage" class="empty hidden">Không có đơn hàng nào.</p>
+        </main>
+        <!-- jsPDF + AutoTable để xuất hóa đơn PDF -->
+        <script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@5.0.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+        <script type="module" src="./src/js/pages/admin-orders-page.js"></script>
+    </body>
+</html>

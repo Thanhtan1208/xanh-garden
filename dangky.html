@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Đăng ký - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="auth-wrap">
+                <div class="auth-aside"><img src="./src/static/IMAGES/bg/bg5.jpg" alt=""><div><b>Tạo tài khoản Xanh Garden</b><ul><li>Nhận voucher chào bạn mới sau khi xác minh email</li><li>Quà sinh nhật mỗi năm</li><li>Đặt hàng nhanh với sổ địa chỉ</li></ul></div></div>
+                <form id="registerForm" class="auth-form" novalidate>
+                <h1>Đăng ký tài khoản</h1>
+                <label>Tên đăng nhập
+                    <input type="text" name="name" autocomplete="username" minlength="3" maxlength="20" required>
+                    <small>3 – 20 ký tự: chữ, số, dấu gạch dưới, dấu chấm.</small>
+                </label>
+                <label>Email
+                    <input type="email" name="email" autocomplete="email" maxlength="80" required>
+                </label>
+                <label>Ngày sinh (không bắt buộc)
+                    <input type="date" name="birthday" autocomplete="bday">
+                    <small>Khai ngày sinh để nhận voucher quà tặng đúng ngày sinh nhật. Chỉ khai được một lần.</small>
+                </label>
+                <label>Mật khẩu
+                    <input type="password" name="password" autocomplete="new-password" maxlength="64" required>
+                    <ul id="pwRules" class="pw-rules"></ul>
+                </label>
+                <label>Nhập lại mật khẩu
+                    <input type="password" name="confirmPassword" autocomplete="new-password" required>
+                </label>
+                <button type="submit" class="btn btn-block btn-lg">Đăng ký</button>
+                <p id="message" class="error-message" role="alert"></p>
+                <p>Đã có tài khoản? <a href="./login.html">Đăng nhập</a></p>
+            </form>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/register-page.js"></script>
+    </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Thanh toán - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <a href="./cart.html" class="back" id="backToCart">Quay lại giỏ hàng</a>
+            <ol class="steps"><li class="done">Giỏ hàng</li><li class="current">Thanh toán</li><li>Hoàn tất</li></ol>
+            <div class="checkout-layout">
+                <form id="checkoutForm" class="checkout-form" novalidate>
+                    <section class="form-section">
+                        <h2><span class="num">1</span> Địa chỉ nhận hàng</h2>
+                        <div id="addressList" class="address-list"></div>
+                        <button type="button" id="addAddressBtn" class="btn btn-sm btn-outline">Thêm địa chỉ mới</button>
+                        <div id="addressForm" class="address-form hidden">
+                            <h3 id="addressFormTitle">Địa chỉ mới</h3>
+                            <div class="form-grid">
+                                <label>Tên người nhận
+                                    <input type="text" id="addrName" autocomplete="name" minlength="2" maxlength="60">
+                                </label>
+                                <label>Số điện thoại
+                                    <input type="tel" id="addrPhone" autocomplete="tel" inputmode="tel" placeholder="0901234567">
+                                </label>
+                                <label class="full-column">Địa chỉ giao hàng
+                                    <input type="text" id="addrAddress" autocomplete="street-address" minlength="10" maxlength="200" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành">
+                                </label>
+                                <label class="check-inline full-column"><input type="checkbox" id="addrDefault"> Đặt làm địa chỉ mặc định</label>
+                            </div>
+                            <p id="addressMessage" class="error-message" role="alert"></p>
+                            <div class="button-row">
+                                <button type="button" id="saveAddressBtn" class="btn btn-sm">Lưu địa chỉ</button>
+                                <button type="button" id="cancelAddressBtn" class="btn btn-sm btn-outline">Hủy</button>
+                            </div>
+                        </div>
+                        <label class="note-field">Email nhận thông tin đơn hàng
+                            <input type="email" name="email" autocomplete="email" maxlength="80" class="wide-input" required>
+                        </label>
+                        <label class="note-field">Ghi chú cho người giao (không bắt buộc)
+                            <textarea name="note" rows="2" maxlength="200"></textarea>
+                        </label>
+                    </section>
+
+                    <section class="form-section">
+                        <h2><span class="num">2</span> Phương thức vận chuyển</h2>
+                        <label class="option-card">
+                            <input type="radio" name="shippingMethod" value="standard" checked>
+                            <span><b>Giao tiêu chuẩn</b><small>30.000 ₫, miễn phí cho đơn từ 500.000 ₫</small></span>
+                        </label>
+                        <label class="option-card">
+                            <input type="radio" name="shippingMethod" value="express">
+                            <span><b>Giao nhanh</b><small>50.000 ₫</small></span>
+                        </label>
+                    </section>
+
+                    <section class="form-section">
+                        <h2><span class="num">3</span> Mã giảm giá</h2>
+                        <div class="voucher-input">
+                            <input type="text" id="voucherCode" maxlength="20" placeholder="Nhập mã voucher (VD: SALE10)" aria-label="Mã voucher" autocomplete="off">
+                            <button type="button" id="applyVoucherBtn" class="btn btn-sm">Nhận mã</button>
+                        </div>
+                        <p id="voucherMessage" class="error-message" role="alert"></p>
+                        <div id="voucherList" class="voucher-pick"></div>
+                        <p class="muted">Mỗi đơn dùng tối đa 1 voucher giảm giá và 1 voucher phí vận chuyển. <a href="./vouchers.html">Xem Kho voucher</a></p>
+                    </section>
+
+                    <section class="form-section">
+                        <h2><span class="num">4</span> Phương thức thanh toán</h2>
+                        <label class="option-card">
+                            <input type="radio" name="paymentMethod" value="cod" checked>
+                            <span><b>Thanh toán khi nhận hàng (COD)</b><small>Trả tiền mặt cho nhân viên giao hàng (chỉ áp dụng cho đơn có tiền hàng đến 1.000.000 ₫).</small></span>
+                        </label>
+                        <label class="option-card">
+                            <input type="radio" name="paymentMethod" value="sepay">
+                            <span><b>Chuyển khoản QR (SePay)</b><small>Quét mã VietQR sau khi đặt hàng; hệ thống tự ghi nhận và xác nhận đơn khi tiền về. Đơn quá 30 phút chưa thanh toán sẽ tự hủy.</small></span>
+                        </label>
+                    </section>
+
+                    <p id="checkoutMessage" class="error-message" role="alert"></p>
+                    <button type="submit" class="btn btn-lg btn-block">Xác nhận đặt hàng</button>
+                </form>
+                <aside id="checkoutSummary" class="order-summary"></aside>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/checkout-page.js"></script>
+    </body>
+</html>

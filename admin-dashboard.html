@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Thống kê - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page dash">
+            <div class="dash-top">
+                <h1>Thống kê</h1>
+                <nav class="pill-tabs" id="dashTabs" role="tablist">
+                    <button type="button" class="active" data-tab="revenue" role="tab">Doanh thu</button>
+                    <button type="button" data-tab="inventory" role="tab">Kho &amp; vận hành <span id="invBadge" class="tab-badge hidden"></span></button>
+                    <button type="button" data-tab="demand" role="tab">Nhu cầu khách <span id="demandBadge" class="tab-badge hidden"></span></button>
+                    <button type="button" data-tab="reviews" role="tab">Đánh giá <span id="reviewBadge" class="tab-badge hidden"></span></button>
+                    <button type="button" data-tab="customers" role="tab">Khách hàng</button>
+                </nav>
+            </div>
+
+            <div id="loading" class="loading">Đang tải số liệu...</div>
+            <div id="error" class="error hidden"></div>
+
+            <div id="dashboard" class="hidden">
+                <!-- ===== Doanh thu ===== -->
+                <div class="tab-panel" data-panel="revenue">
+                    <div class="period-bar">
+                        <select id="yearSelect" aria-label="Năm"></select>
+                        <div class="pill-seg" id="periodSeg" role="group" aria-label="Xem theo">
+                            <button type="button" data-period="year">Cả năm</button>
+                            <button type="button" data-period="quarter">Quý</button>
+                            <button type="button" data-period="month">Tháng</button>
+                        </div>
+                        <select id="quarterSelect" class="hidden" aria-label="Quý">
+                            <option value="1">Quý 1</option><option value="2">Quý 2</option>
+                            <option value="3">Quý 3</option><option value="4">Quý 4</option>
+                        </select>
+                        <select id="monthSelect" class="hidden" aria-label="Tháng"></select>
+                        <button type="button" id="revenueExport" class="btn btn-sm">Xuất Excel</button>
+                    </div>
+
+                    <section class="bank-hero" id="revenueHero"></section>
+
+                    <div class="bank-grid">
+                        <section class="bank-card span-2">
+                            <div class="bank-card-head">
+                                <h2>Doanh thu 12 tháng</h2>
+                                <div id="monthLegend" class="legend"></div>
+                            </div>
+                            <div id="monthChart" class="line-chart"></div>
+                            <details class="chart-table">
+                                <summary>Xem số liệu dạng bảng</summary>
+                                <div class="table-wrap"><table class="data-table" id="monthTable"></table></div>
+                            </details>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Theo quý</h2><small id="quarterTotal" class="muted"></small></div>
+                            <div id="quarterList" class="tx-list"></div>
+                            <details class="chart-table"><summary>Xem số liệu dạng bảng</summary><div class="table-wrap"><table class="data-table" id="quarterTable"></table></div></details>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Theo danh mục</h2></div>
+                            <div id="categoryList" class="tx-list"></div>
+                            <details class="chart-table"><summary>Xem số liệu dạng bảng</summary><div class="table-wrap"><table class="data-table" id="categoryTable"></table></div></details>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Hình thức thanh toán</h2></div>
+                            <div id="paymentSplit"></div>
+                            <details class="chart-table"><summary>Xem số liệu dạng bảng</summary><div class="table-wrap"><table class="data-table" id="paymentTable"></table></div></details>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Sản phẩm bán chạy</h2></div>
+                            <div id="topProducts" class="tx-list"></div>
+                            <details class="chart-table"><summary>Xem số liệu dạng bảng</summary><div class="table-wrap"><table class="data-table" id="topProductsTable"></table></div></details>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- ===== Kho & vận hành ===== -->
+                <div class="tab-panel hidden" data-panel="inventory">
+                    <section class="bank-hero" id="invHero"></section>
+                    <div class="bank-grid">
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Việc cần xử lý</h2></div>
+                            <div id="todoList" class="tx-list"></div>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Cảnh báo dữ liệu &amp; thanh toán</h2></div>
+                            <div id="alertList" class="tx-list"></div>
+                        </section>
+                        <section class="bank-card span-2">
+                            <div class="bank-card-head">
+                                <h2>Tồn kho sản phẩm</h2>
+                                <div class="filter-bar inv-filter">
+                                    <input type="search" id="invSearch" placeholder="Tìm sản phẩm" aria-label="Tìm sản phẩm">
+                                    <div class="pill-seg" id="invSeg" role="group" aria-label="Lọc tồn kho">
+                                        <button type="button" data-f="all" class="active">Tất cả</button>
+                                        <button type="button" data-f="low">Sắp hết</button>
+                                        <button type="button" data-f="out">Hết hàng</button>
+                                    </div>
+                                    <a class="btn btn-sm btn-outline" href="./admin-products.html">Quản lý sản phẩm</a>
+                                    <button type="button" id="inventoryExport" class="btn btn-sm">Xuất Excel</button>
+                                </div>
+                            </div>
+                            <div class="table-wrap flat"><table class="data-table" id="invTable">
+                                <thead><tr><th>Sản phẩm</th><th>Tồn kho</th><th>Đang trong đơn</th><th>Đã bán</th><th>Giá trị tồn</th><th>Hàng về</th><th>Nhập thêm</th></tr></thead>
+                                <tbody id="invBody"></tbody>
+                            </table></div>
+                            <p id="invEmpty" class="empty hidden">Không có sản phẩm phù hợp.</p>
+                            <button type="button" id="invMore" class="btn btn-sm btn-outline more-btn hidden"></button>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- ===== Nhu cầu khách hàng (admin-demand.js) ===== -->
+                <div class="tab-panel hidden" data-panel="demand">
+                    <div class="period-bar">
+                        <div class="pill-seg" id="demandRange" role="group" aria-label="Khoảng thời gian">
+                            <button type="button" data-days="7">7 ngày</button>
+                            <button type="button" data-days="30" class="active">30 ngày</button>
+                            <button type="button" data-days="90">90 ngày</button>
+                        </div>
+                        <button type="button" id="demandExport" class="btn btn-sm btn-outline">Xuất CSV</button>
+                        <button type="button" id="demandXlsx" class="btn btn-sm">Xuất Excel</button>
+                        <span id="demandNote" class="muted"></span>
+                    </div>
+                    <section class="bank-hero" id="demandKpi"></section>
+                    <div class="bank-grid">
+                        <section class="bank-card span-2">
+                            <div class="bank-card-head"><h2>Nhận định</h2></div>
+                            <div id="demandInsights" class="tx-list"></div>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Phễu chuyển đổi</h2></div>
+                            <div id="demandFunnel"></div>
+                            <details class="chart-table"><summary>Xem số liệu dạng bảng</summary><div class="table-wrap"><table class="data-table" id="demandFunnelTable"></table></div></details>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Khung giờ truy cập</h2></div>
+                            <div id="demandHours" class="hour-chart"></div>
+                            <div id="demandDevices" class="device-split"></div>
+                            <details class="chart-table"><summary>Xem theo giờ dạng bảng</summary><div class="table-wrap"><table class="data-table" id="demandHoursTable"></table></div></details>
+                        </section>
+                        <section class="bank-card span-2">
+                            <div class="bank-card-head"><h2>Mức quan tâm theo sản phẩm</h2></div>
+                            <div class="table-wrap flat"><table class="data-table">
+                                <thead><tr><th>Sản phẩm</th><th>Lượt xem</th><th>Xem TB</th><th>Thêm giỏ</th><th>Đã đặt</th><th>Tồn</th><th>Mức nhu cầu</th></tr></thead>
+                                <tbody id="demandProducts"></tbody>
+                            </table></div>
+                            <button type="button" id="demandMore" class="btn btn-sm btn-outline more-btn hidden"></button>
+                        </section>
+                        <section class="bank-card"><div class="bank-card-head"><h2>Quan tâm theo danh mục</h2></div><div id="demandCategories" class="hbars"></div><details class="chart-table"><summary>Xem dạng bảng</summary><div class="table-wrap"><table class="data-table" id="demandCategoriesTable"></table></div></details></section>
+                        <section class="bank-card"><div class="bank-card-head"><h2>Từ khóa tìm kiếm</h2></div><div id="demandKeywords"></div><details class="chart-table"><summary>Xem dạng bảng</summary><div class="table-wrap"><table class="data-table" id="demandKeywordsTable"></table></div></details></section>
+                        <section class="bank-card span-2"><div class="bank-card-head"><h2>Trang được xem nhiều</h2></div><div id="demandPages" class="hbars"></div><details class="chart-table"><summary>Xem dạng bảng</summary><div class="table-wrap"><table class="data-table" id="demandPagesTable"></table></div></details></section>
+                    </div>
+                </div>
+
+                <!-- ===== Đánh giá & cải thiện ===== -->
+                <div class="tab-panel hidden" data-panel="reviews">
+                    <section class="bank-hero" id="reviewHero"></section>
+                    <div class="bank-grid">
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Phân bố số sao</h2><button type="button" id="reviewsExport" class="btn btn-sm">Xuất Excel</button></div>
+                            <div id="ratings"></div>
+                            <details class="chart-table"><summary>Xem số liệu dạng bảng</summary><div class="table-wrap"><table class="data-table" id="ratingTable"></table></div></details>
+                        </section>
+                        <section class="bank-card">
+                            <div class="bank-card-head"><h2>Cần cải thiện</h2></div>
+                            <div id="improvements" class="tx-list"></div>
+                        </section>
+                        <section class="bank-card span-2">
+                            <div class="bank-card-head"><h2>Đánh giá xấu gần nhất (1–2 sao)</h2></div>
+                            <div id="badReviews" class="tx-list"></div>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="tab-panel hidden" data-panel="customers">
+                    <div class="period-bar">
+                        <span class="period-title">Khoảng thời gian</span>
+                        <div class="pill-seg" id="customerRange" role="group" aria-label="Lọc khách hàng">
+                            <button type="button" data-days="7">7 ngày</button>
+                            <button type="button" data-days="30" class="active">30 ngày</button>
+                            <button type="button" data-days="90">90 ngày</button>
+                        </div>
+                        <button type="button" id="customerCsv" class="btn btn-sm btn-outline">Xuất CSV</button>
+                        <button type="button" id="customerXlsx" class="btn btn-sm">Xuất Excel</button>
+                    </div>
+                    <p class="muted">Khách truy cập là mã ẩn danh; không ghép với tài khoản. “Chưa từng đặt đơn” tính cả đơn đã hủy.</p>
+                    <section class="bank-hero" id="customerKpi"></section>
+                    <section class="bank-card">
+                        <div class="bank-card-head"><h2>Khách truy cập và khách hàng theo ngày</h2></div>
+                        <div class="table-wrap"><table class="data-table" id="customerDailyTable"></table></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/admin-dashboard-page.js"></script>
+    </body>
+</html>

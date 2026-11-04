@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sản phẩm - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="shop-layout">
+                <aside class="shop-sidebar" id="shopSidebar">
+                    <section>
+                        <h3>Danh mục sản phẩm</h3>
+                        <div id="categoryList" class="side-list"></div>
+                    </section>
+                    <section>
+                        <h3>Khoảng giá</h3>
+                        <div id="priceFilter" class="side-list">
+                            <label><input type="radio" name="price" value="" checked> Mọi mức giá</label>
+                            <label><input type="radio" name="price" value="0-100000"> Dưới 100.000 ₫</label>
+                            <label><input type="radio" name="price" value="100000-200000"> 100.000 ₫ – 200.000 ₫</label>
+                            <label><input type="radio" name="price" value="200000-500000"> 200.000 ₫ – 500.000 ₫</label>
+                            <label><input type="radio" name="price" value="500000-"> Trên 500.000 ₫</label>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Tình trạng</h3>
+                        <div class="side-list">
+                            <label><input type="checkbox" id="inStockOnly"> Chỉ hiện còn hàng</label>
+                            <label><input type="checkbox" id="saleOnly"> Đang giảm giá</label>
+                        </div>
+                    </section>
+                    <button type="button" id="resetBtn" class="btn btn-sm btn-outline btn-block">Xóa bộ lọc</button>
+                </aside>
+
+                <section class="shop-main">
+                    <div class="shop-head">
+                        <h1 id="shopTitle">Tất cả sản phẩm</h1>
+                        <p id="resultCount" class="muted"></p>
+                    </div>
+                    <p id="shopIntro" class="shop-intro"></p>
+                    <div id="activeFilters" class="chips"></div>
+                    <div class="shop-toolbar">
+                        <button type="button" id="filterToggle" class="btn btn-sm btn-outline filter-toggle" aria-expanded="false" aria-controls="shopSidebar">Bộ lọc</button>
+                        <input type="search" id="searchInput" placeholder="Lọc theo tên cây..." aria-label="Lọc theo tên">
+                        <label>Sắp xếp
+                            <select id="sortSelect" aria-label="Sắp xếp">
+                                <option value="">Nổi bật</option>
+                                <option value="best">Bán chạy</option>
+                                <option value="newest">Hàng mới về</option>
+                                <option value="asc">Giá thấp đến cao</option>
+                                <option value="desc">Giá cao đến thấp</option>
+                                <option value="name">Tên A – Z</option>
+                            </select>
+                        </label>
+                        <div class="view-toggle" id="viewToggle" role="group" aria-label="Kiểu hiển thị"></div>
+                    </div>
+
+                    <div id="loading" class="loading">Đang tải sản phẩm...</div>
+                    <div id="error" class="error hidden"></div>
+                    <div id="productList" class="product-grid"></div>
+                    <div id="pagination" class="pagination"></div>
+                </section>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/products-page.js"></script>
+    </body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Thông tin cửa hàng - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="section-header"><div><p class="eyebrow">Hiển thị trên toàn website</p><h1>Thông tin cửa hàng</h1></div></div>
+            <p class="muted">Tên, hotline, địa chỉ, giờ mở cửa... hiện ở đầu trang, chân trang, hóa đơn PDF. Sửa ở đây là website đổi theo ngay, không cần sửa code.</p>
+            <div id="loading" class="loading">Đang tải thông tin...</div>
+            <div id="error" class="error hidden"></div>
+            <form id="shopForm" class="form-section hidden" novalidate>
+                <div class="form-grid">
+                    <label>Tên cửa hàng <input type="text" name="name" maxlength="40" required></label>
+                    <label>Khẩu hiệu <input type="text" name="tagline" maxlength="80" required></label>
+                    <label>Hotline <input type="text" name="hotline" maxlength="20" required></label>
+                    <label>Email <input type="email" name="email" maxlength="80" required></label>
+                    <label class="full-column">Địa chỉ <input type="text" name="address" maxlength="150" required></label>
+                    <label class="full-column">Giờ mở cửa <input type="text" name="hours" maxlength="80" required></label>
+                    <label>Liên kết Facebook <input type="url" name="facebook" required></label>
+                    <label>Liên kết Zalo <input type="url" name="zalo" required></label>
+                    <label>Số ngày bảo hành cây <input type="number" name="warrantyDays" min="1" max="90" required></label>
+                </div>
+                <p id="formMessage" class="error-message" role="alert"></p>
+                <div class="button-row"><button type="submit" class="btn">Lưu thông tin</button></div>
+            </form>
+        </main>
+        <script type="module" src="./src/js/pages/admin-settings-page.js"></script>
+    </body>
+</html>
