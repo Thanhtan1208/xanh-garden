@@ -1,24 +1,13 @@
 {
-  "name": "caycanh",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "server": "node --env-file-if-exists=.env server/index.js",
-    "test": "node --test --test-reporter=spec \"tests/*.test.js\"",
-    "mail": "node scripts/mail-ao.mjs"
-  },
-  "dependencies": {
-    "express": "^4.21.0",
-    "nodemailer": "^10.0.16",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "mailparser": "^3.14.1",
-    "smtp-server": "^3.21.3",
-    "vite": "^6.0.0"
-  }
+    "name": "xanh-garden",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Xanh Garden: online plant shop (frontend + backend)",
+    "scripts": {
+        "format": "prettier --write \"backend/**/*.{js,mjs}\" \"frontend/src/js/**/*.js\" frontend/vite.config.js",
+        "format:check": "prettier --check \"backend/**/*.{js,mjs}\" \"frontend/src/js/**/*.js\" frontend/vite.config.js"
+    },
+    "devDependencies": {
+        "prettier": "3.3.3"
+    }
 }

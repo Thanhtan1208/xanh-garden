@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tài khoản của tôi - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="account-layout">
+                <aside class="side-menu">
+                    <div class="side-menu-head">
+                        <span class="avatar" id="avatar"></span>
+                        <span>
+                            <b id="accName"></b>
+                            <small id="accEmail"></small>
+                            <button type="button" class="link-button" id="avatarBtn">Đổi ảnh đại diện</button>
+                            <input type="file" id="avatarFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                        </span>
+                    </div>
+                    <nav id="accountNav" aria-label="Tài khoản">
+                        <a href="./account.html?tab=info" data-tab="info" data-nav-icon="user">Thông tin tài khoản</a>
+                        <a href="./my-orders.html" data-nav-icon="box">Đơn hàng của tôi</a>
+                        <a href="./account.html?tab=addresses" data-tab="addresses" data-nav-icon="mapPin">Sổ địa chỉ</a>
+                        <a href="./account.html?tab=favorites" data-tab="favorites" data-nav-icon="heart">Sản phẩm yêu thích</a>
+                        <a href="./vouchers.html" data-nav-icon="ticket">Ví voucher</a>
+                        <a href="./account.html?tab=password" data-tab="password" data-nav-icon="shield">Đổi mật khẩu</a>
+                        <button type="button" class="logout" data-logout data-nav-icon="logout">Đăng xuất</button>
+                    </nav>
+                </aside>
+
+                <div>
+                    <section class="panel-card hidden" data-panel="info">
+                        <h2>Thông tin tài khoản</h2>
+                        <dl class="info-rows" id="infoRows"></dl>
+                        <form id="birthdayForm" class="narrow-form hidden">
+                            <p class="muted">Khai ngày sinh để nhận voucher quà tặng đúng ngày sinh nhật mỗi năm (chỉ khai được một lần).</p>
+                            <label>Ngày sinh <input type="date" id="birthdayInput" required></label>
+                            <button type="submit" class="btn btn-sm">Lưu ngày sinh</button>
+                            <p id="birthdayMessage" class="error-message" role="alert"></p>
+                        </form>
+                    </section>
+                    <section class="panel-card hidden" data-panel="info" id="summaryCard">
+                        <h2>Hoạt động mua sắm</h2>
+                        <div class="tx-list" id="summaryList"></div>
+                    </section>
+
+                    <section class="panel-card hidden" data-panel="addresses">
+                        <div class="section-header"><h2>Sổ địa chỉ</h2><button type="button" id="newAddressBtn" class="btn btn-sm">+ Thêm địa chỉ</button></div>
+                        <form id="addressForm" class="address-form hidden" novalidate>
+                            <h3 id="addressFormTitle">Địa chỉ mới</h3>
+                            <div class="form-grid">
+                                <label>Tên người nhận <input type="text" name="fullName" autocomplete="name" maxlength="60"></label>
+                                <label>Số điện thoại <input type="tel" name="phone" autocomplete="tel" placeholder="0901234567"></label>
+                                <label class="full-column">Địa chỉ giao hàng <input type="text" name="address" autocomplete="street-address" maxlength="200" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></label>
+                                <label class="check-inline full-column"><input type="checkbox" name="isDefault"> Đặt làm địa chỉ mặc định</label>
+                            </div>
+                            <p id="addressMessage" class="error-message" role="alert"></p>
+                            <div class="button-row">
+                                <button type="submit" class="btn btn-sm">Lưu địa chỉ</button>
+                                <button type="button" id="cancelAddressBtn" class="btn btn-sm btn-outline">Hủy</button>
+                            </div>
+                        </form>
+                        <div id="addressBook" class="address-book"></div>
+                    </section>
+
+                    <section class="panel-card hidden" data-panel="favorites">
+                        <h2>Sản phẩm yêu thích</h2>
+                        <div id="favoriteList" class="product-grid"></div>
+                    </section>
+
+                    <section class="panel-card hidden" data-panel="password">
+                        <h2>Đổi mật khẩu</h2>
+                        <form id="passwordForm" class="narrow-form" novalidate>
+                            <label>Mật khẩu hiện tại <input type="password" name="currentPassword" autocomplete="current-password" required></label>
+                            <label>Mã xác nhận (OTP) gửi về email
+                                <span class="otp-row"><input type="text" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 số"><button type="button" class="btn btn-sm btn-outline" data-send-code>Gửi mã</button></span>
+                                <small class="muted code-target">Mã sẽ được gửi tới: <b data-code-email></b></small>
+                                <small class="muted" data-code-hint>Nhập mật khẩu hiện tại rồi bấm "Gửi mã". Mã có hiệu lực 3 phút.</small>
+                            </label>
+                            <label>Mật khẩu mới
+                                <input type="password" name="newPassword" autocomplete="new-password" maxlength="64" required>
+                                <ul id="pwRules" class="pw-rules"></ul>
+                            </label>
+                            <label>Nhập lại mật khẩu mới <input type="password" name="confirmPassword" autocomplete="new-password" required></label>
+                            <button type="submit" class="btn">Đổi mật khẩu</button>
+                            <p id="passwordMessage" class="error-message" role="alert"></p>
+                            <p class="muted">Quên mật khẩu hiện tại? <a href="./forgot-password.html">Đặt lại qua email</a></p>
+                        </form>
+                    </section>
+                </div>
+            </div>
+        </main>
+        <script type="module" src="./src/js/pages/account-page.js"></script>
+    </body>
+</html>

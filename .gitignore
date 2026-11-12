@@ -6,14 +6,14 @@ dist/
 .claude/
 
 # Script chứa mật khẩu tài khoản thử trên máy
-scripts/them-tai-khoan-role.mjs
+backend/scripts/them-tai-khoan-role.mjs
 
-# Dữ liệu sinh ra khi chạy, có thông tin khách hàng (dữ liệu mẫu nằm ở data/db.sample.json)
-data/db.json
-data/analytics.ndjson
-data/uploads/
-data/backups/
-data/db.json.tmp
+# Dữ liệu sinh ra khi chạy, có thông tin khách hàng (dữ liệu mẫu nằm ở backend/data/db.sample.json)
+backend/data/db.json
+backend/data/analytics.ndjson
+backend/data/uploads/
+backend/data/backups/
+backend/data/db.json.tmp
 
 # Cache embedding của chatbot (tự sinh lại khi cần)
-server/ai/.cache/
+backend/server/ai/.cache/

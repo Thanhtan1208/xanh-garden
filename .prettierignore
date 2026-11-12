@@ -1,0 +1,9 @@
+node_modules/
+dist/
+backend/data/
+frontend/src/static/
+package-lock.json
+*.html
+*.css
+*.md
+*.json

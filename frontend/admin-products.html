@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quản lý sản phẩm - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="section-header">
+                <h1>Quản lý sản phẩm</h1>
+                <div class="button-row">
+                    <button type="button" id="exportExcelBtn" class="btn btn-sm btn-outline">Xuất Excel</button>
+                    <button type="button" id="exportPdfBtn" class="btn btn-sm btn-outline">Xuất PDF</button>
+                    <button type="button" id="importExcelBtn" class="btn btn-sm btn-outline">Nhập từ Excel</button>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
+                    <button type="button" id="importBtn" class="btn btn-sm btn-outline">Nhập hàng</button>
+                </div>
+            </div>
+
+            <!-- Các dòng lỗi khi nhập file Excel -->
+            <section id="excelErrors" class="form-section hidden">
+                <div class="section-header"><h2 id="excelErrorsTitle">File Excel có lỗi</h2><button type="button" id="closeExcelErrorsBtn" class="btn btn-sm btn-outline">Đóng</button></div>
+                <ul id="excelErrorList" class="excel-errors"></ul>
+            </section>
+
+            <!-- Cài đặt sản phẩm mới: số ngày hiện nhãn, số ngày giảm giá tự động -->
+            <form id="settingsForm" class="form-section hidden" novalidate>
+                <h2>Sản phẩm mới và khuyến mãi</h2>
+                <p class="muted">Nhãn "Mới" và giảm giá cho sản phẩm mới đều chỉnh ở đây, có hiệu lực ngay, không cần sửa code.</p>
+                <div class="form-grid">
+                    <label>Số ngày hiện nhãn "Mới" (tính từ lúc nhập sản phẩm) <input type="number" name="newProductDays" min="1" max="90" required></label>
+                    <label>Số ngày hiện nhãn "Mới về" (tính từ lần nhập hàng gần nhất) <input type="number" name="restockDays" min="1" max="90" required></label>
+                    <label class="check-inline full-column"><input type="checkbox" name="promoEnabled"> Giảm giá tự động cho sản phẩm đang có nhãn "Mới"</label>
+                    <label>Mức giảm (%) <input type="number" name="percent" min="1" max="70"></label>
+                    <label>Giảm tối đa (₫) <input type="number" name="maxDiscount" min="1000" max="5000000"></label>
+                    <label>Tiền sản phẩm mới tối thiểu để được giảm (₫) <input type="number" name="minOrder" min="0"></label>
+                    <label>Số ngày được giảm, tính từ lúc nhập sản phẩm (phải ít hơn số ngày nhãn "Mới") <input type="number" name="promoDays" min="1" max="90"></label>
+                    <span class="muted full-column" id="promoState"></span>
+                </div>
+                <p id="settingsMessage" class="error-message" role="alert"></p>
+                <div class="button-row"><button type="submit" class="btn btn-sm">Lưu cài đặt</button></div>
+            </form>
+
+            <!-- Form dùng chung cho thêm và sửa sản phẩm -->
+            <form id="productForm" class="form-section">
+                <h2 id="formTitle">Thêm sản phẩm</h2>
+                <input type="hidden" id="productId">
+                <div class="form-grid">
+                    <label>Tên sản phẩm <input type="text" id="name" maxlength="80" required></label>
+                    <label>Danh mục <select id="productCategory" required></select></label>
+                    <label>Giá bán (₫) <input type="number" id="price" min="1000" max="100000000" required></label>
+                    <label>Giá gốc trước giảm (₫, bỏ trống nếu không giảm) <input type="number" id="oldPrice" min="1000" max="100000000"></label>
+                    <label>Tồn kho <input type="number" id="stock" min="0" max="100000" required></label>
+                    <label>Hiện nhãn "Mới" đến (để trống = theo số ngày chung) <input type="datetime-local" id="newUntil"></label>
+                    <label>Giảm giá đến (để trống = theo số ngày chung) <input type="datetime-local" id="promoUntil"></label>
+                    <label>Chọn ảnh từ máy <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp"></label>
+                    <label class="full-column">Ảnh sản phẩm (tự điền sau khi chọn file, hoặc nhập tên ảnh có sẵn như p1.png) <input type="text" id="productImage" required></label>
+                    <img id="preview" class="product-preview full-column" alt="Ảnh xem trước" hidden>
+                    <label class="full-column">Mô tả <textarea id="description" rows="3" maxlength="500" required></textarea></label>
+                    <details class="full-column spec-box">
+                        <summary>Thông số theo danh mục (không bắt buộc)</summary>
+                        <div id="specFields" class="form-grid"></div>
+                    </details>
+                </div>
+                <p id="formMessage" class="error-message" role="alert"></p>
+                <div class="button-row">
+                    <button type="submit" id="submitBtn" class="btn">Thêm sản phẩm</button>
+                    <button type="button" id="cancelBtn" class="btn btn-outline" hidden>Hủy sửa</button>
+                </div>
+            </form>
+
+            <!-- Phiếu nhập hàng: cộng thêm vào tồn kho -->
+            <form id="importForm" class="form-section hidden" novalidate>
+                <h2>Phiếu nhập hàng</h2>
+                <div class="form-grid">
+                    <label>Sản phẩm <select name="productId"></select></label>
+                    <label>Số lượng nhập <input type="number" name="add" min="1" max="100000" step="1"></label>
+                    <label class="full-column">Ghi chú (nhà cung cấp, lô hàng...) <input type="text" name="note" maxlength="200"></label>
+                </div>
+                <p id="importMessage" class="error-message" role="alert"></p>
+                <div class="button-row">
+                    <button type="submit" class="btn btn-sm">Nhập kho</button>
+                    <button type="button" id="cancelImportBtn" class="btn btn-sm btn-outline">Hủy</button>
+                </div>
+            </form>
+
+            <!-- Lịch sử nhập/xuất của một sản phẩm -->
+            <section id="historyBox" class="form-section hidden">
+                <div class="section-header"><h2 id="historyTitle">Lịch sử nhập/xuất</h2><button type="button" id="closeHistoryBtn" class="btn btn-sm btn-outline">Đóng</button></div>
+                <div class="table-wrap"><table class="data-table"><thead><tr><th>Thời gian</th><th>Loại</th><th>Số lượng</th><th>Tồn sau</th><th>Ghi chú</th><th>Người thực hiện</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+            </section>
+
+            <div class="filter-bar">
+                <input type="search" id="search" placeholder="Tìm tên sản phẩm" aria-label="Tìm sản phẩm">
+                <select id="sortSelect" aria-label="Sắp xếp">
+                    <option value="arrival">Hàng về mới nhất</option>
+                    <option value="name">Tên A đến Z</option>
+                    <option value="stock">Tồn kho ít nhất</option>
+                </select>
+                <label class="check-inline"><input type="checkbox" id="lowOnly"> Chỉ hiện sắp hết / hết hàng</label>
+            </div>
+            <div id="loading" class="loading">Đang tải sản phẩm...</div>
+            <div id="error" class="error hidden"></div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Hình</th><th>Tên</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Hàng về</th><th>Thao tác</th></tr>
+                    </thead>
+                    <tbody id="productList"></tbody>
+                </table>
+            </div>
+        </main>
+        <!-- jsPDF + AutoTable để xuất danh sách sản phẩm ra PDF -->
+        <script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@5.0.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+        <script type="module" src="./src/js/pages/admin-products-page.js"></script>
+    </body>
+</html>

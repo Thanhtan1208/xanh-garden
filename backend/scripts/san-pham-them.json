@@ -1,0 +1,2365 @@
+[
+  {
+    "name": "Cây Hồng Môn",
+    "categoryId": 1,
+    "price": 185000,
+    "oldPrice": 220000,
+    "stock": 14,
+    "image": "sp-anthurium.jpg",
+    "daysAgo": 2,
+    "description": "Mo hoa đỏ bóng như sáp, nở bền nhiều tuần, hợp bàn làm việc và quầy lễ tân.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, tránh nắng gắt",
+      "Tưới nước: 2–3 lần/tuần, giữ đất hơi ẩm",
+      "Đất trồng: Tơi xốp, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Mo hoa đỏ, lá xanh bóng",
+      "size": "Cao 30–40 cm, chậu Ø13 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ trắng Ø13 cm",
+      "difficulty": "Trung bình",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Ngọc Ngân",
+    "categoryId": 1,
+    "price": 140000,
+    "oldPrice": null,
+    "stock": 22,
+    "image": "sp-ngoc-ngan.jpg",
+    "daysAgo": 41,
+    "description": "Lá xanh pha mảng trắng bạc, chịu bóng tốt, sống khỏe trong phòng máy lạnh.",
+    "care": [
+      "Ánh sáng: Chịu bóng, ánh sáng đèn văn phòng",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Nhựa lá có thể gây ngứa, rửa tay sau khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Lá xanh đốm trắng bạc",
+      "size": "Cao 25–35 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa trắng Ø12 cm",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Cẩm Nhung",
+    "categoryId": 1,
+    "price": 65000,
+    "oldPrice": null,
+    "stock": 30,
+    "image": "sp-cam-nhung.jpg",
+    "daysAgo": 63,
+    "description": "Lá nhỏ có gân màu nổi bật như dệt lưới, mọc thấp, hợp để bàn và trồng terrarium.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, tránh nắng trực tiếp",
+      "Tưới nước: Giữ đất luôn hơi ẩm, phun sương cho lá",
+      "Đất trồng: Giàu mùn, giữ ẩm tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh, gân hồng hoặc trắng",
+      "size": "Cao 10–15 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø8 cm",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Hạnh Phúc",
+    "categoryId": 1,
+    "price": 195000,
+    "oldPrice": null,
+    "stock": 12,
+    "image": "sp-hanh-phuc.jpg",
+    "daysAgo": 75,
+    "description": "Tán lá xanh bóng xếp tầng gọn gàng, nhìn tươi mát, là món quà tân gia được nhiều người chọn.",
+    "care": [
+      "Ánh sáng: Sáng vừa, có nắng nhẹ buổi sáng càng tốt",
+      "Tưới nước: 2 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh bóng",
+      "size": "Cao 40–50 cm, chậu Ø15 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø15 cm",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Trúc Nhật",
+    "categoryId": 1,
+    "price": 90000,
+    "oldPrice": null,
+    "stock": 4,
+    "image": "sp-truc-nhat.jpg",
+    "daysAgo": 88,
+    "description": "Thân mảnh, lá nhỏ lấm tấm đốm vàng kem, dáng thanh, chịu được nơi ít sáng.",
+    "care": [
+      "Ánh sáng: Chịu bóng, tránh nắng gắt",
+      "Tưới nước: 1–2 lần/tuần",
+      "Đất trồng: Tơi xốp, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh đốm vàng kem",
+      "size": "Cao 25–30 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø10 cm",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Măng Tây Cảnh",
+    "categoryId": 1,
+    "price": 75000,
+    "oldPrice": null,
+    "stock": 18,
+    "image": "sp-mang-tay-canh.jpg",
+    "daysAgo": 96,
+    "description": "Cành lá mảnh như lông vũ, tạo tán mềm mại, đẹp khi để bàn hoặc cắm kèm hoa.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 2 lần/tuần, không để đất khô hẳn",
+      "Lưu ý: Thân có gai nhỏ, cẩn thận khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Lá xanh tươi",
+      "size": "Cao 20–30 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø10 cm",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Bạc Hà Lục",
+    "categoryId": 1,
+    "price": 40000,
+    "oldPrice": null,
+    "stock": 35,
+    "image": "sp-bac-ha.jpg",
+    "daysAgo": 17,
+    "description": "Lá thơm mát, ngắt dùng pha trà hoặc làm gia vị, trồng được ngay bệ cửa sổ.",
+    "care": [
+      "Ánh sáng: Nắng nhẹ hoặc sáng nhiều",
+      "Tưới nước: Hằng ngày khi trời nóng, giữ đất ẩm",
+      "Đất trồng: Giàu mùn"
+    ],
+    "specs": {
+      "color": "Lá xanh tươi",
+      "size": "Cao 15–25 cm, chậu Ø10 cm",
+      "scent": "Thơm mát đặc trưng",
+      "pot": "Chậu nhựa Ø10 cm",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Hương Thảo",
+    "categoryId": 1,
+    "price": 85000,
+    "oldPrice": null,
+    "stock": 16,
+    "image": "sp-huong-thao.jpg",
+    "daysAgo": 110,
+    "description": "Lá kim xanh xám, chạm vào tỏa mùi thơm dễ chịu, dùng được làm gia vị món nướng.",
+    "care": [
+      "Ánh sáng: Cần nhiều nắng, ít nhất 5 giờ mỗi ngày",
+      "Tưới nước: Khi đất khô, tránh úng",
+      "Đất trồng: Thoát nước rất tốt, trộn cát hoặc perlite"
+    ],
+    "specs": {
+      "color": "Lá xanh xám",
+      "size": "Cao 20–30 cm, chậu Ø12 cm",
+      "scent": "Thơm nồng dễ chịu",
+      "pot": "Chậu đất nung Ø12 cm",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Oải Hương",
+    "categoryId": 1,
+    "price": 120000,
+    "oldPrice": 145000,
+    "stock": 0,
+    "image": "sp-oai-huong.jpg",
+    "daysAgo": 120,
+    "description": "Hoa tím thơm dịu, hợp để gần cửa sổ nhiều nắng; khí hậu nóng ẩm cần chú ý thoát nước.",
+    "care": [
+      "Ánh sáng: Cần nắng trực tiếp nhiều giờ",
+      "Tưới nước: Ít, chỉ tưới khi đất khô",
+      "Đất trồng: Rất thoát nước, tránh úng rễ"
+    ],
+    "specs": {
+      "color": "Hoa tím, lá xanh xám",
+      "size": "Cao 25–35 cm, chậu Ø13 cm",
+      "scent": "Thơm dịu đặc trưng",
+      "pot": "Chậu đất nung Ø13 cm",
+      "difficulty": "Khó",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Húng Tây",
+    "categoryId": 1,
+    "price": 55000,
+    "oldPrice": null,
+    "stock": 20,
+    "image": "sp-huong-tay.jpg",
+    "daysAgo": 54,
+    "description": "Thân thấp, lá nhỏ thơm, thường dùng làm gia vị cho món Âu.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Khi mặt đất đã khô",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh nhỏ",
+      "size": "Cao 10–20 cm, chậu Ø10 cm",
+      "scent": "Thơm nhẹ",
+      "pot": "Chậu nhựa Ø10 cm",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Thu Hải Đường Lá",
+    "categoryId": 1,
+    "price": 130000,
+    "oldPrice": null,
+    "stock": 9,
+    "image": "sp-thu-hai-duong.jpg",
+    "daysAgo": 70,
+    "description": "Lá lớn loang bạc, đỏ và tím như được vẽ tay, là điểm nhấn màu sắc cho góc bàn.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: Tưới gốc khi mặt đất khô, tránh làm ướt lá",
+      "Đất trồng: Tơi xốp, giàu mùn"
+    ],
+    "specs": {
+      "color": "Lá loang bạc, đỏ, tím",
+      "size": "Cao 20–30 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø12 cm",
+      "difficulty": "Trung bình",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Lan Hồ Điệp",
+    "categoryId": 1,
+    "price": 350000,
+    "oldPrice": 420000,
+    "stock": 8,
+    "image": "sp-lan-ho-diep.jpg",
+    "daysAgo": 24,
+    "description": "Cành hoa dài như cánh bướm, nở bền nhiều tuần, sang trọng cho phòng khách hoặc làm quà.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, tránh nắng trực tiếp",
+      "Tưới nước: 1 lần/tuần, để giá thể ráo nước",
+      "Đất trồng: Vỏ thông hoặc dớn chuyên cho lan"
+    ],
+    "specs": {
+      "color": "Hoa trắng hoặc tím hồng",
+      "size": "Cao 50–60 cm, 1 cành hoa",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø12 cm",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón lan 20 g"
+    }
+  },
+  {
+    "name": "Violet Châu Phi",
+    "categoryId": 1,
+    "price": 70000,
+    "oldPrice": null,
+    "stock": 3,
+    "image": "sp-violet-chau-phi.jpg",
+    "daysAgo": 47,
+    "description": "Cây nhỏ, lá nhung, hoa tím nở nhiều đợt trong năm khi đủ sáng.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: Tưới gốc, tránh làm ướt lá và hoa",
+      "Đất trồng: Tơi xốp, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Hoa tím, lá xanh nhung",
+      "size": "Cao 8–12 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø8 cm",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Đuôi Công",
+    "categoryId": 1,
+    "price": 160000,
+    "oldPrice": null,
+    "stock": 11,
+    "image": "sp-duoi-cong.jpg",
+    "daysAgo": 82,
+    "description": "Mặt lá có hoa văn như lông công, mặt dưới ánh tím, ưa nơi ẩm và mát.",
+    "care": [
+      "Ánh sáng: Sáng nhẹ, tránh nắng trực tiếp",
+      "Tưới nước: Giữ đất ẩm đều, phun sương thường xuyên",
+      "Đất trồng: Tơi xốp, giữ ẩm"
+    ],
+    "specs": {
+      "color": "Lá xanh hoa văn đậm, mặt dưới tím",
+      "size": "Cao 30–40 cm, chậu Ø13 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø13 cm",
+      "difficulty": "Khó",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Cầu Nguyện",
+    "categoryId": 1,
+    "price": 110000,
+    "oldPrice": null,
+    "stock": 13,
+    "image": "sp-cau-nguyen.jpg",
+    "daysAgo": 103,
+    "description": "Lá có vệt màu đẹp, ban đêm tự khép lên như bàn tay chắp lại nên có tên gọi này.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: Giữ đất hơi ẩm",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh vệt đậm, gân đỏ",
+      "size": "Cao 15–25 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø12 cm",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Trầu Bà Đốm Bạc",
+    "categoryId": 1,
+    "price": 95000,
+    "oldPrice": null,
+    "stock": 17,
+    "image": "sp-trau-ba-dom-bac.jpg",
+    "daysAgo": 36,
+    "description": "Lá xanh đậm lấm tấm đốm bạc, thân rủ mềm, đẹp khi để trên kệ cao.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, chịu bóng khá",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Nhựa lá có thể gây kích ứng, để xa thú cưng"
+    ],
+    "specs": {
+      "color": "Lá xanh đốm bạc",
+      "size": "Dây dài 20–30 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø10 cm",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Peperomia Lá Tròn",
+    "categoryId": 1,
+    "price": 80000,
+    "oldPrice": null,
+    "stock": 19,
+    "image": "sp-peperomia.jpg",
+    "daysAgo": 58,
+    "description": "Lá dày, tròn và bóng, trữ nước tốt nên ít phải tưới, hợp người bận rộn.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1 lần/tuần, để đất khô giữa hai lần tưới",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh bóng",
+      "size": "Cao 15–25 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø10 cm",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Lưỡi Hổ Mini",
+    "categoryId": 1,
+    "price": 60000,
+    "oldPrice": null,
+    "stock": 26,
+    "image": "sp-luoi-ho-mini.jpg",
+    "daysAgo": 31,
+    "description": "Lá ngắn xếp thành hoa thị, cao chỉ một gang tay, gần như không cần chăm sóc.",
+    "care": [
+      "Ánh sáng: Chịu bóng, ưa sáng vừa",
+      "Tưới nước: 2 tuần/lần",
+      "Lưu ý: Không nên để thú cưng gặm lá"
+    ],
+    "specs": {
+      "color": "Lá xanh vân ngang",
+      "size": "Cao 10–15 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø8 cm",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Pilea Đồng Tiền",
+    "categoryId": 1,
+    "price": 100000,
+    "oldPrice": null,
+    "stock": 0,
+    "image": "sp-pilea.jpg",
+    "daysAgo": 66,
+    "description": "Lá tròn như đồng xu mọc xòe trên cuống dài, cây con mọc quanh gốc dễ tách nhân giống.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, xoay chậu để cây cân đối",
+      "Tưới nước: Khi mặt đất khô",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh tươi",
+      "size": "Cao 15–20 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø10 cm",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Thu Hải Đường Hoa",
+    "categoryId": 1,
+    "price": 50000,
+    "oldPrice": null,
+    "stock": 28,
+    "image": "sp-thu-hai-duong-hoa.jpg",
+    "daysAgo": 12,
+    "description": "Cây thấp, hoa nhỏ hồng đỏ nở liên tục, lá bóng, thêm sắc tươi cho bệ cửa sổ.",
+    "care": [
+      "Ánh sáng: Nắng nhẹ buổi sáng",
+      "Tưới nước: Khi mặt đất khô, tránh úng",
+      "Đất trồng: Tơi xốp, giàu mùn"
+    ],
+    "specs": {
+      "color": "Hoa hồng đỏ, lá xanh bóng",
+      "size": "Cao 15–20 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø10 cm",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Trúc Phát Lộc",
+    "categoryId": 2,
+    "price": 120000,
+    "oldPrice": null,
+    "stock": 24,
+    "image": "sp-truc-phat-loc.jpg",
+    "daysAgo": 5,
+    "description": "Thân xanh thẳng có đốt, trồng được trong nước hoặc đất, thường đặt ở bàn làm việc.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, chịu bóng",
+      "Tưới nước: Trồng nước thì thay nước mỗi tuần",
+      "Đất trồng: Nước sạch hoặc đất tơi xốp"
+    ],
+    "specs": {
+      "color": "Thân và lá xanh",
+      "size": "Cao 30–40 cm, bình Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Bình thủy tinh Ø10 cm",
+      "meaning": "Dân gian xem là biểu tượng của tài lộc, may mắn",
+      "placement": "Bàn làm việc, phòng khách",
+      "difficulty": "Rất dễ",
+      "gift": "Sỏi trang trí"
+    }
+  },
+  {
+    "name": "Thiết Mộc Lan",
+    "categoryId": 2,
+    "price": 420000,
+    "oldPrice": 480000,
+    "stock": 7,
+    "image": "sp-thiet-moc-lan.jpg",
+    "daysAgo": 93,
+    "description": "Thân gỗ, lá dài có sọc vàng, cây trưởng thành có thể ra hoa thơm về đêm.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, chịu bóng",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Không nên để thú cưng gặm lá"
+    ],
+    "specs": {
+      "color": "Lá xanh sọc vàng",
+      "size": "Cao 100–120 cm, chậu Ø25 cm",
+      "scent": "Hoa thơm về đêm",
+      "pot": "Chậu xi măng Ø25 cm",
+      "meaning": "Dân gian xem là biểu tượng của thịnh vượng",
+      "placement": "Phòng khách, sảnh, góc văn phòng",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Bàng Singapore",
+    "categoryId": 2,
+    "price": 380000,
+    "oldPrice": null,
+    "stock": 10,
+    "image": "sp-bang-singapore.jpg",
+    "daysAgo": 28,
+    "description": "Lá to, gân nổi, dáng như cây đàn, nhìn hiện đại và rất hợp phòng khách rộng.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, có nắng nhẹ càng tốt",
+      "Tưới nước: Khi lớp đất mặt khô, tránh úng",
+      "Lưu ý: Không di chuyển cây thường xuyên để tránh rụng lá"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm bóng",
+      "size": "Cao 80–100 cm, chậu Ø25 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu xi măng Ø25 cm",
+      "meaning": "Thường được chọn với ý nghĩa phát triển, vững vàng",
+      "placement": "Phòng khách, gần cửa sổ lớn",
+      "difficulty": "Trung bình",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Tùng La Hán",
+    "categoryId": 2,
+    "price": 650000,
+    "oldPrice": null,
+    "stock": 5,
+    "image": "sp-tung-la-han.jpg",
+    "daysAgo": 115,
+    "description": "Lá kim dày xếp dày đặc, dáng bonsai cổ kính, sống lâu và càng để càng đẹp.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Giữ đất hơi ẩm, 2–3 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm",
+      "size": "Cao 40–50 cm, chậu Ø25 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu gốm bonsai Ø25 cm",
+      "meaning": "Dân gian xem là biểu tượng của trường thọ",
+      "placement": "Sân vườn, ban công có nắng",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Cây Mai Vàng",
+    "categoryId": 2,
+    "price": 550000,
+    "oldPrice": 620000,
+    "stock": 6,
+    "image": "sp-mai-vang.jpg",
+    "daysAgo": 125,
+    "description": "Hoa vàng năm cánh, loài hoa quen thuộc của ngày Tết ở miền Nam.",
+    "care": [
+      "Ánh sáng: Cần nhiều nắng",
+      "Tưới nước: Hằng ngày khi trời nắng",
+      "Đất trồng: Giàu mùn, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Hoa vàng, lá xanh",
+      "size": "Cao 60–80 cm, chậu Ø30 cm",
+      "scent": "Thơm nhẹ",
+      "pot": "Chậu xi măng Ø30 cm",
+      "meaning": "Biểu tượng của mùa xuân, may mắn và phú quý",
+      "placement": "Sân trước, ban công nhiều nắng",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Quất Cảnh",
+    "categoryId": 2,
+    "price": 320000,
+    "oldPrice": null,
+    "stock": 15,
+    "image": "sp-quat-canh.jpg",
+    "daysAgo": 19,
+    "description": "Trái vàng cam tròn sai cành, thường bày trong nhà dịp Tết, trái ăn được.",
+    "care": [
+      "Ánh sáng: Cần nhiều nắng",
+      "Tưới nước: 1 lần/ngày khi trời nắng",
+      "Đất trồng: Thoát nước tốt, bón phân định kỳ"
+    ],
+    "specs": {
+      "color": "Trái vàng cam, lá xanh",
+      "size": "Cao 50–70 cm, chậu Ø25 cm",
+      "scent": "Lá và hoa thơm nhẹ",
+      "pot": "Chậu sành Ø25 cm",
+      "meaning": "Trái nhiều tượng trưng cho sung túc, đầy đủ",
+      "placement": "Phòng khách, trước nhà",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Hoa Giấy",
+    "categoryId": 2,
+    "price": 150000,
+    "oldPrice": null,
+    "stock": 21,
+    "image": "sp-hoa-giay.jpg",
+    "daysAgo": 73,
+    "description": "Lá bắc mỏng như giấy, màu rực rỡ, chịu nắng hạn tốt, đẹp khi leo cổng hoặc rủ ban công.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp cả ngày",
+      "Tưới nước: Ít, để đất khô giữa hai lần tưới",
+      "Lưu ý: Cành có gai, đeo găng khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Hồng, tím hoặc đỏ",
+      "size": "Cao 50–70 cm, chậu Ø20 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa đen Ø20 cm",
+      "meaning": "Thường gắn với sức sống bền bỉ",
+      "placement": "Ban công, cổng nhà, sân thượng",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Lộc Vừng",
+    "categoryId": 2,
+    "price": 720000,
+    "oldPrice": null,
+    "stock": 3,
+    "image": "sp-loc-vung.jpg",
+    "daysAgo": 130,
+    "description": "Chùm hoa đỏ rủ dài như dây pháo, là cây cảnh dáng thế được ưa chuộng.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Giữ đất ẩm, cây ưa nước",
+      "Đất trồng: Giàu mùn"
+    ],
+    "specs": {
+      "color": "Hoa đỏ, lá xanh",
+      "size": "Cao 80–100 cm, chậu Ø35 cm",
+      "scent": "Thơm nhẹ",
+      "pot": "Chậu xi măng Ø35 cm",
+      "meaning": "Tên gọi gắn với lộc và may mắn đầu năm",
+      "placement": "Sân vườn, cạnh hồ nước",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Trầu Bà Lá Xẻ",
+    "categoryId": 2,
+    "price": 290000,
+    "oldPrice": 340000,
+    "stock": 12,
+    "image": "sp-trau-ba-la-xe.jpg",
+    "daysAgo": 38,
+    "description": "Lá lớn xẻ thùy rất đặc trưng, tạo cảm giác nhiệt đới cho không gian sống.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Nhựa lá có thể gây kích ứng, để xa thú cưng và trẻ nhỏ"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm bóng",
+      "size": "Cao 50–70 cm, chậu Ø20 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu xi măng Ø20 cm",
+      "meaning": "Thường được chọn với ý nghĩa sức sống dồi dào",
+      "placement": "Phòng khách, góc sáng trong nhà",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Sanh Bonsai",
+    "categoryId": 2,
+    "price": 890000,
+    "oldPrice": null,
+    "stock": 2,
+    "image": "sp-sanh-bonsai.jpg",
+    "daysAgo": 140,
+    "description": "Dáng bonsai có rễ nổi, lá nhỏ, cứng cáp, là cây trưng bày có giá trị theo năm tháng.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Hằng ngày khi trời nắng",
+      "Đất trồng: Thoát nước tốt, tỉa tán định kỳ"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm",
+      "size": "Cao 40–50 cm, chậu Ø30 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu gốm bonsai Ø30 cm",
+      "meaning": "Dân gian xem là biểu tượng của sự bền bỉ, trường thọ",
+      "placement": "Sân vườn, ban công, bàn trà có nắng",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Cây Sứ Thái",
+    "categoryId": 2,
+    "price": 240000,
+    "oldPrice": null,
+    "stock": 9,
+    "image": "sp-su-thai.jpg",
+    "daysAgo": 61,
+    "description": "Gốc phình to độc đáo, hoa hồng đỏ nổi bật, chịu nắng hạn rất tốt.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp",
+      "Tưới nước: Ít, 1 lần/tuần",
+      "Lưu ý: Nhựa cây có độc, đeo găng khi cắt tỉa, để xa trẻ nhỏ và thú cưng"
+    ],
+    "specs": {
+      "color": "Hoa hồng đỏ, lá xanh",
+      "size": "Cao 30–40 cm, chậu Ø20 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø20 cm",
+      "meaning": "Thường được chọn với ý nghĩa thịnh vượng",
+      "placement": "Ban công, sân thượng nhiều nắng",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Mai Chiếu Thủy",
+    "categoryId": 2,
+    "price": 480000,
+    "oldPrice": null,
+    "stock": 4,
+    "image": "sp-mai-chieu-thuy.jpg",
+    "daysAgo": 105,
+    "description": "Hoa trắng nhỏ thơm nhẹ, lá nhỏ, dễ uốn dáng nên thường được làm bonsai.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Hằng ngày khi trời nắng",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Hoa trắng, lá xanh",
+      "size": "Cao 40–50 cm, chậu Ø25 cm",
+      "scent": "Thơm nhẹ",
+      "pot": "Chậu gốm bonsai Ø25 cm",
+      "meaning": "Thường gắn với vẻ thanh cao, bình an",
+      "placement": "Sân vườn, ban công có nắng",
+      "difficulty": "Trung bình",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Cây Nguyệt Quế",
+    "categoryId": 2,
+    "price": 210000,
+    "oldPrice": null,
+    "stock": 14,
+    "image": "sp-nguyet-que.jpg",
+    "daysAgo": 50,
+    "description": "Hoa trắng nhỏ thơm ngát, nở nhiều đợt, lá xanh bóng, trồng chậu hoặc làm hàng rào đều đẹp.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: 2–3 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Hoa trắng, lá xanh bóng",
+      "size": "Cao 50–70 cm, chậu Ø20 cm",
+      "scent": "Thơm ngát",
+      "pot": "Chậu nhựa đen Ø20 cm",
+      "meaning": "Thường gắn với may mắn và thành công",
+      "placement": "Sân trước, ban công",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Lựu Cảnh",
+    "categoryId": 2,
+    "price": 260000,
+    "oldPrice": 300000,
+    "stock": 0,
+    "image": "sp-luu-canh.jpg",
+    "daysAgo": 85,
+    "description": "Hoa đỏ cam, trái tròn treo trên cành, đẹp cả khi ra hoa và lúc có trái.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Khi mặt đất khô",
+      "Đất trồng: Thoát nước tốt, bón phân khi ra hoa"
+    ],
+    "specs": {
+      "color": "Hoa đỏ cam, trái đỏ",
+      "size": "Cao 50–60 cm, chậu Ø25 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sành Ø25 cm",
+      "meaning": "Dân gian xem là biểu tượng của con đàn cháu đống",
+      "placement": "Sân vườn, ban công nhiều nắng",
+      "difficulty": "Dễ",
+      "gift": "Phân bón tan chậm 20 g"
+    }
+  },
+  {
+    "name": "Cây Ngọc Bút",
+    "categoryId": 2,
+    "price": 135000,
+    "oldPrice": null,
+    "stock": 18,
+    "image": "sp-ngoc-but.jpg",
+    "daysAgo": 44,
+    "description": "Hoa trắng năm cánh xoay như chong chóng, tán lá xanh mướt quanh năm.",
+    "care": [
+      "Ánh sáng: Nắng nhẹ đến nhiều nắng",
+      "Tưới nước: 2–3 lần/tuần",
+      "Lưu ý: Nhựa cây có thể gây kích ứng, để xa thú cưng"
+    ],
+    "specs": {
+      "color": "Hoa trắng, lá xanh bóng",
+      "size": "Cao 50–60 cm, chậu Ø20 cm",
+      "scent": "Thơm nhẹ về đêm",
+      "pot": "Chậu nhựa đen Ø20 cm",
+      "meaning": "Thường gắn với vẻ thanh khiết",
+      "placement": "Sân trước, lối đi",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Hoa Nhài",
+    "categoryId": 2,
+    "price": 85000,
+    "oldPrice": null,
+    "stock": 25,
+    "image": "sp-hoa-nhai.jpg",
+    "daysAgo": 9,
+    "description": "Hoa trắng nhỏ thơm dịu về chiều tối, dùng ướp trà được, trồng chậu rất dễ.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: 1 lần/ngày khi trời nắng",
+      "Đất trồng: Giàu mùn, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Hoa trắng, lá xanh",
+      "size": "Cao 30–40 cm, chậu Ø15 cm",
+      "scent": "Thơm dịu",
+      "pot": "Chậu nhựa đen Ø15 cm",
+      "meaning": "Thường gắn với sự tinh khiết, dịu dàng",
+      "placement": "Ban công, sân trước",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Dành Dành",
+    "categoryId": 2,
+    "price": 125000,
+    "oldPrice": null,
+    "stock": 16,
+    "image": "sp-danh-danh.jpg",
+    "daysAgo": 79,
+    "description": "Hoa trắng cánh dày hương thơm đậm, lá xanh bóng, nở nhiều vào mùa xuân hè.",
+    "care": [
+      "Ánh sáng: Nắng nhẹ buổi sáng",
+      "Tưới nước: Giữ đất hơi ẩm",
+      "Đất trồng: Hơi chua, giàu mùn"
+    ],
+    "specs": {
+      "color": "Hoa trắng, lá xanh bóng",
+      "size": "Cao 40–50 cm, chậu Ø18 cm",
+      "scent": "Thơm đậm",
+      "pot": "Chậu nhựa đen Ø18 cm",
+      "meaning": "Thường gắn với tình cảm thuần khiết",
+      "placement": "Ban công, sân trước",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Tùng Thơm",
+    "categoryId": 2,
+    "price": 175000,
+    "oldPrice": 200000,
+    "stock": 13,
+    "image": "sp-tung-thom.jpg",
+    "daysAgo": 22,
+    "description": "Dáng tháp nhỏ, lá vàng chanh, vuốt nhẹ có mùi thơm mát, rất hợp trang trí Giáng Sinh.",
+    "care": [
+      "Ánh sáng: Cần nhiều nắng, chỉ để trong nhà vài ngày",
+      "Tưới nước: Giữ đất hơi ẩm",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá vàng chanh",
+      "size": "Cao 30–40 cm, chậu Ø13 cm",
+      "scent": "Thơm mát mùi chanh",
+      "pot": "Chậu sứ Ø13 cm",
+      "meaning": "Thường gắn với sức sống và sự tươi mới",
+      "placement": "Bệ cửa sổ, ban công",
+      "difficulty": "Trung bình",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Vạn Lộc",
+    "categoryId": 2,
+    "price": 230000,
+    "oldPrice": null,
+    "stock": 17,
+    "image": "sp-van-loc.jpg",
+    "daysAgo": 34,
+    "description": "Lá xanh viền và gân hồng đỏ, màu lên rất rõ khi đủ sáng, chịu được môi trường văn phòng.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, đủ sáng lá càng đỏ",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Nhựa lá có thể gây ngứa, rửa tay sau khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Lá xanh viền hồng đỏ",
+      "size": "Cao 30–40 cm, chậu Ø15 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø15 cm",
+      "meaning": "Tên gọi gắn với tài lộc",
+      "placement": "Phòng khách, bàn tiếp khách",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Bạch Mã Hoàng Tử",
+    "categoryId": 2,
+    "price": 270000,
+    "oldPrice": null,
+    "stock": 11,
+    "image": "sp-bach-ma.jpg",
+    "daysAgo": 56,
+    "description": "Thân và gân lá trắng nổi trên nền lá xanh, dáng thanh lịch, sống tốt trong nhà.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Nhựa lá có thể gây ngứa, rửa tay sau khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Lá xanh, thân và gân trắng",
+      "size": "Cao 40–50 cm, chậu Ø18 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø18 cm",
+      "meaning": "Thường được chọn với ý nghĩa thành đạt",
+      "placement": "Phòng khách, phòng làm việc",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Trầu Bà Vàng",
+    "categoryId": 3,
+    "price": 70000,
+    "oldPrice": null,
+    "stock": 40,
+    "image": "sp-trau-ba-vang.jpg",
+    "daysAgo": 13,
+    "description": "Lá xanh loang vàng, dây dài rủ đẹp, sống khỏe cả trong nước lẫn đất.",
+    "care": [
+      "Ánh sáng: Chịu bóng, sáng gián tiếp lá loang đẹp hơn",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Để xa thú cưng"
+    ],
+    "specs": {
+      "color": "Lá xanh loang vàng",
+      "size": "Dây dài 30–40 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø12 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Lan Chi",
+    "categoryId": 3,
+    "price": 60000,
+    "oldPrice": null,
+    "stock": 33,
+    "image": "sp-lan-chi.jpg",
+    "daysAgo": 69,
+    "description": "Lá dài sọc trắng xanh, cây con rủ xuống như nhện nên còn gọi là cây dây nhện.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh sọc trắng",
+      "size": "Cao 15–25 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø12 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Thường Xuân",
+    "categoryId": 3,
+    "price": 90000,
+    "oldPrice": null,
+    "stock": 20,
+    "image": "sp-thuong-xuan.jpg",
+    "daysAgo": 99,
+    "description": "Lá hình sao, dây leo mềm, trồng rủ trên kệ hoặc cho leo khung rất đẹp.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, tránh nắng gắt",
+      "Tưới nước: 2 lần/tuần",
+      "Lưu ý: Nhựa cây có thể gây kích ứng da"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm",
+      "size": "Dây dài 20–30 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø12 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Cau Vàng",
+    "categoryId": 3,
+    "price": 310000,
+    "oldPrice": 360000,
+    "stock": 8,
+    "image": "sp-cau-vang.jpg",
+    "daysAgo": 47,
+    "description": "Tán lá dài xòe rộng, thân vàng nhạt, tạo cảm giác mát mắt cho phòng khách và sảnh.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, tránh nắng gắt buổi trưa",
+      "Tưới nước: 2 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh, thân vàng nhạt",
+      "size": "Cao 100–130 cm, chậu Ø25 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu xi măng Ø25 cm",
+      "air": "Thoát hơi nước nhiều, giúp tăng độ ẩm trong phòng",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cau Tiểu Trâm",
+    "categoryId": 3,
+    "price": 95000,
+    "oldPrice": null,
+    "stock": 23,
+    "image": "sp-cau-tieu-tram.jpg",
+    "daysAgo": 27,
+    "description": "Cây cau nhỏ để bàn, chịu bóng tốt, lớn chậm nên giữ dáng gọn trong thời gian dài.",
+    "care": [
+      "Ánh sáng: Chịu bóng, sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh tươi",
+      "size": "Cao 30–40 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø12 cm",
+      "air": "Giúp tăng độ ẩm, phù hợp phòng máy lạnh",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Dương Xỉ Boston",
+    "categoryId": 3,
+    "price": 110000,
+    "oldPrice": null,
+    "stock": 15,
+    "image": "sp-duong-xi-boston.jpg",
+    "daysAgo": 76,
+    "description": "Lá dài cong rủ mềm mại, thích hợp trồng chậu treo nơi mát và nhiều ẩm.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: Giữ đất luôn ẩm, phun sương thường xuyên",
+      "Đất trồng: Giàu mùn, giữ ẩm"
+    ],
+    "specs": {
+      "color": "Lá xanh tươi",
+      "size": "Xòe 40–50 cm, chậu Ø18 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø18 cm",
+      "air": "Thoát hơi nước nhiều, giúp tăng độ ẩm trong phòng",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Dương Xỉ Tổ Chim",
+    "categoryId": 3,
+    "price": 145000,
+    "oldPrice": null,
+    "stock": 10,
+    "image": "sp-duong-xi-to-chim.jpg",
+    "daysAgo": 108,
+    "description": "Lá to nguyên phiến xòe tròn như tổ chim, gân giữa sẫm màu, hợp phòng tắm có cửa sổ.",
+    "care": [
+      "Ánh sáng: Sáng nhẹ, tránh nắng trực tiếp",
+      "Tưới nước: Tưới quanh gốc, không đọng nước giữa nõn",
+      "Đất trồng: Tơi xốp, giàu mùn"
+    ],
+    "specs": {
+      "color": "Lá xanh tươi, gân sẫm",
+      "size": "Xòe 30–40 cm, chậu Ø15 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø15 cm",
+      "air": "Giúp tăng độ ẩm trong phòng",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Trung bình",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Nha Đam",
+    "categoryId": 3,
+    "price": 65000,
+    "oldPrice": null,
+    "stock": 31,
+    "image": "sp-nha-dam.jpg",
+    "daysAgo": 90,
+    "description": "Lá mọng chứa gel, tưới ít, là loại cây mọng nước vừa để bàn vừa quen thuộc trong gia đình.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, có nắng nhẹ",
+      "Tưới nước: 2 tuần/lần, tránh úng",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh đốm trắng nhạt",
+      "size": "Cao 20–30 cm, chậu Ø13 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø13 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Đa Búp Đỏ",
+    "categoryId": 3,
+    "price": 260000,
+    "oldPrice": null,
+    "stock": 12,
+    "image": "sp-da-bup-do.jpg",
+    "daysAgo": 52,
+    "description": "Lá dày bóng màu xanh sẫm, búp non đỏ nổi bật, dáng cây đứng thẳng khỏe khoắn.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, chịu được bóng nhẹ",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Nhựa trắng có thể gây kích ứng, đeo găng khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Lá xanh sẫm, búp đỏ",
+      "size": "Cao 70–90 cm, chậu Ø22 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu xi măng Ø22 cm",
+      "air": "Lá lớn giữ bụi tốt, lau lá định kỳ",
+      "pet": "Nhựa cây có thể gây kích ứng cho chó mèo",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Hoa Đồng Tiền",
+    "categoryId": 3,
+    "price": 55000,
+    "oldPrice": null,
+    "stock": 27,
+    "image": "sp-dong-tien.jpg",
+    "daysAgo": 15,
+    "description": "Hoa tròn nhiều màu rực rỡ trên cuống dài, chậu nhỏ thêm sắc tươi cho bàn làm việc.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, có nắng sáng",
+      "Tưới nước: Tưới gốc, tránh đọng nước ở nách lá",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Đỏ, cam, vàng, hồng",
+      "size": "Cao 25–30 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø12 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cúc Mâm Xôi",
+    "categoryId": 3,
+    "price": 75000,
+    "oldPrice": null,
+    "stock": 0,
+    "image": "sp-cuc-mam-xoi.jpg",
+    "daysAgo": 71,
+    "description": "Hoa nở dày tròn như mâm xôi, nhiều màu, thường bày dịp lễ Tết.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: Hằng ngày khi trời nắng, tưới gốc",
+      "Đất trồng: Giàu mùn"
+    ],
+    "specs": {
+      "color": "Vàng, trắng, tím",
+      "size": "Cao 25–30 cm, chậu Ø15 cm",
+      "scent": "Thơm nhẹ mùi cúc",
+      "pot": "Chậu nhựa Ø15 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Trung bình",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Phất Dụ Viền Đỏ",
+    "categoryId": 3,
+    "price": 180000,
+    "oldPrice": null,
+    "stock": 14,
+    "image": "sp-phat-du-vien-do.jpg",
+    "daysAgo": 84,
+    "description": "Thân mảnh uốn lượn, chùm lá nhọn viền đỏ mảnh, hợp không gian hiện đại.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Không nên để thú cưng gặm lá"
+    ],
+    "specs": {
+      "color": "Lá xanh viền đỏ",
+      "size": "Cao 60–80 cm, chậu Ø18 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø18 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Trầu Bà Đuôi Phượng",
+    "categoryId": 3,
+    "price": 155000,
+    "oldPrice": null,
+    "stock": 19,
+    "image": "sp-trau-ba-duoi-phuong.jpg",
+    "daysAgo": 39,
+    "description": "Lá trưởng thành xẻ như đuôi phượng, thân leo khỏe, đẹp khi cho leo cột.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Nhựa lá có thể gây kích ứng"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm",
+      "size": "Cao 40–60 cm, chậu Ø18 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø18 cm",
+      "air": "Giúp tăng độ ẩm, lá lớn giữ bụi tốt",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Trầu Bà Lá Tim",
+    "categoryId": 3,
+    "price": 80000,
+    "oldPrice": null,
+    "stock": 24,
+    "image": "sp-trau-ba-la-tim.jpg",
+    "daysAgo": 64,
+    "description": "Lá hình trái tim xanh bóng, dây mềm, trồng rủ hoặc leo đều đẹp và rất dễ nhân giống.",
+    "care": [
+      "Ánh sáng: Chịu bóng, sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Để xa thú cưng"
+    ],
+    "specs": {
+      "color": "Lá xanh bóng",
+      "size": "Dây dài 30–40 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø12 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Lưỡi Hổ Viền Vàng",
+    "categoryId": 3,
+    "price": 150000,
+    "oldPrice": 175000,
+    "stock": 21,
+    "image": "sp-luoi-ho-vang.jpg",
+    "daysAgo": 20,
+    "description": "Lá cứng thẳng đứng, viền vàng rõ, vân xanh ngang, chịu hạn và ít sáng rất tốt.",
+    "care": [
+      "Ánh sáng: Chịu bóng, ưa sáng vừa",
+      "Tưới nước: 2 tuần/lần",
+      "Lưu ý: Không nên để thú cưng gặm lá"
+    ],
+    "specs": {
+      "color": "Lá xanh vân ngang, viền vàng",
+      "size": "Cao 50–60 cm, chậu Ø18 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu xi măng Ø18 cm",
+      "air": "Có trong nghiên cứu cây lọc khí của NASA (1989)",
+      "pet": "Độc nhẹ với chó mèo nếu ăn phải",
+      "difficulty": "Rất dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Trúc Mây",
+    "categoryId": 3,
+    "price": 340000,
+    "oldPrice": null,
+    "stock": 6,
+    "image": "sp-truc-may.jpg",
+    "daysAgo": 118,
+    "description": "Nhiều thân nhỏ mọc bụi, lá xòe như cánh quạt, chịu bóng tốt, sang trọng ở góc phòng.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, chịu bóng",
+      "Tưới nước: 1–2 lần/tuần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh đậm",
+      "size": "Cao 80–100 cm, chậu Ø25 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu xi măng Ø25 cm",
+      "air": "Giúp tăng độ ẩm trong phòng",
+      "pet": "Không độc với chó mèo",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Vạn Niên Thanh",
+    "categoryId": 3,
+    "price": 165000,
+    "oldPrice": null,
+    "stock": 16,
+    "image": "sp-van-nien-thanh.jpg",
+    "daysAgo": 81,
+    "description": "Lá lớn đốm kem trắng trên nền xanh, thân mập, tạo mảng xanh lớn trong nhà.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Nhựa cây gây ngứa rát miệng, để xa trẻ nhỏ và thú cưng"
+    ],
+    "specs": {
+      "color": "Lá xanh đốm kem",
+      "size": "Cao 50–60 cm, chậu Ø20 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø20 cm",
+      "air": "Lá lớn giúp tăng độ ẩm, giữ bụi",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Dễ",
+      "gift": "Đĩa lót chậu"
+    }
+  },
+  {
+    "name": "Cây Ngũ Gia Bì",
+    "categoryId": 3,
+    "price": 125000,
+    "oldPrice": null,
+    "stock": 22,
+    "image": "sp-ngu-gia-bi.jpg",
+    "daysAgo": 59,
+    "description": "Lá kép xòe như bàn tay, cây lớn nhanh, dễ tỉa dáng, chịu được nhiều điều kiện sáng.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp đến nắng nhẹ",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Không nên để thú cưng gặm lá"
+    ],
+    "specs": {
+      "color": "Lá xanh bóng",
+      "size": "Cao 50–70 cm, chậu Ø18 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø18 cm",
+      "air": "Lá dày giữ bụi tốt, giúp không gian xanh mát",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Tróc Bạc",
+    "categoryId": 3,
+    "price": 85000,
+    "oldPrice": null,
+    "stock": 5,
+    "image": "sp-troc-bac.jpg",
+    "daysAgo": 43,
+    "description": "Lá hình mũi tên với gân sáng, cây non mọc bụi gọn, lớn lên có thể leo.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 1–2 lần/tuần",
+      "Lưu ý: Nhựa cây có thể gây kích ứng"
+    ],
+    "specs": {
+      "color": "Lá xanh gân trắng bạc",
+      "size": "Cao 20–30 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø12 cm",
+      "air": "Giúp tăng độ ẩm trong phòng",
+      "pet": "Độc với chó mèo nếu ăn phải",
+      "difficulty": "Dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Thài Lài Tía",
+    "categoryId": 3,
+    "price": 45000,
+    "oldPrice": null,
+    "stock": 29,
+    "image": "sp-thai-lai-tia.jpg",
+    "daysAgo": 100,
+    "description": "Lá sọc bạc và tím, mặt dưới tím đậm, thân rủ nhanh dài, rất dễ giâm cành.",
+    "care": [
+      "Ánh sáng: Nhiều sáng thì lá càng lên màu",
+      "Tưới nước: 2 lần/tuần",
+      "Lưu ý: Nhựa cây có thể gây kích ứng da"
+    ],
+    "specs": {
+      "color": "Lá sọc bạc tím",
+      "size": "Dây dài 20–30 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø12 cm",
+      "air": "Tán lá dày giúp góc phòng xanh mát",
+      "pet": "Nhựa cây có thể gây kích ứng da chó mèo",
+      "difficulty": "Rất dễ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Hoa Hồng",
+    "categoryId": 4,
+    "price": 45000,
+    "oldPrice": null,
+    "stock": 36,
+    "image": "sp-sd-hoa-hong.jpg",
+    "daysAgo": 26,
+    "description": "Lá xanh phấn xếp tròn như đóa hồng, mép hơi trong, nhìn rất xinh trên bàn.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, có nắng sáng",
+      "Tưới nước: 1 lần/tuần, tưới gốc",
+      "Đất trồng: Chuyên cho sen đá, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Xanh phấn",
+      "size": "Đường kính 6–8 cm, chậu Ø7 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø7 cm",
+      "sun": "Nắng sáng 3–4 giờ mỗi ngày",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Cây Ngọc Bích",
+    "categoryId": 4,
+    "price": 95000,
+    "oldPrice": 115000,
+    "stock": 18,
+    "image": "sp-ngoc-bich.jpg",
+    "daysAgo": 53,
+    "description": "Thân mập, lá dày bóng như ngọc, sống rất lâu và càng lớn càng có dáng cổ thụ.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, có nắng nhẹ",
+      "Tưới nước: 1–2 tuần/lần",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Lá xanh bóng, mép đỏ khi đủ nắng",
+      "size": "Cao 15–20 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø10 cm",
+      "sun": "Nắng sáng hoặc nơi rất sáng",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Đuôi Lừa",
+    "categoryId": 4,
+    "price": 70000,
+    "oldPrice": null,
+    "stock": 12,
+    "image": "sp-sd-duoi-lua.jpg",
+    "daysAgo": 77,
+    "description": "Nhánh rủ dài phủ lá mập xanh phấn, hợp chậu treo nơi sáng và ít mưa.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, nắng nhẹ",
+      "Tưới nước: 2 tuần/lần",
+      "Lưu ý: Lá rất dễ rụng, hạn chế chạm vào"
+    ],
+    "specs": {
+      "color": "Xanh phấn",
+      "size": "Dây dài 15–20 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø10 cm",
+      "sun": "Nắng sáng, tránh nắng trưa gắt",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Chuỗi Ngọc",
+    "categoryId": 4,
+    "price": 75000,
+    "oldPrice": null,
+    "stock": 4,
+    "image": "sp-sd-chuoi-ngoc.jpg",
+    "daysAgo": 35,
+    "description": "Lá tròn như hạt ngọc kết thành chuỗi rủ, đẹp nhất khi treo ngang tầm mắt.",
+    "care": [
+      "Ánh sáng: Sáng nhiều, tránh nắng gắt",
+      "Tưới nước: 2 tuần/lần, tránh úng",
+      "Lưu ý: Không ăn được, để xa thú cưng"
+    ],
+    "specs": {
+      "color": "Xanh tươi",
+      "size": "Dây dài 15–25 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø10 cm",
+      "sun": "Sáng nhiều, nắng nhẹ buổi sáng",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Tai Thỏ",
+    "categoryId": 4,
+    "price": 50000,
+    "oldPrice": null,
+    "stock": 25,
+    "image": "sp-sd-tai-tho.jpg",
+    "daysAgo": 92,
+    "description": "Lá phủ lông trắng mịn như tai thỏ, mép có chấm nâu, chạm vào rất thích tay.",
+    "care": [
+      "Ánh sáng: Nhiều sáng",
+      "Tưới nước: 1–2 tuần/lần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Xanh bạc, mép chấm nâu",
+      "size": "Cao 10–15 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø8 cm",
+      "sun": "Nắng sáng hoặc nơi rất sáng",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Móng Rồng",
+    "categoryId": 4,
+    "price": 55000,
+    "oldPrice": null,
+    "stock": 30,
+    "image": "sp-sd-mong-rong.jpg",
+    "daysAgo": 68,
+    "description": "Lá nhọn xếp hoa thị, mặt ngoài có các sọc chấm trắng nổi, chịu bóng tốt hơn nhiều loại sen đá.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: 2 tuần/lần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Xanh đậm sọc trắng",
+      "size": "Cao 8–12 cm, chậu Ø7 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø7 cm",
+      "sun": "Sáng gián tiếp, không cần nắng trực tiếp",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Thủy Tinh",
+    "categoryId": 4,
+    "price": 85000,
+    "oldPrice": null,
+    "stock": 0,
+    "image": "sp-sd-thuy-tinh.jpg",
+    "daysAgo": 111,
+    "description": "Đầu lá trong suốt như thủy tinh để lấy sáng, cây nhỏ nhắn và lạ mắt.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp, tránh nắng gắt",
+      "Tưới nước: 2 tuần/lần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Xanh trong",
+      "size": "Đường kính 4–6 cm, chậu Ø6 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu sứ Ø6 cm",
+      "sun": "Sáng gián tiếp",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Ma",
+    "categoryId": 4,
+    "price": 48000,
+    "oldPrice": null,
+    "stock": 27,
+    "image": "sp-sd-ma.jpg",
+    "daysAgo": 46,
+    "description": "Lá màu xám phấn ánh hồng khi đủ nắng, thân dài dần, rất dễ nhân giống từ lá.",
+    "care": [
+      "Ánh sáng: Nhiều nắng sáng",
+      "Tưới nước: 1–2 tuần/lần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Xám phấn ánh hồng",
+      "size": "Đường kính 6–8 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø8 cm",
+      "sun": "Nắng sáng 3–4 giờ mỗi ngày",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Đen",
+    "categoryId": 4,
+    "price": 120000,
+    "oldPrice": 140000,
+    "stock": 9,
+    "image": "sp-sd-den.jpg",
+    "daysAgo": 30,
+    "description": "Hoa thị trên đầu cành, lá tím đen bóng khi đủ nắng, màu rất nổi bật.",
+    "care": [
+      "Ánh sáng: Nhiều nắng thì lá càng sẫm",
+      "Tưới nước: 1–2 tuần/lần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Tím đen",
+      "size": "Cao 15–20 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø10 cm",
+      "sun": "Nắng sáng, tránh nắng trưa gắt",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Sen Đá Trường Sinh",
+    "categoryId": 4,
+    "price": 52000,
+    "oldPrice": null,
+    "stock": 21,
+    "image": "sp-sd-truong-sinh.jpg",
+    "daysAgo": 87,
+    "description": "Hoa thị dày đầu lá đỏ tía, cây mẹ đẻ nhiều cây con quanh gốc.",
+    "care": [
+      "Ánh sáng: Nhiều nắng",
+      "Tưới nước: 1–2 tuần/lần",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Xanh đầu lá đỏ tía",
+      "size": "Đường kính 6–10 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø8 cm",
+      "sun": "Nắng sáng 4 giờ mỗi ngày",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Hoa Sống Đời",
+    "categoryId": 4,
+    "price": 58000,
+    "oldPrice": null,
+    "stock": 34,
+    "image": "sp-hoa-song-doi.jpg",
+    "daysAgo": 16,
+    "description": "Lá mọng xanh bóng, chùm hoa nhỏ nhiều màu nở bền, thường chưng dịp Tết.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, nắng sáng",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Không nên để thú cưng gặm lá"
+    ],
+    "specs": {
+      "color": "Đỏ, hồng, vàng, cam",
+      "size": "Cao 15–20 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø10 cm",
+      "sun": "Nắng sáng hoặc nơi rất sáng",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Xương Rồng Kim Hổ",
+    "categoryId": 4,
+    "price": 135000,
+    "oldPrice": null,
+    "stock": 11,
+    "image": "sp-xr-kim-ho.jpg",
+    "daysAgo": 102,
+    "description": "Thân cầu tròn phủ gai vàng óng theo từng khía, càng lớn càng đẹp mắt.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp",
+      "Tưới nước: 2–3 tuần/lần",
+      "Lưu ý: Gai cứng, đặt xa tầm tay trẻ nhỏ"
+    ],
+    "specs": {
+      "color": "Xanh, gai vàng",
+      "size": "Đường kính 8–10 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø10 cm",
+      "sun": "Nắng trực tiếp 5–6 giờ mỗi ngày",
+      "gift": "Sỏi trang trí"
+    }
+  },
+  {
+    "name": "Xương Rồng Ruby",
+    "categoryId": 4,
+    "price": 60000,
+    "oldPrice": null,
+    "stock": 23,
+    "image": "sp-xr-ruby.jpg",
+    "daysAgo": 49,
+    "description": "Phần ngọn đỏ rực được ghép trên gốc xanh, nhỏ gọn, màu nổi bật cho bàn làm việc.",
+    "care": [
+      "Ánh sáng: Sáng nhiều, tránh nắng gắt",
+      "Tưới nước: 2 tuần/lần",
+      "Đất trồng: Thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Đầu đỏ, gốc xanh",
+      "size": "Cao 8–12 cm, chậu Ø6 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu nhựa Ø6 cm",
+      "sun": "Sáng nhiều, nắng nhẹ buổi sáng",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Xương Rồng Bát Tiên",
+    "categoryId": 4,
+    "price": 90000,
+    "oldPrice": null,
+    "stock": 17,
+    "image": "sp-xr-bat-tien.jpg",
+    "daysAgo": 74,
+    "description": "Thân nhiều gai, hoa nhỏ đỏ hồng nở quanh năm khi đủ nắng, rất chịu hạn.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp",
+      "Tưới nước: 1 lần/tuần",
+      "Lưu ý: Nhựa trắng có độc, đeo găng khi cắt tỉa"
+    ],
+    "specs": {
+      "color": "Hoa đỏ hồng, lá xanh",
+      "size": "Cao 20–30 cm, chậu Ø13 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø13 cm",
+      "sun": "Nắng trực tiếp nhiều giờ",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Xương Rồng Lông Vũ",
+    "categoryId": 4,
+    "price": 78000,
+    "oldPrice": null,
+    "stock": 3,
+    "image": "sp-xr-long-vu.jpg",
+    "daysAgo": 97,
+    "description": "Thân tròn nhỏ mọc cụm, gai trắng mềm như lông vũ, nhìn như quả cầu bông.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, có nắng sáng",
+      "Tưới nước: 2–3 tuần/lần, không tưới lên thân",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Trắng lông",
+      "size": "Cụm 6–8 cm, chậu Ø8 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø8 cm",
+      "sun": "Nắng sáng 3–4 giờ mỗi ngày",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Xương Rồng Núi Đá",
+    "categoryId": 4,
+    "price": 110000,
+    "oldPrice": null,
+    "stock": 13,
+    "image": "sp-xr-nui-da.jpg",
+    "daysAgo": 60,
+    "description": "Thân biến dạng gồ ghề như những khối đá xếp chồng, dáng lạ và rất khỏe.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp",
+      "Tưới nước: 2–3 tuần/lần",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Xanh xám",
+      "size": "Cao 15–20 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø12 cm",
+      "sun": "Nắng trực tiếp 5–6 giờ mỗi ngày",
+      "gift": "Sỏi trang trí"
+    }
+  },
+  {
+    "name": "Hoa Càng Cua",
+    "categoryId": 4,
+    "price": 95000,
+    "oldPrice": null,
+    "stock": 15,
+    "image": "sp-hoa-cang-cua.jpg",
+    "daysAgo": 10,
+    "description": "Thân dẹt từng đốt như càng cua, hoa hồng rực ở đầu cành vào cuối năm.",
+    "care": [
+      "Ánh sáng: Sáng gián tiếp",
+      "Tưới nước: Giữ đất hơi ẩm, không úng",
+      "Đất trồng: Tơi xốp, thoát nước tốt"
+    ],
+    "specs": {
+      "color": "Hoa hồng, thân xanh",
+      "size": "Dài 15–25 cm, chậu Ø12 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu treo nhựa Ø12 cm",
+      "sun": "Sáng gián tiếp, không cần nắng gắt",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Xương Rồng Ngôi Sao",
+    "categoryId": 4,
+    "price": 115000,
+    "oldPrice": null,
+    "stock": 7,
+    "image": "sp-xr-ngoi-sao.jpg",
+    "daysAgo": 122,
+    "description": "Thân tròn dẹt không gai, chia múi như ngôi sao, phủ chấm trắng li ti rất lạ.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, nắng sáng",
+      "Tưới nước: 3 tuần/lần",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Xanh xám chấm trắng",
+      "size": "Đường kính 4–6 cm, chậu Ø7 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø7 cm",
+      "sun": "Nắng sáng 3–4 giờ mỗi ngày",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Xương Rồng Đuốc Bạc",
+    "categoryId": 4,
+    "price": 125000,
+    "oldPrice": null,
+    "stock": 10,
+    "image": "sp-xr-duoc-bac.jpg",
+    "daysAgo": 83,
+    "description": "Thân cột mảnh phủ gai trắng bạc mịn như ngọn đuốc, đẹp khi trồng thành cụm.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp",
+      "Tưới nước: 2–3 tuần/lần",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Trắng bạc",
+      "size": "Cao 20–30 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø10 cm",
+      "sun": "Nắng trực tiếp 5–6 giờ mỗi ngày",
+      "gift": "Sỏi trang trí"
+    }
+  },
+  {
+    "name": "Lithops Đá Sống",
+    "categoryId": 4,
+    "price": 90000,
+    "oldPrice": null,
+    "stock": 6,
+    "image": "sp-lithops.jpg",
+    "daysAgo": 55,
+    "description": "Hai lá mập dính nhau trông y như viên đá nhỏ, cần rất ít nước, hợp người thích sưu tầm.",
+    "care": [
+      "Ánh sáng: Nhiều sáng, nắng sáng",
+      "Tưới nước: Rất ít, ngừng tưới khi cây đang thay lá",
+      "Đất trồng: Cát sỏi thoát nước nhanh"
+    ],
+    "specs": {
+      "color": "Nâu, xám, xanh nhạt",
+      "size": "Đường kính 2–3 cm, chậu Ø6 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø6 cm",
+      "sun": "Nắng sáng 3–4 giờ mỗi ngày",
+      "gift": "Sỏi trang trí"
+    }
+  },
+  {
+    "name": "Xương Rồng Hoàng Kim",
+    "categoryId": 4,
+    "price": 105000,
+    "oldPrice": null,
+    "stock": 14,
+    "image": "sp-xr-hoang-kim.jpg",
+    "daysAgo": 91,
+    "description": "Thân trụ phủ gai vàng mảnh dày như lông, nhìn ấm áp và mềm mại.",
+    "care": [
+      "Ánh sáng: Nắng trực tiếp",
+      "Tưới nước: 2–3 tuần/lần",
+      "Đất trồng: Thoát nước rất tốt"
+    ],
+    "specs": {
+      "color": "Xanh, gai vàng",
+      "size": "Cao 12–18 cm, chậu Ø10 cm",
+      "scent": "Không mùi",
+      "pot": "Chậu đất nung Ø10 cm",
+      "sun": "Nắng trực tiếp 5–6 giờ mỗi ngày",
+      "gift": "Không có"
+    }
+  },
+  {
+    "name": "Chậu Đất Nung Tròn",
+    "categoryId": 5,
+    "price": 45000,
+    "oldPrice": null,
+    "stock": 60,
+    "image": "sp-chau-dat-nung.jpg",
+    "daysAgo": 65,
+    "description": "Chậu đất nung màu đỏ gạch, thoáng khí giúp rễ khỏe, hợp sen đá và xương rồng.",
+    "care": [],
+    "specs": {
+      "material": "Đất nung",
+      "color": "Đỏ gạch",
+      "size": "Ø15 × cao 13 cm",
+      "scent": "Không mùi",
+      "drain": "Có lỗ thoát nước",
+      "spec": "1 chậu",
+      "note": "Không kèm cây"
+    }
+  },
+  {
+    "name": "Chậu Gốm Tráng Men",
+    "categoryId": 5,
+    "price": 130000,
+    "oldPrice": 155000,
+    "stock": 25,
+    "image": "sp-chau-gom-men.jpg",
+    "daysAgo": 33,
+    "description": "Chậu gốm tráng men bóng, màu sắc sang, chắc chắn, dùng trong nhà hay ngoài trời đều được.",
+    "care": [],
+    "specs": {
+      "material": "Gốm tráng men",
+      "color": "Nhiều màu, giao theo mẫu có sẵn",
+      "size": "Ø18 × cao 16 cm",
+      "scent": "Không mùi",
+      "drain": "Có lỗ thoát nước",
+      "spec": "1 chậu",
+      "note": "Không kèm cây"
+    }
+  },
+  {
+    "name": "Bộ Chậu Nhựa Ươm Cây",
+    "categoryId": 5,
+    "price": 35000,
+    "oldPrice": null,
+    "stock": 80,
+    "image": "sp-chau-nhua.jpg",
+    "daysAgo": 78,
+    "description": "Chậu nhựa nhẹ, bền, phù hợp để ươm cây con hoặc sang chậu tạm.",
+    "care": [],
+    "specs": {
+      "material": "Nhựa PP",
+      "color": "Nâu đất",
+      "size": "Ø12 × cao 10 cm",
+      "scent": "Không mùi",
+      "drain": "Nhiều lỗ thoát nước ở đáy",
+      "spec": "Bộ 10 chậu",
+      "note": "Tránh để nắng gắt lâu ngày"
+    }
+  },
+  {
+    "name": "Chậu Treo Giỏ Đan",
+    "categoryId": 5,
+    "price": 65000,
+    "oldPrice": null,
+    "stock": 40,
+    "image": "sp-chau-treo.jpg",
+    "daysAgo": 25,
+    "description": "Chậu treo dạng giỏ đan có sẵn dây móc, tạo góc xanh gọn gàng cho ban công và cửa sổ.",
+    "care": [],
+    "specs": {
+      "material": "Nhựa giả mây",
+      "color": "Vàng kem",
+      "size": "Ø25 cm, dây treo dài 50 cm",
+      "scent": "Không mùi",
+      "drain": "Có lỗ thoát nước ở đáy",
+      "spec": "1 chậu kèm dây treo",
+      "note": "Không kèm cây"
+    }
+  },
+  {
+    "name": "Bình Tưới Cây 2 Lít",
+    "categoryId": 5,
+    "price": 85000,
+    "oldPrice": null,
+    "stock": 30,
+    "image": "sp-binh-tuoi.jpg",
+    "daysAgo": 95,
+    "description": "Bình có vòi dài, tưới đúng vào gốc, không làm ướt lá, cầm chắc tay.",
+    "care": [],
+    "specs": {
+      "material": "Nhựa hoặc kim loại sơn tĩnh điện",
+      "color": "Giao theo mẫu có sẵn",
+      "size": "Dung tích 2 lít",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 bình",
+      "note": "Đổ hết nước khi không dùng lâu"
+    }
+  },
+  {
+    "name": "Bình Xịt Phun Sương",
+    "categoryId": 5,
+    "price": 38000,
+    "oldPrice": null,
+    "stock": 55,
+    "image": "sp-binh-xit.jpg",
+    "daysAgo": 42,
+    "description": "Vòi phun sương mịn, dùng tăng ẩm cho lá dương xỉ, lan và các cây ưa ẩm.",
+    "care": [],
+    "specs": {
+      "material": "Nhựa PET",
+      "color": "Thân trong suốt, vòi hồng",
+      "size": "Dung tích 500 ml",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 bình",
+      "note": "Chỉ dùng nước sạch, không để nắng gắt"
+    }
+  },
+  {
+    "name": "Kéo Cắt Tỉa Cây",
+    "categoryId": 5,
+    "price": 120000,
+    "oldPrice": 145000,
+    "stock": 22,
+    "image": "sp-keo-cat-tia.jpg",
+    "daysAgo": 18,
+    "description": "Lưỡi thép sắc, có khóa an toàn, cắt gọn cành nhỏ và lá hư mà không làm dập cây.",
+    "care": [],
+    "specs": {
+      "material": "Thép, tay cầm bọc nhựa",
+      "color": "Giao theo mẫu có sẵn",
+      "size": "Dài 20 cm",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 cây kéo",
+      "note": "Lau khô và khóa lại sau khi dùng"
+    }
+  },
+  {
+    "name": "Xẻng Làm Vườn Mini",
+    "categoryId": 5,
+    "price": 42000,
+    "oldPrice": null,
+    "stock": 45,
+    "image": "sp-xeng-lam-vuon.jpg",
+    "daysAgo": 72,
+    "description": "Xẻng nhỏ bằng thép, dùng xúc đất thay chậu và xới đất rất tiện.",
+    "care": [],
+    "specs": {
+      "material": "Thép",
+      "color": "Bạc",
+      "size": "Dài 28 cm",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 cái",
+      "note": "Rửa sạch và lau khô sau khi dùng"
+    }
+  },
+  {
+    "name": "Găng Tay Làm Vườn",
+    "categoryId": 5,
+    "price": 30000,
+    "oldPrice": null,
+    "stock": 70,
+    "image": "sp-gang-tay.jpg",
+    "daysAgo": 89,
+    "description": "Bảo vệ tay khi thay chậu, cắt tỉa cây có gai hoặc có nhựa gây kích ứng.",
+    "care": [],
+    "specs": {
+      "material": "Vải phủ cao su",
+      "color": "Giao theo mẫu có sẵn",
+      "size": "Cỡ tự do",
+      "scent": "Mùi cao su nhẹ khi mới",
+      "drain": "Không áp dụng",
+      "spec": "1 đôi",
+      "note": "Giặt nhẹ sau khi dùng"
+    }
+  },
+  {
+    "name": "Đá Perlite 1 Lít",
+    "categoryId": 5,
+    "price": 40000,
+    "oldPrice": null,
+    "stock": 35,
+    "image": "sp-da-perlite.jpg",
+    "daysAgo": 57,
+    "description": "Hạt khoáng nhẹ màu trắng trộn vào đất giúp đất tơi xốp và thoát nước tốt hơn.",
+    "care": [],
+    "specs": {
+      "material": "Đá perlite nở nhiệt",
+      "color": "Trắng",
+      "size": "Hạt 2–5 mm",
+      "scent": "Không mùi",
+      "drain": "Tăng thoát nước cho đất",
+      "spec": "Túi 1 lít",
+      "note": "Đeo khẩu trang khi trộn để tránh bụi"
+    }
+  },
+  {
+    "name": "Khoáng Vermiculite 1 Lít",
+    "categoryId": 5,
+    "price": 45000,
+    "oldPrice": null,
+    "stock": 28,
+    "image": "sp-vermiculite.jpg",
+    "daysAgo": 104,
+    "description": "Khoáng dạng vảy giữ ẩm và giữ dinh dưỡng, thường dùng để gieo hạt và giâm cành.",
+    "care": [],
+    "specs": {
+      "material": "Khoáng vermiculite",
+      "color": "Nâu vàng ánh kim",
+      "size": "Hạt 2–4 mm",
+      "scent": "Không mùi",
+      "drain": "Giữ ẩm tốt, nên trộn cùng đất",
+      "spec": "Túi 1 lít",
+      "note": "Đeo khẩu trang khi trộn để tránh bụi"
+    }
+  },
+  {
+    "name": "Xơ Dừa Đã Xử Lý",
+    "categoryId": 5,
+    "price": 35000,
+    "oldPrice": null,
+    "stock": 50,
+    "image": "sp-xo-dua.jpg",
+    "daysAgo": 37,
+    "description": "Xơ dừa đã xử lý, nhẹ và giữ ẩm tốt, trộn với đất giúp giá thể tơi xốp.",
+    "care": [],
+    "specs": {
+      "material": "Mụn và xơ dừa",
+      "color": "Nâu",
+      "size": "Túi 2 kg",
+      "scent": "Mùi dừa khô nhẹ",
+      "drain": "Giữ ẩm, thoát khí tốt",
+      "spec": "Túi 2 kg",
+      "note": "Nên làm ẩm trước khi trộn"
+    }
+  },
+  {
+    "name": "Viên Đất Nung Leca",
+    "categoryId": 5,
+    "price": 55000,
+    "oldPrice": null,
+    "stock": 32,
+    "image": "sp-vien-dat-nung.jpg",
+    "daysAgo": 86,
+    "description": "Viên đất sét nung nhẹ, lót đáy chậu chống úng hoặc trồng cây thủy sinh bán phần.",
+    "care": [],
+    "specs": {
+      "material": "Đất sét nung",
+      "color": "Nâu đỏ",
+      "size": "Viên 8–16 mm",
+      "scent": "Không mùi",
+      "drain": "Tăng thoát nước, chống úng rễ",
+      "spec": "Túi 2 lít",
+      "note": "Rửa sạch bụi trước khi dùng"
+    }
+  },
+  {
+    "name": "Phân Trùn Quế 2 Kg",
+    "categoryId": 5,
+    "price": 50000,
+    "oldPrice": null,
+    "stock": 42,
+    "image": "sp-phan-trun-que.jpg",
+    "daysAgo": 7,
+    "description": "Phân hữu cơ từ trùn quế, tơi và nhẹ mùi, bón được cho hầu hết cây cảnh và rau gia vị.",
+    "care": [],
+    "specs": {
+      "material": "Phân trùn quế hữu cơ",
+      "color": "Nâu đen",
+      "size": "Túi 2 kg",
+      "scent": "Mùi đất nhẹ",
+      "drain": "Không áp dụng",
+      "spec": "Túi 2 kg",
+      "note": "Bảo quản nơi khô mát, tránh nắng"
+    }
+  },
+  {
+    "name": "Đĩa Lót Chậu Nhựa",
+    "categoryId": 5,
+    "price": 18000,
+    "oldPrice": null,
+    "stock": 65,
+    "image": "sp-dia-lot-chau.jpg",
+    "daysAgo": 101,
+    "description": "Đĩa lót hứng nước thừa, giữ sàn và bàn luôn sạch sẽ.",
+    "care": [],
+    "specs": {
+      "material": "Nhựa",
+      "color": "Nâu đất",
+      "size": "Ø15 cm",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 đĩa, không kèm chậu",
+      "note": "Đổ nước đọng sau khi tưới để tránh úng"
+    }
+  },
+  {
+    "name": "Giá Đỡ Chậu Cây Gỗ",
+    "categoryId": 5,
+    "price": 185000,
+    "oldPrice": 220000,
+    "stock": 14,
+    "image": "sp-gia-do-chau.jpg",
+    "daysAgo": 40,
+    "description": "Giá gỗ nâng chậu lên cao, giúp cây đón sáng tốt hơn và góc phòng gọn gàng.",
+    "care": [],
+    "specs": {
+      "material": "Gỗ tự nhiên",
+      "color": "Nâu gỗ",
+      "size": "Cao 40 cm, vừa chậu Ø20–25 cm",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 giá",
+      "note": "Nên dùng kèm đĩa lót để tránh ẩm gỗ"
+    }
+  },
+  {
+    "name": "Bình Terrarium Thủy Tinh",
+    "categoryId": 5,
+    "price": 175000,
+    "oldPrice": null,
+    "stock": 0,
+    "image": "sp-terrarium.jpg",
+    "daysAgo": 29,
+    "description": "Bình thủy tinh để tạo tiểu cảnh với rêu, dương xỉ nhỏ hoặc sen đá.",
+    "care": [],
+    "specs": {
+      "material": "Thủy tinh",
+      "color": "Trong suốt",
+      "size": "Ø18 × cao 20 cm",
+      "scent": "Không mùi",
+      "drain": "Không có lỗ, cần lót sỏi ở đáy",
+      "spec": "1 bình",
+      "note": "Hàng dễ vỡ, không kèm cây"
+    }
+  },
+  {
+    "name": "Phân Bón Tan Chậm",
+    "categoryId": 5,
+    "price": 48000,
+    "oldPrice": null,
+    "stock": 38,
+    "image": "sp-phan-tan-cham.jpg",
+    "daysAgo": 51,
+    "description": "Hạt phân tan dần theo mỗi lần tưới, cung cấp dinh dưỡng đều cho cây trong nhiều tuần.",
+    "care": [],
+    "specs": {
+      "material": "Phân hạt NPK",
+      "color": "Nhiều màu theo lô hàng",
+      "size": "Hạt 2–4 mm",
+      "scent": "Không mùi đáng kể",
+      "drain": "Không áp dụng",
+      "spec": "Túi 200 g",
+      "note": "Để xa tầm tay trẻ nhỏ và thú cưng"
+    }
+  },
+  {
+    "name": "Vỏ Thông Trồng Lan",
+    "categoryId": 5,
+    "price": 38000,
+    "oldPrice": null,
+    "stock": 44,
+    "image": "sp-vo-thong.jpg",
+    "daysAgo": 94,
+    "description": "Vỏ thông đã qua xử lý làm giá thể trồng lan hoặc phủ mặt chậu giữ ẩm.",
+    "care": [],
+    "specs": {
+      "material": "Vỏ cây thông",
+      "color": "Nâu đỏ",
+      "size": "Mảnh 1–2 cm",
+      "scent": "Mùi gỗ thông nhẹ",
+      "drain": "Thoáng và thoát nước rất tốt",
+      "spec": "Túi 1 kg",
+      "note": "Ngâm nước trước khi trồng lan"
+    }
+  },
+  {
+    "name": "Rêu Sphagnum Khô",
+    "categoryId": 5,
+    "price": 65000,
+    "oldPrice": null,
+    "stock": 26,
+    "image": "sp-reu-sphagnum.jpg",
+    "daysAgo": 116,
+    "description": "Rêu khô giữ ẩm rất tốt, dùng trồng lan, giâm cành và phủ mặt chậu.",
+    "care": [],
+    "specs": {
+      "material": "Rêu sphagnum sấy khô",
+      "color": "Vàng nâu",
+      "size": "Túi 100 g",
+      "scent": "Mùi cỏ khô nhẹ",
+      "drain": "Giữ ẩm cao, không nén chặt",
+      "spec": "Túi 100 g",
+      "note": "Ngâm nước rồi vắt nhẹ trước khi dùng"
+    }
+  },
+  {
+    "name": "Đèn LED Trồng Cây",
+    "categoryId": 5,
+    "price": 240000,
+    "oldPrice": 280000,
+    "stock": 10,
+    "image": "sp-den-trong-cay.jpg",
+    "daysAgo": 21,
+    "description": "Đèn bổ sung ánh sáng cho cây để trong phòng tối hoặc xa cửa sổ.",
+    "care": [],
+    "specs": {
+      "material": "Nhựa và chip LED",
+      "color": "Đen",
+      "size": "Dài 30 cm",
+      "scent": "Không mùi",
+      "drain": "Không áp dụng",
+      "spec": "1 đèn, kèm dây nguồn",
+      "note": "Không để nước bắn vào đèn"
+    }
+  }
+]

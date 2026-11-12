@@ -7,16 +7,16 @@ Mọi tên file, tên hàm dưới đây lấy từ chính mã nguồn hiện t�
 
 ## 1. Hiểu dự án trong 1 phút
 
-Dự án có **hai nửa** nói chuyện với nhau qua địa chỉ `/api/...`:
+Dự án chia **hai thư mục** `frontend/` và `backend/`, nói chuyện với nhau qua địa chỉ `/api/...`. Trong tài liệu này, đường dẫn `src/...` nằm trong `frontend/`, còn `server/...`, `data/...`, `tests/...`, `scripts/...` nằm trong `backend/`.
 
 ```
 TRÌNH DUYỆT (nửa "tĩnh" + "động" phía người dùng)          MÁY CHỦ (nửa xử lý dữ liệu)
 ┌────────────────────────────────────────────┐            ┌─────────────────────────────┐
-│ *.html          khung trang (TĨNH)         │            │ server/routes/   nhận yêu cầu│
-│ src/static/CSS  giao diện (TĨNH)           │   /api/…   │ server/services/ tính toán   │
-│ src/static/IMAGES  ảnh có sẵn (TĨNH)       │ ─────────► │ server/core/     luật, quyền │
-│ src/js/pages/   điền dữ liệu vào khung     │ ◄───────── │ data/db.json     dữ liệu     │
-│ src/js/...      (ĐỘNG: JavaScript)         │   JSON     │ data/uploads/    ảnh tải lên │
+│ frontend/*.html khung trang (TĨNH)         │            │ backend/server/routes/  nhận │
+│ src/static/CSS  giao diện (TĨNH)           │   /api/…   │ backend/server/services/ tính│
+│ src/static/IMAGES  ảnh có sẵn (TĨNH)       │ ─────────► │ backend/server/core/ luật    │
+│ src/js/pages/   điền dữ liệu vào khung     │ ◄───────── │ backend/data/db.json dữ liệu │
+│ src/js/...      (ĐỘNG: JavaScript)         │   JSON     │ backend/data/uploads/ ảnh    │
 └────────────────────────────────────────────┘            └─────────────────────────────┘
 ```
 
@@ -24,7 +24,7 @@ TRÌNH DUYỆT (nửa "tĩnh" + "động" phía người dùng)          MÁY CH
 - **Động** = nội dung do JavaScript tạo ra sau khi tải trang, lấy từ server: danh sách sản phẩm, đơn hàng, số liệu thống kê, menu theo quyền...
 - **Quy tắc vàng:** giao diện chỉ *hiển thị và gửi yêu cầu*; **mọi tính toán tiền, kiểm tra quyền, trừ kho nằm ở server**. Vì người dùng sửa được code trình duyệt, nên server không bao giờ tin dữ liệu giá hay vai trò do trình duyệt gửi lên.
 
-Lệnh chạy: `npm run server` (máy chủ, cổng 3000) và `npm run dev` (giao diện, cổng 5173). `npm test` chạy 85 bài test. `npm run build` đóng gói ra `dist/`.
+Lệnh chạy: trong `backend/` là `npm run server` (máy chủ, cổng 3000), trong `frontend/` là `npm run dev` (giao diện, cổng 5173). `npm test` trong `backend/` chạy 106 bài test. `npm run build` trong `frontend/` đóng gói ra `frontend/dist/`.
 
 ---
 
@@ -34,7 +34,7 @@ Lệnh chạy: `npm run server` (máy chủ, cổng 3000) và `npm run dev` (gia
 
 | Bước | Làm gì | Ví dụ với trang **Quản lý đơn hàng** |
 |---|---|---|
-| 1 | Tìm **chữ** trên màn hình trong các file `.html` ở thư mục gốc. Nếu thấy → đó là phần tĩnh. Không thấy → chữ do JavaScript tạo ra (sang bước 3). | Chữ "Quản lý đơn hàng" có trong `admin-orders.html`. |
+| 1 | Tìm **chữ** trên màn hình trong các file `.html` của `frontend/`. Nếu thấy → đó là phần tĩnh. Không thấy → chữ do JavaScript tạo ra (sang bước 3). | Chữ "Quản lý đơn hàng" có trong `admin-orders.html`. |
 | 2 | Trong HTML, tìm thẻ có `id="..."` bao quanh chỗ cần điền dữ liệu, và thẻ `<script type="module" src="...">` ở cuối file. | Có `<tbody id="orderBody">` và script `admin-orders-page.js`. |
 | 3 | Mở file JS đó trong `src/js/pages/`, tìm `getElementById` hoặc `querySelector('#id')` để thấy **chỗ điền dữ liệu**; tìm hàm `render...` để thấy **cách vẽ**. | `renderOrders()` gán `orderBody.innerHTML = ...`. |
 | 4 | Tìm `api.get / api.post / api.patch / api.load(...)` trong file đó để biết trang **xin dữ liệu từ đâu**. | `api.load('/orders', ...)`. |
@@ -52,14 +52,14 @@ Lệnh chạy: `npm run server` (máy chủ, cổng 3000) và `npm run dev` (gia
 | `checkout.html` Thanh toán | `checkout-page.js` | `/orders/quote`, `/orders`, `/addresses`, `/vouchers/claim` |
 | `order-success.html` Đặt xong | `order-success-page.js` | `/orders/:id`, `/orders/:id/payment-info`, `/orders/:id/payment-method` |
 | `login.html`, `dangky.html`, `verify-email.html`, `forgot-password.html` | `login-page.js`, `register-page.js`, `verify-email-page.js`, `forgot-password-page.js` | `/auth/...` |
-| `account.html` Tài khoản | `account-page.js` | `/addresses`, `/favorites`, `/vouchers/mine`, `/auth/change-password` |
+| `account.html` Tài khoản | `account-page.js` | `/addresses`, `/favorites`, `/vouchers/mine`, `/auth/change-password`, `/auth/avatar` |
 | `my-orders.html` Đơn của tôi | `my-orders-page.js` | `/orders`, `/orders/:id/status` |
 | `vouchers.html` Khuyến mãi | `vouchers-page.js` | `/vouchers`, `/vouchers/mine`, `/vouchers/claim`, `/vouchers/birthday` |
 | `feedback.html` Góp ý (khách) / Phản hồi (quản trị) | `feedback-page.js` | `/feedbacks` |
 | `info.html` Chính sách, cẩm nang | `info-page.js` | `/pages`, `/pages/:slug` |
 | `admin-dashboard.html` Thống kê | `admin-dashboard-page.js` (+ `admin-demand.js`, `admin-customers.js`) | `/admin/stats`, `/admin/inventory`, `/admin/demand`, `/admin/customer-analytics` |
 | `admin-orders.html` Đơn hàng | `admin-orders-page.js` | `/orders`, `/orders/:id/status`, `/orders/:id/payment` |
-| `admin-products.html` Sản phẩm & kho | `admin-products-page.js` | `/products`, `/admin/products`, `/admin/stock-logs`, `/admin/uploads/product` |
+| `admin-products.html` Sản phẩm & kho | `admin-products-page.js` | `/products`, `/admin/products`, `/admin/products/import`, `/admin/settings`, `/admin/stock-logs`, `/admin/uploads/product` |
 | `admin-banners.html` Banner & sự kiện | `admin-banners-page.js` | `/admin/banners`, `/admin/events` |
 | `admin-vouchers.html` Voucher | `admin-vouchers-page.js` | `/admin/vouchers` |
 | `admin-team.html` Tài khoản (admin) | `admin-team-page.js` | `/admin/users`, `/admin/users/:id/...`, `/auth/change-password` |
@@ -76,7 +76,13 @@ Các trang đều dùng chung `components/header.js`: nó **vẽ thanh đầu tr
 | Số trên biểu tượng giỏ hàng | `services/cart-service.js` + `updateCartBadge()` trong header |
 | Trang hiện ngay không giật khi quay lại | `api.load()` trong `services/api-service.js` (dùng bản nhớ rồi cập nhật bản mới) |
 | Màu giao diện đổi theo sự kiện (Tết, Noel...) | `services/site-service.js` + `server/services/site.js` + `server/services/lunar.js` |
-| Hóa đơn PDF | `components/invoice.js` (jsPDF, font ở `public/fonts`) |
+| Hóa đơn PDF | `components/invoice.js` (jsPDF, font ở `frontend/public/fonts`) |
+| Hóa đơn gửi qua email | `server/services/order-mail.js` (`invoiceMail`, `sendAutoInvoice`), gọi từ `routes/orders.js` và `routes/payments.js` |
+| Xuất Excel, xuất PDF, nhập Excel sản phẩm | `exportExcel`, `exportPdf`, `importExcel` trong `pages/admin-products-page.js`; server kiểm tra và lưu ở `POST /admin/products/import` (`routes/admin.js`) |
+| Ảnh đại diện | `renderAvatar` trong `pages/account-page.js`, `POST /auth/avatar` trong `routes/auth.js`, ảnh nhỏ trên header ở `components/header.js` |
+| Chữ "Hết hàng" trên ảnh và nhãn "Mới -N%" | `soldOutMark`, `productBadges` trong `components/product-card.js`; class `.soldout-mark` trong `main.css` |
+| 4 sản phẩm mới ở trang chủ | `home-page.js` gọi `/products/new`, `routes/site.js` sắp theo `createdAt` |
+| Biểu đồ doanh thu theo ngày | `chartData`, `renderMonthChart` trong `pages/admin-dashboard-page.js`; số liệu `days` trong `GET /admin/stats` |
 | Xuất CSV/Excel đơn hàng | cuối `pages/admin-orders-page.js`, `services/excel-service.js` |
 | Mã QR chuyển khoản | `components/bank-ui.js`, `server/services/sepay.js` |
 | Khung chat tư vấn | `components/chat-widget.js` ↔ `server/routes/chat.js`, `server/ai/` |
@@ -196,7 +202,7 @@ unconfirmed (chờ thanh toán) ──► pending (chờ xác nhận) ──► 
 - Hủy hoặc hết hạn mà voucher đã dùng: hoàn lại voucher (`releaseVouchers`, `services/vouchers.js`).
 
 ### 7.3. Thanh toán chuyển khoản (SePay)
-Đơn chuyển khoản hiện mã QR (`services/sepay.js`). Khi ngân hàng báo có tiền, SePay gọi `POST /api/payments/sepay/webhook` (`routes/payments.js`): kiểm khóa API, bỏ giao dịch tiền ra, khớp nội dung với mã đơn, **cộng dồn** nếu chuyển thiếu rồi bù, đánh dấu thừa tiền, tiền về sau khi đơn đã hủy thì đánh dấu cần hoàn tiền. Không khớp đơn nào thì lưu lại để admin xử lý ở trang Thống kê. Giao dịch lặp lại không ghi hai lần.
+Đơn chuyển khoản hiện mã QR (`services/sepay.js`). Khi ngân hàng báo có tiền, SePay gọi `POST /api/payments/sepay/webhook` (`routes/payments.js`): kiểm khóa API, bỏ giao dịch tiền ra, khớp nội dung với mã đơn, **cộng dồn** nếu chuyển thiếu rồi bù, đánh dấu thừa tiền, tiền về sau khi đơn đã hủy thì đánh dấu cần hoàn tiền. Không khớp đơn nào thì lưu lại để admin xử lý ở trang Thống kê. Giao dịch lặp lại không ghi hai lần. Nhận đủ tiền thì tự gửi hóa đơn về email của tài khoản (`sendAutoInvoice`); đơn COD thì gửi ngay sau khi đặt.
 
 ### 7.4. Voucher
 Mỗi đơn dùng tối đa **1 voucher giảm đơn + 1 voucher giảm phí ship**. Điều kiện đơn tối thiểu, mức giảm tối đa cho voucher %, phạm vi (tất cả, theo danh mục, sản phẩm, hàng mới) đều kiểm trong `services/pricing.js` (`evaluate`). Voucher tự tặng: người dùng mới (tài khoản dưới 30 ngày và chưa từng đặt đơn nào) và sinh nhật (`syncAutoVouchers` trong `services/vouchers.js`). Giới hạn mỗi người, ví tối đa 50 voucher.
@@ -205,7 +211,7 @@ Mỗi đơn dùng tối đa **1 voucher giảm đơn + 1 voucher giảm phí shi
 Nhập kho: `PATCH /admin/products/:id/stock` (staff, owner, admin). Mọi thay đổi (nhập, bán, hoàn khi hủy, điều chỉnh khi sửa sản phẩm) đều ghi `stockLogs` qua `logStock` (`services/inventory.js`). Sản phẩm đã có trong đơn thì **không xóa được**, chỉ đặt tồn kho về 0 để ngừng bán.
 
 ### 7.6. Thống kê
-`GET /admin/stats` (`routes/admin.js`): doanh thu tính từ chi tiết đơn (`items`) của **đơn đã giao**, không dùng trường `total` điền tay. Chia theo năm, quý, tháng (giờ Việt Nam). Staff không có quyền này, chỉ thấy tab Kho & vận hành. Số liệu khách truy cập lấy từ `data/analytics.ndjson` (`services/analytics.js`, `customer-analytics.js`).
+`GET /admin/stats` (`routes/admin.js`): doanh thu tính từ chi tiết đơn (`items`) của **đơn đã giao**, không dùng trường `total` điền tay. Mở trang là tháng hiện tại, biểu đồ theo ngày (`days`, `prevDays`); đổi được sang quý, cả năm (giờ Việt Nam). Staff không có quyền này, chỉ thấy tab Kho & vận hành. Số liệu khách truy cập lấy từ `data/analytics.ndjson` (`services/analytics.js`, `customer-analytics.js`).
 
 ### 7.7. Tài khoản và bảo mật
 - Mật khẩu băm bằng scrypt kèm muối (`hashPassword`, `core/http.js`), chính sách mật khẩu ở `passwordProblem` (`core/rules.js`, giao diện phản chiếu ở `utils/password.js`).
@@ -222,10 +228,14 @@ Nhập kho: `PATCH /admin/products/:id/stock` (staff, owner, admin). Mọi thay 
 | Ẩn nút ở giao diện đã đủ phân quyền chưa? | Chưa. Nút ẩn chỉ để gọn. Chặn thật ở server bằng `requirePermission`, có test (`tests/admin.test.js`). |
 | Hai người cùng mua món cuối cùng thì sao? | Kiểm kho và trừ kho nằm trong cùng phần xử lý đồng bộ của một route, không có `await` chen giữa, nên không bị bán vượt tồn. |
 | Vì sao có `db.json` thay vì cơ sở dữ liệu? | Phạm vi đồ án, dễ xem và dễ sửa tay. Ghi qua file tạm rồi đổi tên để không hỏng file, sao lưu mỗi ngày. Hạn chế: một tiến trình, đọc một lần lúc khởi động. |
-| Làm sao biết đổi code có làm hỏng chỗ khác không? | Chạy `npm test` (85 bài), chạy trên dữ liệu tạm, không đụng `data/`. |
-| Ảnh sản phẩm mới lưu ở đâu? | `data/uploads/products`, `db.json` chỉ lưu đường dẫn; lý do ở mục 6. |
+| Làm sao biết đổi code có làm hỏng chỗ khác không? | Vào `backend/`, chạy `npm test` (106 bài), chạy trên dữ liệu tạm, không đụng `data/`. |
+| Ảnh sản phẩm mới lưu ở đâu? | `backend/data/uploads/products`, `db.json` chỉ lưu đường dẫn; lý do ở mục 6. |
+| Hóa đơn tự gửi lúc nào? | COD: ngay sau khi đặt. Chuyển khoản: sau khi nhận đủ tiền. Luôn gửi về email của tài khoản, không nhập tay ở checkout. |
+| Sản phẩm "mới" tính thế nào? | Theo `createdAt`, nhập thêm hàng cũ không tính (chỉ hiện "Mới về"). Số ngày chỉnh trên trang Sản phẩm; từng sản phẩm đặt được hạn riêng. |
+| Vì sao giảm giá phải ngắn hơn nhãn Mới? | `parseSettings` trong `core/rules.js` và `assertPromoShorter` trong `services/inventory.js` chặn ở server. |
+| Nhập Excel có đổi tồn kho không? | Không. Dòng có ID chỉ cập nhật thông tin, tồn kho phải đổi qua phiếu nhập hàng để có nhật ký. Dòng không ID tạo mới và ghi nhật ký kho. |
 | Đơn quá hạn thanh toán xử lý ra sao? | Tự hủy sau 30 phút, hoàn kho, hoàn voucher; đã chuyển một phần thì đánh dấu cần hoàn tiền. |
-| Tại sao khi chuyển trang không bị giật? | `api.load()` hiện dữ liệu đã nhớ ngay rồi cập nhật khi server trả bản mới; `blocking="render"` do plugin trong `vite.config.js`; chỗ trống được giữ trước (`scrollbar-gutter`, `min-height`). |
+| Tại sao khi chuyển trang không bị giật? | `api.load()` hiện dữ liệu đã nhớ ngay rồi cập nhật khi server trả bản mới; `blocking="render"` do plugin trong `frontend/vite.config.js`; chỗ trống được giữ trước (`scrollbar-gutter`, `min-height`). |
 
 ---
 
@@ -233,19 +243,19 @@ Nhập kho: `PATCH /admin/products/:id/stock` (staff, owner, admin). Mọi thay 
 
 | Thư mục | Chứa gì |
 |---|---|
-| `*.html` (gốc) | khung từng trang |
-| `src/js/pages` | mỗi trang một file JS |
-| `src/js/components` | phần dùng lại: header, thông báo, hóa đơn, thẻ sản phẩm, chatbot |
-| `src/js/services` | gọi API, giỏ hàng, yêu thích, màu giao diện, đo lượt truy cập |
-| `src/js/utils` | hàm nhỏ: định dạng, quyền, đăng nhập, icon, kiểm tra mật khẩu |
-| `src/static` | CSS và ảnh có sẵn |
-| `public/fonts` | font cho hóa đơn PDF |
-| `server/routes` | cửa vào API |
-| `server/services` | nghiệp vụ nặng (giá, voucher, kho, thanh toán, thống kê, email) |
-| `server/core` | nền tảng (lưu dữ liệu, quyền, luật, mật khẩu, email) |
-| `server/data` | dữ liệu khởi tạo và thông số theo loại cây |
-| `server/ai` | chatbot và kho kiến thức `kb/*.md` |
-| `data` | `db.json`, ảnh tải lên, sao lưu, nhật ký truy cập |
-| `tests` | 85 bài test tự động |
-| `scripts` | `them-tai-khoan-role.mjs`: thêm tài khoản owner/staff mẫu (chạy khi server tắt; đặt lại mật khẩu về giá trị trong file) |
-| `dist` | bản build, tự sinh |
+| `frontend/*.html` | khung từng trang |
+| `frontend/src/js/pages` | mỗi trang một file JS |
+| `frontend/src/js/components` | phần dùng lại: header, thông báo, hóa đơn, thẻ sản phẩm, chatbot |
+| `frontend/src/js/services` | gọi API, giỏ hàng, yêu thích, màu giao diện, đo lượt truy cập |
+| `frontend/src/js/utils` | hàm nhỏ: định dạng, quyền, đăng nhập, icon, kiểm tra mật khẩu |
+| `frontend/src/static` | CSS, ảnh có sẵn, `IMAGES/NGUON_ANH.md` ghi nguồn và giấy phép ảnh |
+| `frontend/public/fonts` | font cho PDF |
+| `backend/server/routes` | cửa vào API |
+| `backend/server/services` | nghiệp vụ nặng (giá, voucher, kho, thanh toán, thống kê, email) |
+| `backend/server/core` | nền tảng (lưu dữ liệu, quyền, luật, mật khẩu, email) |
+| `backend/server/data` | dữ liệu khởi tạo và thông số theo loại cây |
+| `backend/server/ai` | chatbot và kho kiến thức `kb/*.md` |
+| `backend/data` | `db.json`, `db.sample.json`, ảnh tải lên, sao lưu, nhật ký truy cập |
+| `backend/tests` | 106 bài test tự động |
+| `backend/scripts` | `mail-ao.mjs`: hộp thư ảo; `them-san-pham.mjs` + `san-pham-them.json`: thêm hàng loạt sản phẩm; `them-tai-khoan-role.mjs`: thêm tài khoản owner/staff mẫu (các script sửa dữ liệu phải chạy khi server tắt) |
+| `frontend/dist` | bản build, tự sinh |

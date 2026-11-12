@@ -127,7 +127,7 @@
 Thêm một mục theo mẫu: `YYYY-MM-DD — Sửa phần nào; vì sao; file chính; đã kiểm tra gì; còn vướng gì.`
 
 - **2026-10-27:** Tạo rồi mở rộng nhật ký từ mã nguồn: ghi 10 chặng chức năng, bảng tra 21 trang, các luồng code và việc còn thiếu. Không sửa chức năng website; không chạy test trong lần viết tài liệu này.
-- **2026-10-27:** Ghi riêng, kèm code để copy, các việc 20–27/10 (hóa đơn PDF theo B16, hết giật khi chuyển trang, giao diện mới, quản lý sản phẩm theo B17, sửa giao không thành công + phân quyền hủy đơn của khách) vào `NHAT_KY_THAY_DOI_20_27_10.md`; `npm test` 83/83 đạt.
+- **2026-10-27:** Ghi riêng, kèm code để copy, các việc 20–27/10 (hóa đơn PDF theo B16, hết giật khi chuyển trang, giao diện mới, quản lý sản phẩm theo B17, sửa giao không thành công + phân quyền hủy đơn của khách) vào một file nhật ký riêng (đã gộp vào mục này và xóa); `npm test` 83/83 đạt.
 
 ### 2026-10-27 — Thông số sản phẩm: màu sắc, kích thước, chậu, quà tặng
 

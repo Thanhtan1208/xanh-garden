@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Đánh giá sản phẩm - Xanh Garden</title>
+        <link rel="icon" href="./src/static/IMAGES/favicon.svg" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=optional">
+        <link rel="stylesheet" href="./src/static/CSS/main.css">
+    </head>
+    <body>
+        <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
+        <main class="container page">
+            <div class="section-header">
+                <h1>Đánh giá sản phẩm</h1>
+            </div>
+            <p class="muted">Xem đánh giá của khách, phản hồi công khai dưới từng đánh giá. Đánh giá khách đã "đóng" vẫn hiện ở đây.</p>
+
+            <section id="reviewStats" class="rv-stats"></section>
+
+            <div class="rv-filters">
+                <div id="starChips" class="rv-chips"></div>
+                <div class="rv-chips">
+                    <label class="rv-toggle"><input type="checkbox" id="onlyMedia"> Có ảnh/video</label>
+                    <label class="rv-toggle"><input type="checkbox" id="onlyUnreplied"> Chưa phản hồi</label>
+                </div>
+                <input type="search" id="searchBox" maxlength="60" placeholder="Tìm theo sản phẩm, khách hàng, nội dung">
+            </div>
+
+            <div id="loading" class="loading">Đang tải đánh giá...</div>
+            <div id="error" class="error hidden"></div>
+            <div id="reviewList"></div>
+            <button type="button" id="moreBtn" class="btn btn-outline hidden">Xem thêm</button>
+        </main>
+        <script type="module" src="./src/js/pages/admin-reviews-page.js"></script>
+    </body>
+</html>
