@@ -5,15 +5,11 @@ Online plant shop with a customer storefront and a back office for staff. The wh
 - [`backend/`](backend): REST API on Node.js and Express. Data is stored in a JSON file.
 - [`frontend/`](frontend): multi-page website (HTML, CSS, JavaScript ES Modules) served and bundled by Vite.
 
-The UI text is in Vietnamese. Extra documentation (Vietnamese):
+The UI text is in Vietnamese. Documentation is in [`docs/`](docs):
 
 | File | Content |
 |---|---|
-| [CONG_NGHE_SU_DUNG.md](CONG_NGHE_SU_DUNG.md) | Technologies, services and versions |
-| [KIEN_TRUC_VA_LUONG_DU_LIEU.md](KIEN_TRUC_VA_LUONG_DU_LIEU.md) | Architecture diagrams and data flow of each feature |
-| [CAU_TRUC_PROJECT.md](CAU_TRUC_PROJECT.md) | Role of every file |
-| [HUONG_DAN_DOC_CODE.md](HUONG_DAN_DOC_CODE.md) | Which code produces which part of the screen |
-| [NHAT_KY_DU_AN.md](NHAT_KY_DU_AN.md) | Project history |
+| [docs/HUONG_DAN_CODE_XANH_GARDEN.docx](docs/HUONG_DAN_CODE_XANH_GARDEN.docx) | What each folder and file contains and does |
 | [docs/SRS_XANH_GARDEN.docx](docs/SRS_XANH_GARDEN.docx) | Software Requirements Specification (SRS) |
 | [docs/USECASE_XANH_GARDEN.docx](docs/USECASE_XANH_GARDEN.docx) | Use case diagram and use case descriptions |
 | [docs/SDS_XANH_GARDEN.docx](docs/SDS_XANH_GARDEN.docx) | Software Design Specification (SDS), includes the data dictionary |
@@ -33,6 +29,7 @@ The UI text is in Vietnamese. Extra documentation (Vietnamese):
 10. [Testing email and payments locally](#testing-email-and-payments-locally)
 11. [Code style](#code-style)
 12. [Known limits](#known-limits)
+13. [Change log](#change-log)
 
 ## Features
 
@@ -44,6 +41,7 @@ The UI text is in Vietnamese. Extra documentation (Vietnamese):
 - Reviews with photos and videos (only after receiving the product). A customer can hide ("Close") their own review but cannot delete it.
 - Voucher wallet, new-user and birthday vouchers, feedback form.
 - Account: profile, avatar upload, address book, change password with an email code, forgot password.
+- Delivery address rules (checked by the server in `backend/server/core/address.js`): the phone must be a Vietnamese mobile number (10 digits, `0` or `+84` prefix, saved as `0xxxxxxxxx`); the address must contain a house number, a ward/commune/town or a district, and a province/city. Addresses saved before these rules must be corrected before the next order.
 - Email codes are valid for 3 minutes. The page shows the address the code is sent to, a countdown, and a paste button.
 - Invoice emailed automatically (right after a COD order, or after a transfer is received).
 - Shopping assistant chatbot (OpenAI with retrieval); falls back to a knowledge-base lookup when no valid API key is set.
@@ -53,18 +51,30 @@ The UI text is in Vietnamese. Extra documentation (Vietnamese):
 - Dashboard: revenue by month, quarter or year, inventory, demand, reviews, customer analytics.
 - Orders: confirm, ship, cancel, record payments and refunds, handle cancel requests, send or export invoices (PDF).
 - Products and stock: create, edit, import stock, Excel export and import, PDF export, "new product" label and discount settings.
+- Per-product sales (owner and admin): delivered units, in-process units and revenue columns in the product table, plus a "Doanh thu" panel with 12-month history (`GET /api/admin/product-sales`).
 - Reviews: filter by stars, media or unanswered; reply publicly; delete bad reviews (owner and admin only).
 - Vouchers, banners and seasonal events, store information, customer feedback.
 - Accounts (admin only): change roles, reset passwords, delete accounts.
 
 ## Roles
 
-| Role | Can do |
-|---|---|
-| Customer (`user`) | Shop, review, manage their own account |
-| Staff (`staff`) | Process orders, view products, import stock, view and reply to reviews and feedback |
-| Owner (`owner`) | Everything staff can do, plus sales statistics, products, vouchers, banners, store info, delete reviews |
-| Admin (`admin`) | Everything owner can do, plus account management |
+Permissions are defined once per role in `backend/server/core/permissions.js` (the frontend copy in `frontend/src/js/utils/permissions.js` is checked against it by a test). Every API route is guarded with `requirePermission(...)`.
+
+| Permission | Customer | Staff | Owner | Admin |
+|---|:-:|:-:|:-:|:-:|
+| Shop, cart, address book, voucher wallet, review, own orders (`customer.purchase`) | yes | | | |
+| View and process all orders (`orders.view`, `orders.manage`) | own only | yes | yes | yes |
+| Operations stats and stock (`dashboard.operations`, `inventory.view`, `inventory.manage`) | | yes | yes | yes |
+| View products and store settings (`products.view`) | | yes | yes | yes |
+| View and reply to reviews and feedback (`feedback.viewAll`, `feedback.reply`) | | yes | yes | yes |
+| Sales statistics and per-product revenue (`dashboard.sales`) | | | yes | yes |
+| Customer analytics (`customers.analytics`) | | | yes | yes |
+| Create, edit, delete products (`products.manage`) | | | yes | yes |
+| Payments, vouchers, banners and events, store information (`payments.manage`, `vouchers.manage`, `content.manage`) | | | yes | yes |
+| Delete reviews and feedback (`feedback.delete`) | | | yes | yes |
+| Accounts: change role, reset password, delete (`team.manage`) | | | | yes |
+
+Management accounts (staff, owner, admin) do not shop: cart, address book and voucher wallet are for customers only. An admin cannot change or delete another admin or their own account.
 
 Permissions are enforced on the server. The frontend only hides what a role cannot use.
 
@@ -226,3 +236,25 @@ curl.exe -X POST http://localhost:3000/api/payments/sepay/webhook -H "Authorizat
 - The production build must be served by a web server that also forwards `/api` and `/uploads` to the backend. Express does not serve the website.
 - SePay can only call the webhook when the backend has a public address.
 - Login hashing (scrypt) runs on the main thread, so very many simultaneous logins slow the server.
+
+## Change log
+
+Newest first. Add a line here with every change.
+
+| Date | Change |
+|---|---|
+| 2026-11-12 | Statistics: filter by day and by week (Monday to Sunday), with a date picker. Day shows revenue by hour, week shows revenue by day, both compared with the previous day or week; Excel export follows the filter. |
+| 2026-11-12 | Products page: two tabs, "Danh sách sản phẩm" and "Thêm sản phẩm" (the add form is no longer above the list). "Sửa" opens the form tab titled "Sửa sản phẩm"; saving or cancelling returns to the list. |
+| 2026-11-12 | Products page: a failed load of per-product revenue now shows an error toast instead of silently showing "—" (it happened when the server still ran old code without `/admin/product-sales`). |
+| 2026-11-12 | Admin tables (orders, products, accounts, vouchers, events, banners): view switch like the product page, "Dạng bảng" (header row stays pinned while scrolling the rows) or "Dạng thẻ" (one card per row). The choice is remembered per table. Shared code: `frontend/src/js/components/table-view.js`, enabled with `data-view-key` on a `.table-wrap`. |
+| 2026-11-12 | Permissions standardized: account management now uses the `team.manage` permission (was a hard-coded admin check), the admin-only frontend helper was removed, and new tests check the frontend table against the backend and every role against 19 API routes. README roles table rewritten. |
+| 2026-11-12 | Delivery address and phone rules: Vietnamese mobile number only; address needs house number, ward/commune or district, and province. Applies when saving an address and when placing an order. |
+| 2026-11-12 | Tables: the header row (column names) stays visible while scrolling; long tables scroll inside their own frame (max 70% of the screen height). |
+| 2026-11-12 | Statistics page: "Biểu đồ / Bảng" switch. Only one form is shown at a time: chart mode hides the tables, table mode hides the charts and shows every data table (choice is remembered in the browser). |
+| 2026-11-12 | Admin "Đặt lại mật khẩu": the dialog showing the new password now has a "Sao chép" (copy) button. The dialog helper supports a copy button on any row. |
+| 2026-11-12 | Fix: restored banner images (`IMAGES/events/*.svg`) and `bg/bg1.jpg` that were deleted by mistake. They are looked up by short name (`tet`, `noel`, `bg1`), not by full file name. |
+| 2026-11-12 | Dashboard: "Cần cải thiện" list has a fixed height with its own scrollbar. |
+| 2026-11-12 | Admin tables: larger text. Products page: delivered units and revenue per product, with a 12-month panel (`GET /api/admin/product-sales`). |
+| 2026-11-12 | Documentation reduced to this README plus Word files in `docs/` (SRS, use cases, SDS, ERD, code guide). |
+| 2026-11-11 | Cleanup before publishing: removed unused files, removed a broken record from the local `db.json`. First push of the `backend/` and `frontend/` layout to GitHub. |
+| 2026-11 | Reviews with an admin Reviews page, email codes (3 minutes) with a copy button, Prettier and EditorConfig, SRS/use case/SDS/ERD documents. |

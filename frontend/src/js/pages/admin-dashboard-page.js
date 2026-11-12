@@ -17,6 +17,7 @@ const el = (id) => document.querySelector(`#${id}`);
 const yearSelect = el('yearSelect');
 const quarterSelect = el('quarterSelect');
 const monthSelect = el('monthSelect');
+const dateSelect = el('dateSelect');
 const periodButtons = [...document.querySelectorAll('#periodSeg button')];
 
 let period = 'month';
@@ -30,6 +31,8 @@ monthSelect.innerHTML = Array.from({ length: 12 }, (_, i) => `<option value="${i
 // Mở trang là xem tháng và quý hiện tại
 monthSelect.value = String(new Date().getMonth() + 1);
 quarterSelect.value = String(Math.floor(new Date().getMonth() / 3) + 1);
+// Ngày mặc định khi chọn xem theo Ngày hoặc Tuần là hôm nay (giờ máy, dạng YYYY-MM-DD)
+dateSelect.value = new Date().toLocaleDateString('sv-SE');
 
 // Tab
 function showTab(name) {
@@ -61,6 +64,28 @@ try {
     showTab('revenue');
 }
 
+// Kiểu hiển thị: Biểu đồ hoặc Bảng (bảng mở sẵn mọi mục "Xem số liệu dạng bảng", ẩn phần biểu đồ)
+function showView(view) {
+    const asTable = view === 'table';
+    document.querySelector('.dash').classList.toggle('view-table', asTable);
+    document.querySelectorAll('details.chart-table').forEach((box) => (box.open = asTable));
+    document.querySelectorAll('#viewSeg button').forEach((button) => button.classList.toggle('active', button.dataset.view === view));
+    try {
+        localStorage.setItem('dashView', view);
+    } catch {
+        /* bỏ qua nếu bị chặn lưu trữ */
+    }
+}
+el('viewSeg').addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-view]');
+    if (button) showView(button.dataset.view);
+});
+try {
+    showView(localStorage.getItem('dashView') === 'table' ? 'table' : 'chart');
+} catch {
+    showView('chart');
+}
+
 function setBadge(id, count) {
     el(id).textContent = count;
     el(id).classList.toggle('hidden', !count);
@@ -83,8 +108,18 @@ function niceTop(value) {
     return [1, 2, 5, 10].map((unit) => unit * power).find((step) => step >= raw) * 4;
 }
 
-const periodText = ({ year, period: kind, quarter, month }) =>
-    kind === 'quarter' ? `Quý ${quarter}/${year}` : kind === 'month' ? `Tháng ${month}/${year}` : `Năm ${year}`;
+// "2026-11-12" -> "12/11/2026"
+const viDate = (iso) => iso.split('-').reverse().join('/');
+const periodText = ({ year, period: kind, quarter, month, date, from, to }) =>
+    kind === 'day'
+        ? `Ngày ${viDate(date)}`
+        : kind === 'week'
+          ? `Tuần ${viDate(from)} – ${viDate(to)}`
+          : kind === 'quarter'
+            ? `Quý ${quarter}/${year}`
+            : kind === 'month'
+              ? `Tháng ${month}/${year}`
+              : `Năm ${year}`;
 
 // Doanh thu
 // Chỉ số phụ: kỳ trước chưa có số liệu thì không hiện gì (tránh lặp chữ "chưa có số liệu").
@@ -126,6 +161,9 @@ function renderRevenueHero(data) {
 
 // Dữ liệu của biểu đồ: xem tháng thì theo từng ngày so với tháng trước, xem quý hoặc năm thì 12 tháng so với năm trước.
 function chartData({ filter, previous, days, prevDays, months, prevMonths }) {
+    // Ngày: 24 giờ; tuần: 7 ngày. Hàng có sẵn nhãn (label) từ server.
+    if (filter.period === 'day' || filter.period === 'week')
+        return { byDay: true, labeled: true, rows: days, prevRows: prevDays, curName: periodText(filter), prevName: previous.label };
     return filter.period === 'month'
         ? {
               byDay: true,
@@ -140,7 +178,7 @@ function chartData({ filter, previous, days, prevDays, months, prevMonths }) {
 // Biểu đồ đường SVG: kỳ đang xem (vùng tô) và kỳ so sánh (nét đứt). Xem quý hoặc năm thì bấm vào tháng để xem theo ngày.
 function renderMonthChart(data) {
     const { filter } = data;
-    const { byDay, rows, prevRows, curName, prevName } = chartData(data);
+    const { byDay, labeled, rows, prevRows, curName, prevName } = chartData(data);
     const W = 720;
     const H = 240;
     const left = 48;
@@ -156,11 +194,25 @@ function renderMonthChart(data) {
     const area = `${line(rows)} L${x(last)},${y(0)} L${x(0)},${y(0)} Z`;
     const inFocus = (row) => byDay || filter.period === 'year' || Math.ceil(row.month / 3) === filter.quarter;
     // Theo ngày thì chỉ ghi vài mốc cho đỡ rối
-    const axisLabel = (row) => (byDay ? ([1, 5, 10, 15, 20, 25, 30].includes(row.day) ? row.day : '') : `T${row.month}`);
+    // Theo giờ chỉ ghi vài mốc; theo tuần ghi hết 7 ngày
+    const axisLabel = (row, index) =>
+        labeled
+            ? filter.period === 'day'
+                ? index % 3 === 0
+                    ? row.label
+                    : ''
+                : row.label.split(' ')[0]
+            : byDay
+              ? [1, 5, 10, 15, 20, 25, 30].includes(row.day)
+                  ? row.day
+                  : ''
+              : `T${row.month}`;
 
-    el('chartTitle').textContent = byDay
-        ? `Doanh thu theo ngày · Tháng ${filter.month}/${filter.year}`
-        : `Doanh thu 12 tháng · Năm ${filter.year}`;
+    el('chartTitle').textContent = labeled
+        ? `Doanh thu ${filter.period === 'day' ? 'theo giờ' : 'theo ngày'} · ${curName}`
+        : byDay
+          ? `Doanh thu theo ngày · Tháng ${filter.month}/${filter.year}`
+          : `Doanh thu 12 tháng · Năm ${filter.year}`;
     el('monthLegend').innerHTML = `<span><i class="dot cur"></i>${curName}</span><span><i class="dot prev"></i>${prevName}</span>`;
     el('monthChart').classList.toggle('by-day', byDay);
     el('monthChart').innerHTML = `
@@ -181,17 +233,18 @@ function renderMonthChart(data) {
                 <g class="pt${inFocus(row) ? '' : ' dim'}" data-index="${index}">
                     <rect x="${x(index) - step / 2}" y="${top}" width="${step}" height="${H - top - bottom}" class="hit"/>
                     <circle cx="${x(index)}" cy="${y(row.revenue)}" r="${byDay ? 3 : 4}"/>
-                    <text class="axis" x="${x(index)}" y="${H - 8}" text-anchor="middle">${axisLabel(row)}</text>
+                    <text class="axis" x="${x(index)}" y="${H - 8}" text-anchor="middle">${axisLabel(row, index)}</text>
                 </g>`
                 )
                 .join('')}
         </svg>`;
 
+    const rowName = (row) => (labeled ? row.label : byDay ? `Ngày ${row.day}` : `Tháng ${row.month}`);
     el('monthTable').innerHTML =
-        `<thead><tr><th>${byDay ? 'Ngày' : 'Tháng'}</th><th>${curName}</th><th>Số đơn</th><th>${prevName}</th></tr></thead><tbody>${rows
+        `<thead><tr><th>${filter.period === 'day' ? 'Giờ' : byDay ? 'Ngày' : 'Tháng'}</th><th>${curName}</th><th>Số đơn</th><th>${prevName}</th></tr></thead><tbody>${rows
             .map(
                 (row, index) =>
-                    `<tr><td>${byDay ? `Ngày ${row.day}` : `Tháng ${row.month}`}</td><td>${formatPrice(row.revenue)}</td><td>${row.orders}</td><td>${formatPrice(prevRows[index].revenue)}</td></tr>`
+                    `<tr><td>${rowName(row)}</td><td>${formatPrice(row.revenue)}</td><td>${row.orders}</td><td>${formatPrice(prevRows[index].revenue)}</td></tr>`
             )
             .join('')}</tbody>`;
 }
@@ -217,13 +270,13 @@ const tooltip = (() => {
 el('monthChart').addEventListener('mousemove', (event) => {
     const point = event.target.closest('.pt');
     if (!point || !lastData) return tooltip.hide();
-    const { byDay, rows, prevRows, prevName } = chartData(lastData);
+    const { byDay, labeled, rows, prevRows, prevName } = chartData(lastData);
     const index = Number(point.dataset.index);
     const cur = rows[index];
     const prev = prevRows[index];
     const { month, year } = lastData.filter;
     tooltip.show(
-        `<b>${byDay ? `Ngày ${cur.day}/${month}/${year}` : `Tháng ${cur.month}/${year}`}</b>
+        `<b>${labeled ? cur.label : byDay ? `Ngày ${cur.day}/${month}/${year}` : `Tháng ${cur.month}/${year}`}</b>
         <div><i class="dot cur"></i>${formatPrice(cur.revenue)} · ${cur.orders} đơn</div>
         <div><i class="dot prev"></i>${prevName}: ${formatPrice(prev.revenue)}</div>
         <div>${deltaPill(cur.revenue, prev.revenue)}</div>
@@ -234,7 +287,7 @@ el('monthChart').addEventListener('mousemove', (event) => {
 el('monthChart').addEventListener('mouseleave', () => tooltip.hide());
 el('monthChart').addEventListener('click', (event) => {
     const point = event.target.closest('.pt');
-    if (!point || lastData?.filter.period === 'month') return;
+    if (!point || ['month', 'day', 'week'].includes(lastData?.filter.period)) return;
     tooltip.hide();
     period = 'month';
     monthSelect.value = lastData.months[Number(point.dataset.index)].month;
@@ -410,6 +463,9 @@ function render(data) {
     monthSelect.value = String(filter.month);
     quarterSelect.classList.toggle('hidden', period !== 'quarter');
     monthSelect.classList.toggle('hidden', period !== 'month');
+    dateSelect.value = filter.date;
+    dateSelect.classList.toggle('hidden', period !== 'day' && period !== 'week');
+    yearSelect.classList.toggle('hidden', period === 'day' || period === 'week');
 
     lastData = data;
     renderRevenueHero(data);
@@ -420,6 +476,7 @@ function render(data) {
 
 async function load() {
     const params = new URLSearchParams({ period, quarter: quarterSelect.value, month: monthSelect.value });
+    if (dateSelect.value) params.set('date', dateSelect.value);
     if (yearSelect.value) params.set('year', yearSelect.value);
     try {
         // Có bản nhớ thì vẽ ngay, dữ liệu mới từ server về thì vẽ lại tại chỗ
@@ -443,7 +500,7 @@ periodButtons.forEach((button) =>
         load();
     })
 );
-[yearSelect, quarterSelect, monthSelect].forEach((select) => select.addEventListener('change', load));
+[yearSelect, quarterSelect, monthSelect, dateSelect].forEach((select) => select.addEventListener('change', load));
 
 async function exportRevenueReport() {
     if (!lastData) return;
@@ -479,13 +536,13 @@ async function exportRevenueReport() {
                     ['Doanh thu kỳ trước', previous.revenue]
                 ]
             },
-            ...(filter.period === 'month'
+            ...(['month', 'day', 'week'].includes(filter.period)
                 ? [
                       {
-                          name: 'Theo ngay',
+                          name: filter.period === 'day' ? 'Theo gio' : 'Theo ngay',
                           rows: [
-                              ['Ngày', periodText(filter), 'Số đơn', previous.label],
-                              ...days.map((row, index) => [row.day, row.revenue, row.orders, prevDays[index].revenue])
+                              [filter.period === 'day' ? 'Giờ' : 'Ngày', periodText(filter), 'Số đơn', previous.label],
+                              ...days.map((row, index) => [row.label ?? row.day, row.revenue, row.orders, prevDays[index].revenue])
                           ]
                       }
                   ]

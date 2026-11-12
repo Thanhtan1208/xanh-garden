@@ -90,9 +90,31 @@ export function toast(message, options = {}) {
 
 export const notifyError = (error) => toast(error?.message || String(error), { type: 'error' });
 
+// Nút "Sao chép": chép giá trị vào bộ nhớ tạm, đổi chữ thành "Đã chép" trong 2 giây
+function copyButton(value) {
+    const button = node('button', 'copy-btn', 'Sao chép');
+    button.type = 'button';
+    button.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(value);
+        } catch {
+            // Trình duyệt không cho dùng clipboard (trang không bảo mật): chép bằng ô tạm
+            const box = document.createElement('textarea');
+            box.value = value;
+            document.body.append(box);
+            box.select();
+            document.execCommand('copy');
+            box.remove();
+        }
+        button.textContent = 'Đã chép';
+        setTimeout(() => (button.textContent = 'Sao chép'), 2000);
+    });
+    return button;
+}
+
 /**
  * Hộp thoại xác nhận, trả về Promise<boolean>.
- * options: { title, message, rows: [[nhãn, giá trị]], confirmText, cancelText (null = chỉ có nút đóng), tone: 'primary'|'danger' }
+ * options: { title, message, rows: [[nhãn, giá trị, in đậm, có nút sao chép]], confirmText, cancelText (null = chỉ có nút đóng), tone: 'primary'|'danger' }
  */
 export function confirmDialog({ title, message, rows = [], confirmText = 'Xác nhận', cancelText = 'Hủy', tone = 'primary' }) {
     return new Promise((resolve) => {
@@ -106,9 +128,12 @@ export function confirmDialog({ title, message, rows = [], confirmText = 'Xác n
         if (message) dialog.append(node('p', 'modal-message', message));
         if (rows.length) {
             const list = node('dl', 'modal-rows');
-            rows.forEach(([label, value, strong]) => {
+            rows.forEach(([label, value, strong, copy]) => {
                 const row = node('div');
-                row.append(node('dt', '', label), node('dd', strong ? 'strong' : '', value));
+                const cell = node('dd', strong ? 'strong' : '', value);
+                // Dòng có cờ copy: thêm nút sao chép giá trị
+                if (copy) cell.append(copyButton(value));
+                row.append(node('dt', '', label), cell);
                 list.append(row);
             });
             dialog.append(list);

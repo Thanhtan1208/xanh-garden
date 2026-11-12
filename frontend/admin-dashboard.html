@@ -22,6 +22,10 @@
                     <button type="button" data-tab="reviews" role="tab">Đánh giá <span id="reviewBadge" class="tab-badge hidden"></span></button>
                     <button type="button" data-tab="customers" role="tab">Khách hàng</button>
                 </nav>
+                <div class="pill-seg" id="viewSeg" role="group" aria-label="Kiểu hiển thị">
+                    <button type="button" data-view="chart" class="active">Biểu đồ</button>
+                    <button type="button" data-view="table">Bảng</button>
+                </div>
             </div>
 
             <div id="loading" class="loading">Đang tải số liệu...</div>
@@ -33,10 +37,13 @@
                     <div class="period-bar">
                         <select id="yearSelect" aria-label="Năm"></select>
                         <div class="pill-seg" id="periodSeg" role="group" aria-label="Xem theo">
+                            <button type="button" data-period="day">Ngày</button>
+                            <button type="button" data-period="week">Tuần</button>
                             <button type="button" data-period="month">Tháng</button>
                             <button type="button" data-period="quarter">Quý</button>
                             <button type="button" data-period="year">Cả năm</button>
                         </div>
+                        <input type="date" id="dateSelect" class="hidden" aria-label="Chọn ngày">
                         <select id="quarterSelect" class="hidden" aria-label="Quý">
                             <option value="1">Quý 1</option><option value="2">Quý 2</option>
                             <option value="3">Quý 3</option><option value="4">Quý 4</option>
@@ -172,7 +179,7 @@
                         </section>
                         <section class="bank-card">
                             <div class="bank-card-head"><h2>Cần cải thiện</h2></div>
-                            <div id="improvements" class="tx-list"></div>
+                            <div id="improvements" class="tx-list tx-scroll"></div>
                         </section>
                         <section class="bank-card span-2">
                             <div class="bank-card-head"><h2>Đánh giá xấu gần nhất (1–2 sao)</h2></div>

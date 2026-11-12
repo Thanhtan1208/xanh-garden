@@ -1,4 +1,5 @@
 import { api } from '../services/api-service.js';
+import '../components/table-view.js';
 import { requirePermission } from '../utils/auth.js';
 import { escapeHtml, formatDate } from '../utils/format.js';
 import { fromLocalInput, timeState, toLocalInput } from '../utils/dates.js';

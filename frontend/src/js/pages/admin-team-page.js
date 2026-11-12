@@ -1,6 +1,7 @@
 import { api } from '../services/api-service.js';
+import '../components/table-view.js';
 import '../components/header.js';
-import { getCurrentUser, requireAdmin } from '../utils/auth.js';
+import { getCurrentUser, requirePermission } from '../utils/auth.js';
 import { bindPasswordHints, passwordProblem } from '../utils/password.js';
 import { bindSendCode } from '../services/password-otp.js';
 import '../utils/password-toggle.js';
@@ -74,7 +75,7 @@ async function resetPassword(button) {
             message: 'Mật khẩu này chỉ hiện một lần. Hãy gửi cho chủ tài khoản và nhắc họ đổi mật khẩu sau khi đăng nhập.',
             rows: [
                 ['Tài khoản', user.name],
-                ['Mật khẩu mới', result.password, true]
+                ['Mật khẩu mới', result.password, true, true]
             ],
             confirmText: 'Đã ghi lại',
             cancelText: null
@@ -202,7 +203,7 @@ document.querySelector('#teamSearch').addEventListener('input', render);
 document.querySelector('#roleFilter').addEventListener('change', render);
 
 async function initialize() {
-    if (!requireAdmin()) return;
+    if (!requirePermission('team.manage')) return;
     try {
         await api.load('/admin/users', (data) => {
             users = data;

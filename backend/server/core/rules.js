@@ -1,4 +1,5 @@
 import { fail } from './http.js';
+import { addressProblem, normalizePhone } from './address.js';
 
 export const FREE_SHIPPING_FROM = 500000;
 export const SHIPPING_FEES = { standard: 30000, express: 50000 };
@@ -68,7 +69,6 @@ export const ORDER_TRANSITIONS = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE_PATTERN = /^(0|\+84)\d{9,10}$/;
 const NAME_PATTERN = /^[A-Za-z0-9_.]+$/;
 
 const text = (value) => (typeof value === 'string' ? value.trim() : '');
@@ -115,12 +115,15 @@ export function parseRegistration(body = {}) {
 }
 
 export function parseAddress(body = {}) {
-    const phone = text(body.phone).replace(/[\s.-]/g, '');
-    if (!PHONE_PATTERN.test(phone)) fail(400, 'Số điện thoại không hợp lệ (VD: 0901234567).');
+    const phone = normalizePhone(text(body.phone));
+    if (!phone) fail(400, 'Số điện thoại không hợp lệ. Cần số di động Việt Nam 10 số (VD: 0901234567 hoặc +84901234567).');
+    const address = textField(body.address, 'Địa chỉ giao hàng', 10, 200);
+    const problem = addressProblem(address);
+    if (problem) fail(400, problem);
     return {
         fullName: textField(body.fullName, 'Tên người nhận', 2, 60),
         phone,
-        address: textField(body.address, 'Địa chỉ giao hàng', 10, 200)
+        address
     };
 }
 

@@ -1,4 +1,5 @@
 import { api } from '../services/api-service.js';
+import '../components/table-view.js';
 import '../components/header.js';
 import { requirePermission } from '../utils/auth.js';
 import { getCurrentUser } from '../utils/auth.js';
@@ -24,11 +25,13 @@ const formMessage = document.getElementById('formMessage');
 
 const LOW_STOCK_AT = 5;
 const canManageProducts = hasPermission('products.manage', getCurrentUser());
+const canSeeSales = hasPermission('dashboard.sales', getCurrentUser());
 
 // dữ liệu lấy từ server về
 let products = [];
 let categories = [];
 let loaded = false;
+let salesById = new Map(); // doanh thu từng sản phẩm (chỉ tải khi có quyền xem doanh thu)
 
 // Danh mục
 // đổ danh mục vào ô chọn, giữ lại lựa chọn đang có (khi dữ liệu mới về trong lúc đang sửa)
@@ -93,7 +96,7 @@ function renderProducts() {
     // danh sách luôn làm mới
     productList.innerHTML = '';
     if (list.length === 0) {
-        productList.innerHTML = '<tr><td colspan="7" class="muted">Không có sản phẩm nào</td></tr>';
+        productList.innerHTML = '<tr><td colspan="9" class="muted">Không có sản phẩm nào</td></tr>';
         return;
     }
     list.forEach((product) => {
@@ -108,12 +111,14 @@ function renderProducts() {
             <td>${escapeHtml(cat?.name || 'Chưa có danh mục')}</td>
             <td>${formatPrice(product.price)}${product.oldPrice > product.price ? `<small class="muted block"><s>${formatPrice(product.oldPrice)}</s></small>` : ''}</td>
             <td>${stockText(product)}</td>
+            ${canSeeSales ? salesCells(product.id) : ''}
             <td>${arrival ? formatDate(arrival) : '<span class="muted">—</span>'}</td>
             <td>
                 <span class="row-actions">
                     ${canManageProducts ? `<button type="button" class="btn btn-sm btn-outline editBtn" data-id="${product.id}">Sửa</button>` : ''}
                     <button type="button" class="btn btn-sm btn-outline importRowBtn" data-id="${product.id}">Nhập</button>
                     <button type="button" class="btn btn-sm btn-outline historyBtn" data-id="${product.id}">Lịch sử</button>
+                    ${canSeeSales ? `<button type="button" class="btn btn-sm btn-outline salesBtn" data-id="${product.id}">Doanh thu</button>` : ''}
                     ${canManageProducts ? `<button type="button" class="btn btn-sm btn-danger deleteBtn" data-id="${product.id}">Xóa</button>` : ''}
                 </span>
             </td>`;
@@ -122,8 +127,23 @@ function renderProducts() {
     });
 }
 
+// Hai cột: số lượng đã giao và doanh thu hàng của sản phẩm
+function salesCells(id) {
+    const sales = salesById.get(String(id));
+    return `<td>${sales ? sales.delivered : '—'}${sales?.inFlight ? `<small class="muted block">${sales.inFlight} đang xử lý</small>` : ''}</td><td><b>${sales ? formatPrice(sales.revenue) : '—'}</b></td>`;
+}
+
 // lấy sản phẩm về (có bản nhớ thì hiện ngay, dữ liệu mới về thì vẽ lại)
 function loadProducts() {
+    if (canSeeSales) {
+        document.querySelectorAll('.sales-col').forEach((th) => (th.hidden = false));
+        api.get('/admin/product-sales')
+            .then((rows) => {
+                salesById = new Map(rows.map((row) => [row.id, row]));
+                if (loaded) renderProducts();
+            })
+            .catch((error) => toast(`Không tải được doanh thu sản phẩm: ${error.message}`, { type: 'error' }));
+    }
     return api.load('/products', (data) => {
         products = data;
         loaded = true;
@@ -180,13 +200,25 @@ async function deleteProduct(id) {
     }
 }
 
+// Tab: "Danh sách sản phẩm" và "Thêm sản phẩm" (đổi tên thành "Sửa sản phẩm" khi đang sửa)
+function showTab(name) {
+    document.querySelectorAll('#prodTabs button').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== name));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.getElementById('prodTabs').addEventListener('click', (event) => {
+    const tab = event.target.closest('button[data-tab]');
+    if (tab) showTab(tab.dataset.tab);
+});
+
 // phương thức sửa: đổ dữ liệu lên form và chuyển form sang chế độ sửa
 function editProduct(id) {
     updateForm(id);
     document.getElementById('formTitle').textContent = 'Sửa sản phẩm';
+    document.getElementById('addTab').textContent = 'Sửa sản phẩm';
     submitBtn.textContent = 'Cập nhật';
     cancelBtn.hidden = false;
-    form.scrollIntoView({ behavior: 'smooth' });
+    showTab('add');
 }
 
 // đổ thông tin sản phẩm lên các ô trong form
@@ -218,6 +250,7 @@ productList.addEventListener('click', async (event) => {
     if (button.classList.contains('editBtn')) editProduct(id);
     if (button.classList.contains('importRowBtn')) openImport(id);
     if (button.classList.contains('historyBtn')) showHistory(id);
+    if (button.classList.contains('salesBtn')) showSales(id);
 });
 
 // Ảnh sản phẩm
@@ -260,6 +293,7 @@ function resetForm() {
     showPreview('');
     formMessage.textContent = '';
     document.getElementById('formTitle').textContent = 'Thêm sản phẩm';
+    document.getElementById('addTab').textContent = 'Thêm sản phẩm';
     submitBtn.textContent = 'Thêm sản phẩm';
     cancelBtn.hidden = true;
 }
@@ -295,8 +329,9 @@ form.addEventListener('submit', async (event) => {
             await api.post('/admin/products', sanpham);
             toast('Thêm sản phẩm thành công!', { type: 'success' });
         }
-        // xong thì làm trống form và tải lại bảng sản phẩm
+        // xong thì làm trống form, về tab danh sách và tải lại bảng sản phẩm
         resetForm();
+        showTab('list');
         await loadProducts();
     } catch (error) {
         formMessage.textContent = error.message;
@@ -305,8 +340,11 @@ form.addEventListener('submit', async (event) => {
     }
 });
 
-// bấm "Hủy sửa" thì quay form về chế độ thêm
-cancelBtn.addEventListener('click', resetForm);
+// bấm "Hủy sửa" thì quay form về chế độ thêm và về tab danh sách
+cancelBtn.addEventListener('click', () => {
+    resetForm();
+    showTab('list');
+});
 
 // tìm kiếm, sắp xếp, lọc sắp hết hàng
 document.getElementById('search').addEventListener('input', renderProducts);
@@ -316,6 +354,7 @@ document.getElementById('lowOnly').addEventListener('change', renderProducts);
 // Nhập hàng (phiếu nhập): cộng vào tồn kho và ghi nhật ký
 const importForm = document.getElementById('importForm');
 function openImport(id) {
+    showTab('list');
     importForm.elements.namedItem('productId').innerHTML = [...products]
         .sort(SORTS.name)
         .map((item) => `<option value="${item.id}">${escapeHtml(item.name)} (còn ${item.stock})</option>`)
@@ -377,6 +416,33 @@ async function showHistory(id) {
         tbody.innerHTML = `<tr><td colspan="6" class="error-message">${escapeHtml(error.message)}</td></tr>`;
     }
 }
+// Doanh thu một sản phẩm: tổng và 12 tháng gần nhất
+function showSales(id) {
+    const sanpham = products.find((p) => String(p.id) === String(id));
+    const sales = salesById.get(String(id));
+    const box = document.getElementById('salesBox');
+    document.getElementById('salesTitle').textContent = `Doanh thu: ${sanpham?.name || ''}`;
+    const cards = [
+        ['Đã giao', sales?.delivered ?? 0],
+        ['Doanh thu hàng', formatPrice(sales?.revenue ?? 0)],
+        ['Giá bán trung bình', formatPrice(sales?.average ?? 0)],
+        ['Đang xử lý', sales?.inFlight ?? 0],
+        ['Đã hủy', sales?.cancelled ?? 0],
+        ['Số đơn đã giao', sales?.orders ?? 0]
+    ];
+    document.getElementById('salesSummary').innerHTML = cards
+        .map(([label, value]) => `<div class="sales-card"><span>${label}</span><b>${value}</b></div>`)
+        .join('');
+    document.getElementById('salesBody').innerHTML = (sales?.months || [])
+        .map(
+            (month) =>
+                `<tr><td>${month.key.slice(5)}/${month.key.slice(0, 4)}</td><td>${month.units}</td><td>${formatPrice(month.revenue)}</td></tr>`
+        )
+        .join('');
+    box.classList.remove('hidden');
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.getElementById('closeSalesBtn').addEventListener('click', () => document.getElementById('salesBox').classList.add('hidden'));
 document.getElementById('closeHistoryBtn').addEventListener('click', () => document.getElementById('historyBox').classList.add('hidden'));
 
 // Cài đặt sản phẩm mới và khuyến mãi
@@ -508,6 +574,7 @@ async function exportPdf() {
 
 // hiện các dòng lỗi server trả về, không có lỗi thì ẩn khung
 function showExcelErrors(errors) {
+    if (errors.length) showTab('list');
     document.getElementById('excelErrors').classList.toggle('hidden', !errors.length);
     document.getElementById('excelErrorsTitle').textContent = `File có ${errors.length} dòng lỗi, chưa lưu dòng nào`;
     document.getElementById('excelErrorList').innerHTML = errors
@@ -560,7 +627,7 @@ document.getElementById('closeExcelErrorsBtn').addEventListener('click', () => s
 // Gọi hàm thực thi
 async function initialize() {
     if (!requirePermission('products.view')) return;
-    form.classList.toggle('hidden', !canManageProducts);
+    document.getElementById('addTab').classList.toggle('hidden', !canManageProducts);
     settingsForm.classList.toggle('hidden', !canManageProducts);
     document.getElementById('importExcelBtn').classList.toggle('hidden', !canManageProducts);
     renderSpecFields('');

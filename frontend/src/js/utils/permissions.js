@@ -5,7 +5,7 @@ export const ROLE_LABELS = Object.freeze({
     user: 'Khách hàng'
 });
 
-const PERMISSIONS = Object.freeze({
+export const PERMISSIONS = Object.freeze({
     admin: [
         'dashboard.sales',
         'dashboard.operations',

@@ -15,7 +15,6 @@ function readSession() {
 
 export const getCurrentUser = () => readSession()?.user ?? null;
 export const getToken = () => readSession()?.token ?? null;
-export const isAdmin = (user = getCurrentUser()) => user?.role === 'admin';
 
 export function setSession({ token, user }) {
     localStorage.setItem(SESSION_KEY, JSON.stringify({ token, user }));
@@ -32,15 +31,6 @@ export function requireLogin(returnUrl = window.location.pathname.split('/').pop
     sessionStorage.setItem('redirectAfterLogin', returnUrl);
     window.location.assign('./login.html');
     return null;
-}
-
-export function requireAdmin() {
-    const user = requireLogin();
-    if (user && !isAdmin(user)) {
-        window.location.assign(isManagementRole(user) ? './admin-dashboard.html' : './index.html');
-        return null;
-    }
-    return user;
 }
 
 export function requirePermission(permission) {

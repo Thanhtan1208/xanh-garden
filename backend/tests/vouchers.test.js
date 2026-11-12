@@ -185,7 +185,7 @@ describe('Voucher tự tặng', () => {
         const first = await placeOrder(ctx, token, addressId, [['1', 1]]); // không dùng voucher
         const second = await quote(token, [['3', 1]], [welcome.id]);
         assert.match(second.body.problems[0].reason, /đơn hàng đầu tiên/);
-        // Quy tắc hiện tại (NHAT_KY_DU_AN.md): "chưa từng đặt đơn" là không có đơn nào, kể cả đơn đã hủy
+        // Quy tắc hiện tại: "chưa từng đặt đơn" là không có đơn nào, kể cả đơn đã hủy
         const cancel = await call(ctx, 'PATCH', `/orders/${first.body.id}/status`, {
             token,
             body: { status: 'cancelled', reasonId: 'change_mind' }

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { byId, db, newId, save } from '../core/store.js';
-import { ApiError, fail, handle, hashPassword, requirePermission, requireRole } from '../core/http.js';
+import { ApiError, fail, handle, hashPassword, requirePermission } from '../core/http.js';
 import { randomInt } from 'node:crypto';
 import { clearLoginFailures } from './auth.js';
 import { hasPermission, ROLE_LABEL, ROLES } from '../core/permissions.js';
@@ -18,6 +18,8 @@ const MAX_IMPORT_ROWS = 500;
 
 // Giờ Việt Nam (UTC+7) để chia tháng/quý đúng với cửa hàng, không phụ thuộc múi giờ máy chủ.
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEKDAY = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const vnDate = (iso) => new Date(Date.parse(iso) + VN_OFFSET_MS);
 
 // Doanh thu tính từ chi tiết đơn (items) của đơn đã giao, không dùng số liệu sinh sẵn.
@@ -36,7 +38,7 @@ const round1 = (value) => Math.round(value * 10) / 10;
 
 router.get(
     '/users',
-    requireRole('admin'),
+    requirePermission('team.manage'),
     handle((_req, res) => {
         const rows = db.user
             .filter((user) => user.verified !== false)
@@ -59,7 +61,7 @@ router.get(
 
 router.patch(
     '/users/:id/role',
-    requireRole('admin'),
+    requirePermission('team.manage'),
     handle((req, res) => {
         const user = byId('user', req.params.id) || fail(404, 'Không tìm thấy tài khoản.');
         const role = String(req.body?.role || '');
@@ -90,7 +92,7 @@ function temporaryPassword(user) {
 // Admin đặt lại mật khẩu cho tài khoản khác: tự sinh mật khẩu tạm (trả về đúng một lần) hoặc dùng mật khẩu admin nhập.
 router.post(
     '/users/:id/reset-password',
-    requireRole('admin'),
+    requirePermission('team.manage'),
     handle((req, res) => {
         const user = byId('user', req.params.id) || fail(404, 'Không tìm thấy tài khoản.');
         if (user.id === req.user.id) fail(409, 'Mật khẩu của chính bạn hãy đổi ở mục "Đổi mật khẩu của tôi".');
@@ -158,7 +160,7 @@ function deletable(req) {
 
 router.get(
     '/users/:id/delete-check',
-    requireRole('admin'),
+    requirePermission('team.manage'),
     handle((req, res) => {
         res.json(deletionReport(deletable(req)));
     })
@@ -166,7 +168,7 @@ router.get(
 
 router.delete(
     '/users/:id',
-    requireRole('admin'),
+    requirePermission('team.manage'),
     handle((req, res) => {
         const user = deletable(req);
         const { blockers } = deletionReport(user);
@@ -188,9 +190,24 @@ router.get(
     handle((req, res) => {
         sweepExpired();
         const nowVn = vnDate(new Date().toISOString());
-        const year =
-            Number.isInteger(Number(req.query.year)) && Number(req.query.year) > 2000 ? Number(req.query.year) : nowVn.getUTCFullYear();
-        const period = ['year', 'quarter', 'month'].includes(req.query.period) ? req.query.period : 'month';
+        const period = ['day', 'week', 'month', 'quarter', 'year'].includes(req.query.period) ? req.query.period : 'month';
+        // Xem theo ngày/tuần: date = ngày (YYYY-MM-DD, giờ VN); tuần tính từ thứ Hai đến Chủ nhật chứa ngày đó.
+        const isRange = period === 'day' || period === 'week';
+        const todayMs = Date.UTC(nowVn.getUTCFullYear(), nowVn.getUTCMonth(), nowVn.getUTCDate());
+        const askedMs = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query.date || '')) ? Date.parse(`${req.query.date}T00:00:00Z`) : NaN;
+        const dateMs = Number.isFinite(askedMs) ? askedMs : todayMs;
+        const spanDays = period === 'week' ? 7 : 1;
+        const fromMs = period === 'week' ? dateMs - ((new Date(dateMs).getUTCDay() + 6) % 7) * DAY_MS : dateMs;
+        const toMs = fromMs + (spanDays - 1) * DAY_MS;
+        const prevFromMs = fromMs - spanDays * DAY_MS;
+        const isoDate = (ms) => new Date(ms).toISOString().slice(0, 10);
+        const shortDate = (ms) =>
+            `${String(new Date(ms).getUTCDate()).padStart(2, '0')}/${String(new Date(ms).getUTCMonth() + 1).padStart(2, '0')}`;
+        const year = isRange
+            ? new Date(dateMs).getUTCFullYear()
+            : Number.isInteger(Number(req.query.year)) && Number(req.query.year) > 2000
+              ? Number(req.query.year)
+              : nowVn.getUTCFullYear();
         const quarter = Math.min(4, Math.max(1, Number(req.query.quarter) || Math.floor(nowVn.getUTCMonth() / 3) + 1));
         const month = Math.min(12, Math.max(1, Number(req.query.month) || nowVn.getUTCMonth() + 1));
 
@@ -198,7 +215,14 @@ router.get(
             .filter((order) => order.status === 'delivered')
             .map((order) => {
                 const at = vnDate(deliveredAt(order));
-                return { order, year: at.getUTCFullYear(), month: at.getUTCMonth() + 1, day: at.getUTCDate() };
+                return {
+                    order,
+                    year: at.getUTCFullYear(),
+                    month: at.getUTCMonth() + 1,
+                    day: at.getUTCDate(),
+                    hour: at.getUTCHours(),
+                    ms: Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate())
+                };
             });
 
         const years = [...new Set([...delivered.map((entry) => entry.year), nowVn.getUTCFullYear()])].sort((a, b) => b - a);
@@ -231,13 +255,18 @@ router.get(
                     : { year, month: month - 1 };
         if (period === 'quarter') prev.label = `Quý ${prev.quarter}/${prev.year}`;
         if (period === 'month') prev.label = `Tháng ${prev.month}/${prev.year}`;
-        const prevOrders = delivered
+        let prevOrders = delivered
             .filter(
                 (entry) =>
                     entry.year === prev.year &&
                     (period === 'year' || (period === 'quarter' ? Math.ceil(entry.month / 3) === prev.quarter : entry.month === prev.month))
             )
             .map((entry) => entry.order);
+        if (isRange) {
+            prev.label =
+                period === 'day' ? `Ngày ${shortDate(prevFromMs)}` : `Tuần ${shortDate(prevFromMs)} – ${shortDate(fromMs - DAY_MS)}`;
+            prevOrders = delivered.filter((entry) => entry.ms >= prevFromMs && entry.ms < fromMs).map((entry) => entry.order);
+        }
         const previousRevenue = prevOrders.reduce((sum, order) => sum + revenueOf(order), 0);
         // Doanh thu từng tháng của năm trước để so sánh cùng kỳ trên biểu đồ.
         const prevMonths = Array.from({ length: 12 }, (_, index) => ({
@@ -253,12 +282,31 @@ router.get(
                 const rows = delivered.filter((entry) => entry.year === y && entry.month === m && entry.day === index + 1);
                 return { day: index + 1, revenue: rows.reduce((s, e) => s + revenueOf(e.order), 0), orders: rows.length };
             });
-        const days = period === 'month' ? toDays(year, month) : [];
-        const prevDays = period === 'month' ? toDays(prev.year, prev.month) : [];
+        // Xem theo ngày: 24 giờ trong ngày; xem theo tuần: 7 ngày. Kèm kỳ liền trước để so sánh.
+        const sumRevenue = (rows) => rows.reduce((s, e) => s + revenueOf(e.order), 0);
+        const rangeRows = (start) =>
+            period === 'day'
+                ? Array.from({ length: 24 }, (_, hour) => {
+                      const rows = delivered.filter((entry) => entry.ms === start && entry.hour === hour);
+                      return { label: `${hour}h`, revenue: sumRevenue(rows), orders: rows.length };
+                  })
+                : Array.from({ length: 7 }, (_, index) => {
+                      const ms = start + index * DAY_MS;
+                      const rows = delivered.filter((entry) => entry.ms === ms);
+                      return {
+                          label: `${WEEKDAY[new Date(ms).getUTCDay()]} ${shortDate(ms)}`,
+                          revenue: sumRevenue(rows),
+                          orders: rows.length
+                      };
+                  });
+        const days = isRange ? rangeRows(fromMs) : period === 'month' ? toDays(year, month) : [];
+        const prevDays = isRange ? rangeRows(prevFromMs) : period === 'month' ? toDays(prev.year, prev.month) : [];
 
-        const selected = inYear.filter(
-            (entry) => period === 'year' || (period === 'quarter' ? Math.ceil(entry.month / 3) === quarter : entry.month === month)
-        );
+        const selected = isRange
+            ? delivered.filter((entry) => entry.ms >= fromMs && entry.ms <= toMs)
+            : inYear.filter(
+                  (entry) => period === 'year' || (period === 'quarter' ? Math.ceil(entry.month / 3) === quarter : entry.month === month)
+              );
         const selectedOrders = selected.map((entry) => entry.order);
         const revenue = selectedOrders.reduce((s, o) => s + revenueOf(o), 0);
 
@@ -291,6 +339,10 @@ router.get(
 
         const inPeriodAll = db.orders.filter((order) => {
             const at = vnDate(order.createdAt);
+            if (isRange) {
+                const ms = Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate());
+                return ms >= fromMs && ms <= toMs;
+            }
             return (
                 at.getUTCFullYear() === year &&
                 (period === 'year' ||
@@ -360,7 +412,7 @@ router.get(
             });
 
         res.json({
-            filter: { year, period, quarter, month },
+            filter: { year, period, quarter, month, date: isoDate(dateMs), from: isoDate(fromMs), to: isoDate(toMs) },
             years,
             previous: {
                 label: prev.label,
@@ -417,6 +469,62 @@ function integrityIssues() {
     });
     return issues;
 }
+
+// Doanh thu từng sản phẩm, tính từ chi tiết đơn (giá chụp lúc đặt, chưa trừ voucher).
+// delivered: đã giao; inFlight: đã đặt nhưng chưa giao xong; cancelled: đơn bị hủy.
+const IN_FLIGHT = ['unconfirmed', 'pending', 'confirmed', 'shipping'];
+router.get(
+    '/product-sales',
+    requirePermission('dashboard.sales'),
+    handle((_req, res) => {
+        sweepExpired();
+        const nowVn = vnDate(new Date().toISOString());
+        const monthKeys = [];
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(Date.UTC(nowVn.getUTCFullYear(), nowVn.getUTCMonth() - i, 1));
+            monthKeys.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`);
+        }
+        const rows = new Map();
+        const rowOf = (id) => {
+            if (!rows.has(id)) {
+                rows.set(id, {
+                    id,
+                    delivered: 0,
+                    revenue: 0,
+                    inFlight: 0,
+                    cancelled: 0,
+                    orders: 0,
+                    months: monthKeys.map((key) => ({ key, units: 0, revenue: 0 }))
+                });
+            }
+            return rows.get(id);
+        };
+        db.orders.forEach((order) =>
+            order.items.forEach((item) => {
+                const row = rowOf(String(item.id));
+                if (order.status === 'delivered') {
+                    row.delivered += item.qty;
+                    row.revenue += item.price * item.qty;
+                    row.orders += 1;
+                    const at = vnDate(deliveredAt(order));
+                    const key = `${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, '0')}`;
+                    const month = row.months.find((m) => m.key === key);
+                    if (month) {
+                        month.units += item.qty;
+                        month.revenue += item.price * item.qty;
+                    }
+                } else if (IN_FLIGHT.includes(order.status)) row.inFlight += item.qty;
+                else if (order.status === 'cancelled') row.cancelled += item.qty;
+            })
+        );
+        res.json(
+            db.products.map((product) => {
+                const row = rowOf(String(product.id));
+                return { ...row, id: String(product.id), average: row.delivered ? Math.round(row.revenue / row.delivered) : 0 };
+            })
+        );
+    })
+);
 
 // Tổng quan kho và các việc quản lý cần xử lý. Số đã bán lấy từ chi tiết đơn đã giao.
 router.get(

@@ -513,3 +513,61 @@ describe('Nhập sản phẩm từ Excel', () => {
         assert.equal(big.body.errors.length, 300, 'vào tới bước kiểm tra, không bị chặn vì quá dung lượng');
     });
 });
+
+describe('Doanh thu từng sản phẩm', () => {
+    test('trả về mọi sản phẩm với 12 tháng gần nhất; khách thường không xem được', async () => {
+        const res = await call(ctx, 'GET', '/admin/product-sales', { token: admin });
+        assert.equal(res.status, 200, JSON.stringify(res.body));
+        const products = (await call(ctx, 'GET', '/products')).body;
+        assert.equal(res.body.length, products.length);
+        const row = res.body[0];
+        assert.equal(row.months.length, 12);
+        for (const key of ['delivered', 'revenue', 'inFlight', 'cancelled', 'average']) assert.equal(typeof row[key], 'number');
+        const user = await newCustomer(ctx);
+        assert.equal((await call(ctx, 'GET', '/admin/product-sales', { token: user.token })).status, 403);
+    });
+});
+
+describe('Thống kê theo ngày và tuần', () => {
+    test('xem theo ngày có 24 giờ, theo tuần có 7 ngày bắt đầu từ thứ Hai; ngày sai thì dùng hôm nay', async () => {
+        const day = await call(ctx, 'GET', '/admin/stats?period=day&date=2026-11-12', { token: admin });
+        assert.equal(day.status, 200, JSON.stringify(day.body));
+        assert.equal(day.body.days.length, 24);
+        assert.equal(day.body.prevDays.length, 24);
+        assert.equal(day.body.filter.date, '2026-11-12');
+        assert.equal(day.body.previous.label, 'Ngày 11/11');
+
+        const week = (await call(ctx, 'GET', '/admin/stats?period=week&date=2026-11-12', { token: admin })).body;
+        assert.equal(week.days.length, 7);
+        assert.equal(week.filter.from, '2026-11-09', 'thứ Hai');
+        assert.equal(week.filter.to, '2026-11-15', 'Chủ nhật');
+        assert.match(week.days[0].label, /^T2 09\/11$/);
+        assert.equal(week.previous.label, 'Tuần 02/11 – 08/11');
+
+        const sunday = (await call(ctx, 'GET', '/admin/stats?period=week&date=2026-11-15', { token: admin })).body;
+        assert.equal(sunday.filter.from, '2026-11-09', 'Chủ nhật vẫn thuộc tuần bắt đầu thứ Hai');
+
+        const bad = (await call(ctx, 'GET', '/admin/stats?period=day&date=khong-hop-le', { token: admin })).body;
+        assert.equal(bad.days.length, 24);
+        assert.match(bad.filter.date, /^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    test('đơn đã giao được tính đúng vào ngày và tuần chứa nó', async () => {
+        const customer = await newCustomer(ctx);
+        const address = await addAddress(ctx, customer.token);
+        const order = (await placeOrder(ctx, customer.token, address, [['1', 1]])).body;
+        for (const status of ['confirmed', 'shipping', 'delivered']) {
+            const step = await call(ctx, 'PATCH', `/orders/${order.id}/status`, { token: admin, body: { status } });
+            assert.equal(step.status, 200, `${status}: ${JSON.stringify(step.body)}`);
+        }
+        const today = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+        const stats = (await call(ctx, 'GET', `/admin/stats?period=day&date=${today}`, { token: admin })).body;
+        assert.ok(stats.summary.deliveredOrders >= 1, 'đơn vừa giao nằm trong hôm nay');
+        assert.ok(stats.days.reduce((sum, row) => sum + row.orders, 0) >= 1, 'và nằm trong một giờ nào đó');
+        const week = (await call(ctx, 'GET', `/admin/stats?period=week&date=${today}`, { token: admin })).body;
+        assert.ok(week.summary.deliveredOrders >= stats.summary.deliveredOrders);
+        const yesterday = new Date(Date.now() + 7 * 3600 * 1000 - 86400000).toISOString().slice(0, 10);
+        const other = (await call(ctx, 'GET', `/admin/stats?period=day&date=${yesterday}`, { token: admin })).body;
+        assert.equal(other.summary.deliveredOrders, 0, 'hôm qua chưa có đơn giao');
+    });
+});

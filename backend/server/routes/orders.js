@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { byId, db, newId, save } from '../core/store.js';
 import { fail, handle, requirePermission, requireRole } from '../core/http.js';
 import { hasPermission } from '../core/permissions.js';
+import { addressProblem, normalizePhone } from '../core/address.js';
 import {
     CANCEL_REQUEST_TTL_MS,
     HIGH_VALUE_FROM,
@@ -172,6 +173,12 @@ router.post(
         const quantities = parseItems(req.body.items);
         const address =
             (user.addresses || []).find((item) => item.id === req.body.addressId) || fail(400, 'Vui lòng chọn địa chỉ nhận hàng.');
+        // Địa chỉ lưu từ trước khi có quy tắc mới: bắt khách sửa lại trước khi đặt
+        if (!normalizePhone(address.phone) || addressProblem(address.address))
+            fail(
+                400,
+                `Địa chỉ nhận hàng chưa đúng quy định, hãy sửa lại trong Sổ địa chỉ. ${addressProblem(address.address) || 'Số điện thoại cần là số di động Việt Nam.'}`
+            );
         const customer = {
             fullName: address.fullName,
             phone: address.phone,

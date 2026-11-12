@@ -864,13 +864,14 @@ div#productList:empty { min-height: 60vh; }
 .section-header h1, .section-header h2 { margin: 0; }
 .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 14px 0 10px; }
 .filter-bar input[type="search"] { flex: 1; min-width: 220px; }
-.table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.table-wrap { overflow: auto; max-height: 70vh; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); }
 .table-wrap.flat { border: 0; border-radius: 0; background: none; }
 /* Bảng chưa có dữ liệu (đang ẩn) thì ẩn luôn khung viền, tránh khung rỗng bị xô khi dòng "Đang tải" biến mất */
 .table-wrap:has(> table[hidden]) { display: none; }
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
-.data-table th { background: #fafaf9; font-size: .8rem; color: var(--muted); font-weight: 600; }
+.data-table th, .data-table td { padding: 14px 16px; font-size: 1rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.data-table th { background: #fafaf9; font-size: .9rem; color: var(--muted); font-weight: 600; position: sticky; top: 0; z-index: 2; box-shadow: inset 0 -1px 0 var(--line); }
+/* Hàng tên cột đứng yên khi cuộn trong khung bảng */
 .data-table tbody tr:hover td { background: #fafaf9; }
 .data-table tr:last-child td { border-bottom: 0; }
 .data-table .detail-row td { background: var(--bg-soft); }
@@ -927,6 +928,8 @@ td.cell-product > b, td.cell-product > span { display: inline-block; vertical-al
 .tx-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 6px; border: 0; border-bottom: 1px solid #eef0ee; background: none; width: 100%; text-align: left; color: inherit; font: inherit; border-radius: var(--radius); }
 .tx-row:last-child { border-bottom: 0; }
 a.tx-row:hover, button.tx-row:hover { background: var(--bg-soft); }
+/* Danh sách dài: giới hạn chiều cao, có thanh cuộn riêng */
+.tx-scroll { max-height: 380px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
 .tx-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .85rem; }
 .tone-green { background: #e3f1e5; color: var(--green-dark); }
 .tone-orange { background: #fff0d6; color: #a35a00; }
@@ -1147,3 +1150,37 @@ td.down { color: var(--down); font-weight: 700; }
 
 /* Không dùng hiệu ứng mờ dần khi chuyển trang (@view-transition): nó trộn trang cũ với trang mới chưa có dữ liệu nên nhìn bị nháy.
    Trình duyệt tự giữ trang cũ cho tới khi trang mới vẽ xong khung (script có blocking="render"), rồi đổi ngay. */
+
+/* Tổng hợp doanh thu một sản phẩm (trang Sản phẩm & kho) */
+.sales-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.sales-card { background: var(--bg-soft); border-radius: var(--radius); padding: 12px 14px; }
+.sales-card span { display: block; font-size: .85rem; color: var(--muted); }
+.sales-card b { font-size: 1.3rem; }
+
+/* Nút sao chép trong hộp thoại */
+.modal-rows dd .copy-btn { margin-left: 10px; padding: 4px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; font: inherit; font-size: .85rem; cursor: pointer; }
+.modal-rows dd .copy-btn:hover { background: var(--bg-soft); }
+
+/* Trang Thống kê chỉ hiện một trong hai dạng: Biểu đồ (ẩn bảng) hoặc Bảng (ẩn biểu đồ) */
+.dash:not(.view-table) details.chart-table { display: none; }
+/* Kiểu "Bảng" của trang Thống kê: chỉ giữ tiêu đề và bảng số liệu, ẩn biểu đồ */
+.view-table .bank-card:has(> details.chart-table) > :not(.bank-card-head):not(details) { display: none; }
+.view-table .chart-table summary { display: none; }
+.view-table .chart-table { margin-top: 0; }
+.view-table .chart-table .table-wrap { max-height: 420px; margin-top: 0; }
+
+/* Nút chuyển Bảng / Thẻ cho bảng quản trị */
+.table-view-bar { display: flex; justify-content: flex-end; margin: 0 0 10px; }
+.table-wrap.view-cards { max-height: none; overflow: visible; border: 0; background: none; border-radius: 0; }
+.view-cards .data-table, .view-cards .data-table tbody { display: block; }
+.view-cards .data-table thead { display: none; }
+.view-cards .data-table tbody { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.view-cards .data-table tbody tr { display: block; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 10px 16px; }
+.view-cards .data-table tbody tr:hover td { background: none; }
+.view-cards .data-table tbody td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 0; border: 0; text-align: right; }
+.view-cards .data-table tbody td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .85rem; text-align: left; }
+.view-cards .data-table tbody td[data-label=""]::before { content: none; }
+.view-cards .data-table tbody td[colspan] { display: block; text-align: center; }
+
+/* Tab Danh sách / Thêm sản phẩm của trang Quản lý sản phẩm */
+.prod-tabs { margin: 0 0 16px; }

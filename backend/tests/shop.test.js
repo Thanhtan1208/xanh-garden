@@ -178,7 +178,7 @@ describe('Sổ địa chỉ', () => {
         let book = (
             await call(ctx, 'POST', '/addresses', {
                 token,
-                body: { fullName: 'Trần Thị B', phone: '0912 345 678', address: '45 Trần Phú, Hải Châu, Đà Nẵng' }
+                body: { fullName: 'Trần Thị B', phone: '0912 345 678', address: '45 Trần Phú, Phường Hải Châu, Đà Nẵng' }
             })
         ).body;
         assert.equal(book.length, 2);
@@ -456,5 +456,42 @@ describe('Ghi nhận hành vi', () => {
         });
         assert.equal(result.status, 204);
         assert.equal(ctx.db.orders.length, before);
+    });
+});
+
+describe('Quy tắc số điện thoại và địa chỉ', () => {
+    const send = (token, phone, address) => call(ctx, 'POST', '/addresses', { token, body: { fullName: 'Nguyễn Văn A', phone, address } });
+
+    test('số điện thoại phải là số di động Việt Nam; +84 được đổi về 0', async () => {
+        const { token } = await newCustomer(ctx);
+        const address = '12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh';
+        for (const phone of ['0123456789', '0201234567', '090123456', '09012345678', 'abcdefghij', '1901234567'])
+            assert.equal((await send(token, phone, address)).status, 400, phone);
+        const ok = await send(token, '+84 901 234 567', address);
+        assert.equal(ok.status, 201, JSON.stringify(ok.body));
+        assert.equal(ok.body[0].phone, '0901234567');
+    });
+
+    test('địa chỉ phải có số nhà, phường/xã hoặc quận/huyện, và tỉnh/thành phố', async () => {
+        const { token } = await newCustomer(ctx);
+        const phone = '0901234567';
+        const cases = [
+            ['Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh', 'số nhà'],
+            ['12 Lê Lợi, Quận 1', 'tỉnh/thành phố'],
+            ['12 Lê Lợi, Hồ Chí Minh', 'phường/xã'],
+            ['một nơi nào đó rất xa', 'số nhà']
+        ];
+        for (const [address, missing] of cases) {
+            const res = await send(token, phone, address);
+            assert.equal(res.status, 400, address);
+            assert.match(res.body.message, new RegExp(missing), address);
+        }
+        for (const address of [
+            '12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+            '5/7A Nguyễn Huệ, Xã Hòa Phú, Huyện Củ Chi, Hồ Chí Minh',
+            'Số 3 ngõ 45 Cầu Giấy, P. Dịch Vọng, Hà Nội',
+            '45 Trần Phú, Phường Hải Châu, Đà Nẵng'
+        ])
+            assert.equal((await send(token, phone, address)).status, 201, address);
     });
 });

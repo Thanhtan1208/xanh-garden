@@ -1,4 +1,5 @@
 import { api } from '../services/api-service.js';
+import '../components/table-view.js';
 import {
     NEXT_STATUS_LABEL,
     canAdminCancel,
