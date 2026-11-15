@@ -30,13 +30,12 @@
                         </div>
                     </section>
                     <section>
-                        <h3>Tình trạng</h3>
+                        <h3>Khuyến mãi</h3>
                         <div class="side-list">
-                            <label><input type="checkbox" id="inStockOnly"> Chỉ hiện còn hàng</label>
                             <label><input type="checkbox" id="saleOnly"> Đang giảm giá</label>
                         </div>
                     </section>
-                    <button type="button" id="resetBtn" class="btn btn-sm btn-outline btn-block">Xóa bộ lọc</button>
+                    <button type="button" id="resetBtn" class="btn btn-outline btn-block hidden">Xóa bộ lọc</button>
                 </aside>
 
                 <section class="shop-main">
@@ -47,19 +46,15 @@
                     <p id="shopIntro" class="shop-intro"></p>
                     <div id="activeFilters" class="chips"></div>
                     <div class="shop-toolbar">
-                        <button type="button" id="filterToggle" class="btn btn-sm btn-outline filter-toggle" aria-expanded="false" aria-controls="shopSidebar">Bộ lọc</button>
-                        <input type="search" id="searchInput" placeholder="Lọc theo tên cây..." aria-label="Lọc theo tên">
-                        <label>Sắp xếp
-                            <select id="sortSelect" aria-label="Sắp xếp">
-                                <option value="">Nổi bật</option>
-                                <option value="best">Bán chạy</option>
-                                <option value="newest">Hàng mới về</option>
-                                <option value="asc">Giá thấp đến cao</option>
-                                <option value="desc">Giá cao đến thấp</option>
-                                <option value="name">Tên A – Z</option>
-                            </select>
-                        </label>
-                        <div class="view-toggle" id="viewToggle" role="group" aria-label="Kiểu hiển thị"></div>
+                        <button type="button" id="filterToggle" class="btn btn-outline filter-toggle" aria-expanded="false" aria-controls="shopSidebar">Bộ lọc</button>
+                        <div class="sort-bar" id="sortBar" role="group" aria-label="Sắp xếp">
+                            <span>Sắp xếp theo</span>
+                            <button type="button" data-sort="">Nổi bật</button>
+                            <button type="button" data-sort="best">Bán chạy</button>
+                            <button type="button" data-sort="newest">Hàng mới về</button>
+                            <button type="button" data-sort="asc">Giá thấp → cao</button>
+                            <button type="button" data-sort="desc">Giá cao → thấp</button>
+                        </div>
                     </div>
 
                     <div id="loading" class="loading">Đang tải sản phẩm...</div>

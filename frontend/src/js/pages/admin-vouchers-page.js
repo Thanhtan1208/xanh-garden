@@ -16,7 +16,14 @@ let categories = [];
 let products = [];
 let editing = null;
 
-const AUDIENCE = { all: 'Mọi khách', newUser: 'Người dùng mới', birthday: 'Sinh nhật' };
+const AUDIENCE = { all: 'Mọi khách', newUser: 'Khách mới', birthday: 'Sinh nhật' };
+const AUDIENCE_HINT = {
+    all: 'Voucher hiện ở mục "Voucher có thể nhận" của trang Voucher, khách bấm "Nhận" là có.',
+    newUser:
+        'Khách tạo tài khoản trong 30 ngày và chưa mua đơn nào sẽ được tặng. Lưu xong là tặng luôn cho khách đang đủ điều kiện. Khách không cần bấm nhận: voucher hiện thẳng ở mục "Voucher của bạn".',
+    birthday:
+        'Mỗi năm tặng một lần, đúng ngày sinh nhật khách đã khai trong tài khoản. Khách không cần bấm nhận: voucher hiện thẳng ở mục "Voucher của bạn".'
+};
 const SCOPE = { all: 'Toàn bộ', newProduct: 'Sản phẩm mới', category: 'Theo danh mục', product: 'Theo sản phẩm' };
 const TIME = {
     upcoming: ['Sắp diễn ra', 'status-pending'],
@@ -32,17 +39,19 @@ function render() {
                   const sold = voucher.totalQuantity && voucher.claimedCount >= voucher.totalQuantity;
                   return `
         <tr data-id="${voucher.id}">
-            <td><b>${escapeHtml(voucher.code)}</b><small class="muted block">${escapeHtml(voucher.name)}</small><small class="muted block">${AUDIENCE[voucher.audience]}${voucher.claimable ? ' · trong Kho voucher' : ' · tự tặng'}</small></td>
+            <td><b>${escapeHtml(voucher.code)}</b><small class="muted block">${escapeHtml(voucher.name)}</small><small class="muted block">${AUDIENCE[voucher.audience]}${voucher.claimable ? ' · khách tự nhận' : ' · hệ thống tự tặng'}</small></td>
             <td>${voucher.type === 'percent' ? `${voucher.value}% <small class="muted block">tối đa ${formatPrice(voucher.maxDiscount)}</small>` : formatPrice(voucher.value)}<small class="muted block">${voucher.kind === 'shipping' ? 'Phí vận chuyển' : 'Đơn hàng'}</small></td>
             <td>${voucher.minOrder ? `Từ ${formatPrice(voucher.minOrder)}` : 'Không'}<small class="muted block">${SCOPE[voucher.scope]}</small></td>
             <td>${formatDate(voucher.startAt)}<small class="muted block">→ ${formatDate(voucher.endAt)}</small></td>
-            <td>${voucher.claimedCount}${voucher.totalQuantity ? ` / ${voucher.totalQuantity}` : ''} · ${voucher.usedCount}</td>
+            <td>${voucher.claimedCount}${voucher.totalQuantity ? ` / ${voucher.totalQuantity}` : ''}</td>
+            <td>${voucher.orderCount ?? 0} đơn${voucher.claimedCount ? `<small class="muted block">${Math.round(((voucher.usedCount || 0) / voucher.claimedCount) * 100)}% số đã nhận</small>` : ''}</td>
+            <td>${formatPrice(voucher.discountTotal || 0)}</td>
             <td><span class="status ${css}">${label}</span>${sold ? '<small class="muted block">Hết lượt</small>' : ''}</td>
             <td><span class="row-actions">${iconButton('edit', 'Sửa', { attrs: { 'data-action': 'edit' } })}${voucher.claimedCount ? '' : iconButton('trash', 'Xóa', { tone: 'danger', attrs: { 'data-action': 'delete' } })}</span></td>
         </tr>`;
               })
               .join('')
-        : '<tr><td colspan="7" class="muted">Chưa có voucher nào.</td></tr>';
+        : '<tr><td colspan="9" class="muted">Chưa có voucher nào.</td></tr>';
 }
 
 // Ẩn/hiện ô theo lựa chọn để admin không nhập điều kiện vô nghĩa (VD: voucher ship không chọn được phạm vi).
@@ -55,6 +64,8 @@ function syncForm(selected = []) {
     if (scopeLocked) field('scope').value = 'all';
     field('scope').disabled = scopeLocked;
     const scope = field('scope').value;
+    document.querySelector('#audienceHint').textContent = AUDIENCE_HINT[field('audience').value];
+    document.querySelector('#scopeHint').textContent = scopeLocked ? 'Voucher ship và voucher sinh nhật luôn áp dụng cho cả đơn.' : '';
     const box = document.querySelector('#scopeBox');
     box.classList.toggle('hidden', !['category', 'product'].includes(scope));
     if (scope === 'category' || scope === 'product') {
@@ -69,6 +80,29 @@ function syncForm(selected = []) {
     }
 }
 ['type', 'kind', 'audience', 'scope'].forEach((name) => field(name).addEventListener('change', () => syncForm()));
+
+// Câu tóm tắt để admin đọc lại trước khi lưu, và cảnh báo khi cấu hình dễ sai
+function showPreview() {
+    const value = Number(field('value').value);
+    const percent = field('type').value === 'percent';
+    const what = field('kind').value === 'shipping' ? 'phí ship' : 'tiền hàng';
+    const min = Number(field('minOrder').value || 0);
+    const max = Number(field('maxDiscount').value || 0);
+    const lines = [
+        `<b>Khách sẽ thấy:</b> Giảm ${percent ? `${value}%` : formatPrice(value)} ${what}${percent && max ? `, giảm tối đa ${formatPrice(max)}` : ''}${min ? `, cho đơn từ ${formatPrice(min)}` : ''}.`
+    ];
+    const start = Date.parse(fromLocalInput(field('startAt').value));
+    const end = Date.parse(fromLocalInput(field('endAt').value));
+    const auto = field('audience').value !== 'all';
+    const days = Number(field('validDays').value || 0);
+    if (end <= start) lines.push('<span class="error-message">Giờ kết thúc phải sau giờ bắt đầu.</span>');
+    else if (end - Date.now() < 86400000) lines.push('Chương trình kết thúc trong chưa đầy 1 ngày, khách có thể không kịp dùng.');
+    if (auto && days) lines.push(`Voucher tự tặng dùng được ${days} ngày kể từ ngày tặng (không quá giờ kết thúc chương trình).`);
+    if (!percent && min && value >= min) lines.push('Mức giảm đang bằng hoặc lớn hơn đơn tối thiểu, khách có thể mua đơn 0₫.');
+    document.querySelector('#preview').innerHTML = lines.join('<br>');
+}
+form.addEventListener('input', showPreview);
+form.addEventListener('change', showPreview);
 
 function openForm(voucher) {
     editing = voucher?.id ?? null;
@@ -102,6 +136,7 @@ function openForm(voucher) {
     document.querySelector('#formMessage').textContent = locked
         ? 'Voucher đã có người nhận: chỉ sửa được tên, ngày kết thúc, tổng số lượng và bật/tắt.'
         : '';
+    showPreview();
     form.classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -133,7 +168,9 @@ form.addEventListener('submit', async (event) => {
         const saved = editing ? await api.put(`/admin/vouchers/${editing}`, payload) : await api.post('/admin/vouchers', payload);
         vouchers = editing ? vouchers.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...vouchers];
         form.classList.add('hidden');
-        toast(`Đã lưu voucher ${saved.code}.`, { type: 'success' });
+        toast(`Đã lưu voucher ${saved.code}.${saved.granted ? ` Đã tặng ngay cho ${saved.granted} khách đủ điều kiện.` : ''}`, {
+            type: 'success'
+        });
         render();
     } catch (error) {
         document.querySelector('#formMessage').textContent = error.message;

@@ -7,6 +7,10 @@ export const SEPAY = {
     apiKey: process.env.SEPAY_API_KEY || 'dev-sepay-key'
 };
 
+// Nút "Đã chuyển khoản (demo)" để thử luồng thanh toán khi chưa nối SePay thật.
+// Mặc định bật khi chạy máy cá nhân, tắt khi NODE_ENV=production; đặt PAYMENT_DEMO=on/off để chọn thủ công.
+export const PAYMENT_DEMO = process.env.PAYMENT_DEMO ? process.env.PAYMENT_DEMO === 'on' : process.env.NODE_ENV !== 'production';
+
 if (!process.env.SEPAY_API_KEY) console.warn('[sepay] Chưa đặt SEPAY_API_KEY: đang dùng khóa thử "dev-sepay-key".');
 
 export const normalizeText = (value) =>

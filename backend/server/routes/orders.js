@@ -15,11 +15,11 @@ import {
     parseCancelReason,
     parseOrderOptions
 } from '../core/rules.js';
-import { paymentInfo } from '../services/sepay.js';
+import { PAYMENT_DEMO, paymentInfo } from '../services/sepay.js';
 import { logStock } from '../services/inventory.js';
 import { quote, walletFor } from '../services/pricing.js';
 import { consumeVouchers } from '../services/vouchers.js';
-import { approveCancelRequest, cancelOrder, markPaid, publicOrder, setStatus, sweepExpired } from '../services/orders.js';
+import { approveCancelRequest, cancelOrder, markDelivered, markPaid, publicOrder, setStatus, sweepExpired } from '../services/orders.js';
 import { sendAutoInvoice, sendInvoiceMail } from '../services/order-mail.js';
 import { getShop } from '../services/settings.js';
 
@@ -158,8 +158,38 @@ router.get(
             ...paymentInfo(order),
             paymentStatus: order.paymentStatus,
             status: order.status,
-            expiresAt: order.payExpiresAt || null
+            expiresAt: order.payExpiresAt || null,
+            demo: PAYMENT_DEMO
         });
+    })
+);
+
+// Demo: khách bấm "Đã chuyển khoản" thì coi như SePay đã báo tiền về đúng số tiền của đơn.
+// Chỉ chủ đơn dùng được, và chỉ khi PAYMENT_DEMO đang bật.
+router.post(
+    '/:id/demo-pay',
+    handle((req, res) => {
+        if (!PAYMENT_DEMO) fail(403, 'Chế độ thanh toán demo đang tắt.');
+        const order = findOrder(req.params.id, req.user);
+        if (!isOwner(req.user, order)) fail(403, 'Chỉ chủ đơn hàng mới dùng được.');
+        if (order.paymentMethod !== 'sepay') fail(400, 'Đơn hàng này không thanh toán qua chuyển khoản.');
+        if (order.status === 'cancelled') fail(409, 'Đơn đã bị hủy.');
+        if (order.paymentStatus !== 'unpaid') fail(409, 'Đơn này đã được ghi nhận thanh toán.');
+        const autoConfirmed = markPaid(order, { by: 'Demo', note: 'Khách bấm "Đã chuyển khoản" (chế độ demo)' });
+        db.payments.push({
+            id: newId(),
+            txId: `demo-${newId()}`,
+            amount: order.total,
+            content: `${order.code} (demo)`,
+            orderCode: order.code,
+            receivedAt: new Date().toISOString(),
+            result: 'paid',
+            demo: true,
+            autoConfirmed
+        });
+        save();
+        sendAutoInvoice(order, { autoConfirmed });
+        res.json(publicOrder(order));
     })
 );
 
@@ -173,12 +203,9 @@ router.post(
         const quantities = parseItems(req.body.items);
         const address =
             (user.addresses || []).find((item) => item.id === req.body.addressId) || fail(400, 'Vui lòng chọn địa chỉ nhận hàng.');
-        // Địa chỉ lưu từ trước khi có quy tắc mới: bắt khách sửa lại trước khi đặt
-        if (!normalizePhone(address.phone) || addressProblem(address.address))
-            fail(
-                400,
-                `Địa chỉ nhận hàng chưa đúng quy định, hãy sửa lại trong Sổ địa chỉ. ${addressProblem(address.address) || 'Số điện thoại cần là số di động Việt Nam.'}`
-            );
+        // Địa chỉ lưu từ trước, thiếu tỉnh/phường/số nhà: bắt khách sửa lại trước khi đặt
+        const problem = !normalizePhone(address.phone) ? 'Số điện thoại cần là số di động Việt Nam.' : addressProblem(address);
+        if (problem) fail(400, `Địa chỉ nhận hàng chưa đủ thông tin, hãy sửa lại trong Sổ địa chỉ. ${problem}`);
         const customer = {
             fullName: address.fullName,
             phone: address.phone,
@@ -314,21 +341,23 @@ router.patch(
             }
             if (order.cancelRequest?.status === 'pending')
                 Object.assign(order.cancelRequest, { status: 'approved', decidedAt: order.updatedAt, decidedBy: req.user.name });
+        } else if (next === 'delivered') {
+            // Khách bấm "Đã nhận được hàng" hoặc nhân viên xác nhận đã giao (COD coi như đã thu tiền, gửi email cảm ơn)
+            markDelivered(order, req.user.name, actor === 'customer' ? 'Khách xác nhận đã nhận được hàng' : undefined);
         } else {
             setStatus(order, next, req.user.name);
-            if (next === 'delivered' && order.paymentMethod === 'cod') {
-                order.paymentStatus = 'paid';
-                order.paidAt = order.updatedAt;
-            }
         }
         save();
         res.json(publicOrder(order));
     })
 );
 
-// Gửi hóa đơn của đơn về email đặt hàng. Nội dung dựng từ dữ liệu đơn trên server; mỗi đơn tối đa 3 lần mỗi giờ để không bị lạm dụng gửi thư.
+// Gửi lại hóa đơn về email khách (nút trong trang Quản lý đơn hàng).
+// Khách không cần nút này: hóa đơn tự gửi khi đặt đơn COD hoặc khi đã nhận tiền chuyển khoản.
+// Chỉ nhân viên, chủ cửa hàng, admin (quyền orders.manage). Nội dung dựng từ dữ liệu đơn trên server; mỗi đơn tối đa 3 lần mỗi giờ.
 router.post(
     '/:id/invoice-email',
+    requirePermission('orders.manage'),
     handle(async (req, res) => {
         const order = findOrder(req.params.id, req.user);
         if (order.status === 'cancelled') fail(409, 'Đơn đã hủy nên không có hóa đơn.');

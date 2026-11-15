@@ -47,7 +47,14 @@ function readToken(token) {
     return data.exp > Date.now() ? data : null;
 }
 
-export const publicUser = ({ id, name, email, role, avatar }) => ({ id, name, email, role, avatar });
+export const publicUser = ({ id, name, email, role, avatar, birthday }) => ({
+    id,
+    name,
+    email,
+    role,
+    avatar,
+    birthday
+});
 
 export { sign as signValue };
 

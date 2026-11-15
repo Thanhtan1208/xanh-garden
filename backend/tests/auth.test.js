@@ -31,13 +31,60 @@ describe('Ảnh đại diện', () => {
         assert.ok(existsSync(fileOf(second.body.avatar)));
     });
 
-    test('từ chối tệp giả ảnh, ảnh quá 2 MB, chưa đăng nhập và tài khoản không phải khách', async () => {
+    test('từ chối tệp giả ảnh, ảnh quá 2 MB, và chưa đăng nhập', async () => {
         const { token } = await newCustomer(ctx);
         assert.equal((await upload(token, Buffer.from('day-khong-phai-la-anh-that'))).status, 400);
         const big = Buffer.concat([PNG, Buffer.alloc(2 * 1024 * 1024 + 1)]);
         assert.equal((await upload(token, big)).status, 413);
         assert.equal((await upload(undefined)).status, 401);
-        assert.equal((await upload(await login(ctx, 'admin'))).status, 403);
+    });
+
+    test('nhân viên, chủ shop và admin cũng đổi được ảnh đại diện', async () => {
+        for (const role of ['admin']) assert.equal((await upload(await login(ctx, role))).status, 201, role);
+    });
+});
+
+describe('Sửa hồ sơ cá nhân', () => {
+    const patch = (token, body) => call(ctx, 'PATCH', '/auth/profile', { token, body });
+
+    test('khách đổi được tên đăng nhập, họ tên, ngày sinh; tên trùng bị chặn', async () => {
+        const a = await newCustomer(ctx);
+        const b = await newCustomer(ctx);
+        const ok = await patch(a.token, { name: 'ten.moi01', birthday: '1999-05-20' });
+        assert.equal(ok.status, 200, JSON.stringify(ok.body));
+        assert.equal(ok.body.name, 'ten.moi01');
+        assert.equal(ok.body.birthday, '1999-05-20');
+        assert.equal(
+            (await call(ctx, 'GET', '/auth/me', { token: a.token })).body.name,
+            'ten.moi01',
+            'token cũ vẫn dùng được sau khi đổi tên'
+        );
+        assert.equal((await login(ctx, 'ten.moi01')) !== undefined, true, 'đăng nhập được bằng tên mới');
+        assert.equal((await patch(b.token, { name: 'TEN.MOI01' })).status, 409, 'trùng tên (không phân biệt hoa thường)');
+        assert.equal((await patch(b.token, { name: 'a b' })).status, 400);
+        assert.equal((await patch(b.token, { birthday: '2999-01-01' })).status, 400);
+        assert.equal((await patch(a.token, { birthday: '' })).body.birthday, undefined, 'để trống = xóa ngày sinh');
+    });
+
+    test('nhân viên, chủ shop, admin tự sửa hồ sơ của mình; chưa đăng nhập thì không được', async () => {
+        const admin = await login(ctx, 'admin');
+        for (const role of ['staff', 'owner']) {
+            const account = await newCustomer(ctx);
+            await call(ctx, 'PATCH', `/admin/users/${account.user.id}/role`, { token: admin, body: { role } });
+            const token = await login(ctx, account.name);
+            const done = await patch(token, { birthday: '1990-01-15' });
+            assert.equal(done.status, 200, `${role}: ${JSON.stringify(done.body)}`);
+            assert.equal(done.body.role, role, 'không đổi được vai trò qua hồ sơ');
+        }
+        assert.equal((await patch(undefined, { birthday: '1990-01-15' })).status, 401);
+    });
+
+    test('không tự nâng quyền hay đổi email qua hồ sơ', async () => {
+        const { token, user } = await newCustomer(ctx);
+        const done = await patch(token, { role: 'admin', email: 'khac@test.vn', birthday: '1990-01-15' });
+        assert.equal(done.status, 200);
+        assert.equal(done.body.role, 'user');
+        assert.equal(done.body.email, user.email);
     });
 });
 

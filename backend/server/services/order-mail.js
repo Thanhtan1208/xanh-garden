@@ -97,3 +97,46 @@ export function sendAutoInvoice(order, { autoConfirmed = false } = {}) {
         console.error('[mail] Không gửi được hóa đơn', order.code, error.message)
     );
 }
+
+// Email cảm ơn khi đơn đã giao xong. Mỗi đơn chỉ gửi một lần (order.thanksSent).
+function thanksMail(order, shop) {
+    const name = order.customer.fullName;
+    const items = order.items.map((item) => `- ${item.name} x ${item.qty}`);
+    const text = [
+        `Xin chào ${name},`,
+        '',
+        `Đơn hàng ${order.code} đã được giao thành công. Cảm ơn bạn đã mua hàng tại ${shop.name}!`,
+        '',
+        ...items,
+        `Tổng thanh toán: ${money(order.total)}`,
+        '',
+        'Nếu cây khỏe và bạn hài lòng, mời bạn vào "Đơn hàng của tôi" để đánh giá sản phẩm, đánh giá của bạn giúp người mua sau chọn dễ hơn.',
+        'Nếu có vấn đề với đơn hàng, bạn cứ gửi góp ý trên website, cửa hàng sẽ hỗ trợ.',
+        '',
+        `${shop.name} · Hotline ${shop.hotline}`
+    ].join('\n');
+    const html = `<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;padding:24px 12px;background:#f3f5f2;font-family:Arial,Helvetica,sans-serif;color:#222222;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e1e5df;border-radius:8px;">
+<tr><td style="padding:20px 24px;border-bottom:3px solid #2e7d32;"><div style="font-size:18px;font-weight:bold;color:#2e7d32;">${esc(shop.name)}</div></td></tr>
+<tr><td style="padding:20px 24px;font-size:14px;line-height:1.7;">
+<p style="margin:0 0 10px;">Xin chào <b>${esc(name)}</b>,</p>
+<p style="margin:0 0 10px;">Đơn hàng <b>${esc(order.code)}</b> đã được giao thành công. Cảm ơn bạn đã mua hàng tại ${esc(shop.name)}!</p>
+<ul style="margin:0 0 10px;padding-left:20px;">${order.items.map((item) => `<li>${esc(item.name)} x ${esc(item.qty)}</li>`).join('')}</ul>
+<p style="margin:0 0 10px;">Tổng thanh toán: <b>${esc(money(order.total))}</b></p>
+<p style="margin:0 0 10px;">Nếu cây khỏe và bạn hài lòng, mời bạn vào "Đơn hàng của tôi" để đánh giá sản phẩm. Đánh giá của bạn giúp người mua sau chọn dễ hơn.</p>
+<p style="margin:0;">Nếu có vấn đề với đơn hàng, bạn cứ gửi góp ý trên website, cửa hàng sẽ hỗ trợ.</p>
+</td></tr>
+<tr><td style="padding:12px 24px 20px;font-size:12px;color:#777777;">${esc(shop.name)} · Hotline ${esc(shop.hotline)}</td></tr>
+</table></body></html>`;
+    return { subject: `Cảm ơn bạn đã mua hàng - đơn ${order.code}`, text, html };
+}
+
+// Gửi ở nền như hóa đơn: lỗi gửi mail chỉ ghi log
+export function sendThanksMail(order) {
+    if (!order.customer?.email || order.thanksSent) return;
+    order.thanksSent = true;
+    sendMail({ to: order.customer.email, ...thanksMail(order, getShop()) }).catch((error) =>
+        console.error('[mail] Không gửi được email cảm ơn', order.code, error.message)
+    );
+}

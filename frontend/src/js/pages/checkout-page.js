@@ -1,11 +1,13 @@
+import { bindDivisions } from '../components/division-select.js';
 import { api } from '../services/api-service.js';
-import { cartReady, clearCart, getCart } from '../services/cart-service.js';
+import { cartReady, removeFromCart, selectedCart } from '../services/cart-service.js';
 import { updateCartBadge } from '../components/header.js';
 import { requireCustomer } from '../utils/auth.js';
 import { escapeHtml, formatDate, formatPrice, shippingFee } from '../utils/format.js';
 import { RULES } from '../config/shop.js';
 import { icon, iconButton } from '../utils/icons.js';
 import { productImage } from '../utils/images.js';
+import { ADDRESS_UPDATE_NOTE, addressNeedsUpdate, checkRequired } from '../utils/validate.js';
 import { confirmDialog, infoDialog, toast } from '../components/notify.js';
 import { trackCheckoutStart } from '../services/tracker.js';
 
@@ -17,10 +19,18 @@ const addressForm = document.querySelector('#addressForm');
 const addressMessage = document.querySelector('#addressMessage');
 const voucherList = document.querySelector('#voucherList');
 const voucherMessage = document.querySelector('#voucherMessage');
-const addressField = { name: '#addrName', phone: '#addrPhone', address: '#addrAddress', isDefault: '#addrDefault' };
+const addressField = {
+    name: '#addrName',
+    phone: '#addrPhone',
+    province: '#addrProvince',
+    ward: '#addrWard',
+    street: '#addrStreet',
+    isDefault: '#addrDefault'
+};
 
 let items = [];
 let addresses = [];
+let divisions = null; // ô chọn phường/xã và tỉnh/thành, có sau khi tải xong danh sách
 let selectedId = null;
 let editingId = null;
 let quote = null; // kết quả tính giá mới nhất từ server (nguồn sự thật)
@@ -85,7 +95,8 @@ const voucherText = (voucher) =>
 
 function renderVouchers() {
     if (!wallet.length) {
-        voucherList.innerHTML = '<p class="muted">Bạn chưa có voucher nào dùng được. Nhập mã ở trên hoặc nhận thêm ở Kho voucher.</p>';
+        voucherList.innerHTML =
+            '<p class="muted">Bạn chưa có voucher nào dùng được. Nhập mã ở trên hoặc nhận thêm ở trang <a href="./vouchers.html">Voucher</a>.</p>';
         return;
     }
     voucherList.innerHTML = wallet
@@ -189,6 +200,7 @@ function renderAddresses() {
             <span>
                 <b>${escapeHtml(item.fullName)} · ${escapeHtml(item.phone)} ${item.isDefault ? '<em class="tag tag-praise">Mặc định</em>' : ''}</b>
                 <small>${escapeHtml(item.address)}</small>
+                ${addressNeedsUpdate(item) ? `<small class="address-warning">${ADDRESS_UPDATE_NOTE}</small>` : ''}
                 <span class="address-actions">
                     ${iconButton('edit', 'Sửa địa chỉ', { attrs: { 'data-action': 'edit' } })}
                     ${item.isDefault ? '' : iconButton('star', 'Đặt làm mặc định', { attrs: { 'data-action': 'default' } })}
@@ -206,12 +218,19 @@ function openAddressForm(entry) {
     document.querySelector('#addressFormTitle').textContent = entry ? 'Sửa địa chỉ' : 'Địa chỉ mới';
     input('name').value = entry?.fullName ?? '';
     input('phone').value = entry?.phone ?? '';
-    input('address').value = entry?.address ?? '';
+    divisions?.set(entry);
+    input('street').value = entry?.street ?? '';
     input('isDefault').checked = entry?.isDefault ?? addresses.length === 0;
+    addressForm.querySelectorAll('.invalid').forEach((item) => item.classList.remove('invalid'));
     addressMessage.textContent = '';
     addressForm.classList.remove('hidden');
     input('name').focus();
 }
+
+// Chọn tỉnh/thành trước, rồi phường/xã thuộc tỉnh đó
+bindDivisions(input('province'), input('ward')).then((bound) => {
+    divisions = bound;
+});
 
 const closeAddressForm = () => addressForm.classList.add('hidden');
 
@@ -222,9 +241,22 @@ document.querySelector('#saveAddressBtn').addEventListener('click', async () => 
     const data = {
         fullName: input('name').value.trim(),
         phone: input('phone').value.trim(),
-        address: input('address').value.trim(),
+        ...divisions?.value(), // tỉnh/thành và phường/xã đã chọn
+        street: input('street').value.trim(),
         isDefault: input('isDefault').checked
     };
+    // Bắt buộc đủ các mục, thiếu mục nào thì tô đỏ mục đó
+    const filled = checkRequired(
+        [
+            [input('name'), 'Tên người nhận', !data.fullName],
+            [input('phone'), 'Số điện thoại', !data.phone],
+            [input('province'), 'Tỉnh/Thành phố', !data.province],
+            [input('ward'), 'Phường/Xã', !data.ward],
+            [input('street'), 'Số nhà, tên đường', !data.street]
+        ],
+        addressMessage
+    );
+    if (!filled) return;
     try {
         addresses = editingId ? await api.put(`/addresses/${editingId}`, data) : await api.post('/addresses', data);
         if (!editingId) selectedId = addresses[addresses.length - 1].id;
@@ -269,6 +301,14 @@ form.addEventListener('submit', async (event) => {
         toast('Vui lòng chọn hoặc thêm địa chỉ nhận hàng.', { type: 'error' });
         return;
     }
+    // Địa chỉ cũ thiếu thông tin: mở form sửa ngay thay vì để server từ chối
+    const chosen = addresses.find((item) => item.id === selectedId);
+    if (addressNeedsUpdate(chosen)) {
+        toast('Địa chỉ nhận hàng cần cập nhật trước khi đặt hàng.', { type: 'error' });
+        openAddressForm(chosen);
+        addressMessage.textContent = ADDRESS_UPDATE_NOTE;
+        return;
+    }
 
     submitButton.disabled = true;
     const fresh = await refreshQuote(); // luôn chốt theo giá mới nhất của server trước khi đặt
@@ -310,7 +350,8 @@ form.addEventListener('submit', async (event) => {
             paymentMethod: field('paymentMethod').value,
             voucherIds: [...selectedVouchers]
         });
-        clearCart();
+        // Chỉ bỏ khỏi giỏ những món vừa đặt; món chưa chọn vẫn nằm lại trong giỏ
+        items.forEach((item) => removeFromCart(item.id));
         updateCartBadge();
         window.location.assign(`./order-success.html?code=${encodeURIComponent(order.code)}`);
     } catch (error) {
@@ -329,7 +370,7 @@ async function initialize() {
     if (!user) return;
 
     await cartReady;
-    const cart = getCart();
+    const cart = selectedCart(); // chỉ những món được tích ở giỏ hàng
     if (!cart.length) {
         window.location.replace('./cart.html');
         return;

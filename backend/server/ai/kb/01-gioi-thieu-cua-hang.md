@@ -11,18 +11,20 @@ Xanh Garden là cửa hàng cây cảnh trực tuyến. Cửa hàng bán cây đ
 - **Chậu và phụ kiện**: chậu sứ trắng, chậu xi măng vân đá, đất trồng hữu cơ 2kg.
 
 ## Các trang chính của website
-- **Trang chủ**: banner theo sự kiện, danh mục, sản phẩm bán chạy trong tháng, hàng mới về, chính sách.
-- **Sản phẩm**: xem toàn bộ sản phẩm, lọc theo danh mục, khoảng giá, còn hàng; tìm kiếm; sắp xếp theo giá, tên hoặc mới nhất; xem dạng lưới hoặc dạng danh sách.
-- **Chi tiết sản phẩm**: thông số, hướng dẫn chăm sóc, đánh giá của khách đã mua, sản phẩm liên quan.
-- **Giỏ hàng**: lưu theo tài khoản, đăng nhập ở máy khác vẫn còn.
-- **Thanh toán**: chọn địa chỉ, phương thức vận chuyển, phương thức thanh toán, chọn voucher.
-- **Đơn hàng của tôi**: xem trạng thái, hủy đơn (khi còn được hủy), mua lại.
-- **Ví voucher**: nhận voucher, xem voucher đang có, khai ngày sinh để nhận quà sinh nhật.
-- **Góp ý**: gửi góp ý hoặc khiếu nại cho cửa hàng.
+- **Trang chủ** (./index.html): banner theo sự kiện, danh mục, sản phẩm bán chạy trong tháng, hàng mới về, chính sách.
+- **Sản phẩm** (./products.html): một trang cho tất cả sản phẩm và từng danh mục. Cột trái lọc theo danh mục, khoảng giá, "Đang giảm giá"; ô tìm kiếm sản phẩm nằm trên đầu trang này (các trang khác không có); sắp xếp bằng các nút Nổi bật, Bán chạy, Hàng mới về, Giá thấp → cao, Giá cao → thấp.
+- **Chi tiết sản phẩm**: giá, tồn kho, thông số, hướng dẫn chăm sóc, đánh giá của khách đã mua, sản phẩm tương tự; nút "Thêm vào giỏ" và "Mua ngay".
+- **Giỏ hàng** (./cart.html): lưu theo tài khoản; tích chọn món muốn mua rồi bấm "Mua hàng".
+- **Thanh toán** (./checkout.html): chọn địa chỉ, cách giao, cách thanh toán, voucher rồi "Xác nhận đặt hàng".
+- **Đơn hàng của tôi** (./my-orders.html): xem trạng thái, thanh toán, hủy hoặc yêu cầu hủy, "Đã nhận được hàng", đánh giá, mua lại, xuất hóa đơn.
+- **Voucher** (./vouchers.html): một trang gồm "Voucher của bạn" (đang dùng được, kể cả quà khách mới và sinh nhật), "Voucher có thể nhận" (bấm "Nhận") và mục thu gọn "Đã dùng / hết hạn".
+- **Tài khoản của tôi** (./account.html): thông tin cá nhân, ảnh đại diện, sổ địa chỉ, sản phẩm yêu thích, đổi mật khẩu.
+- **Góp ý** (./feedback.html): gửi góp ý, khiếu nại, khen ngợi cho cửa hàng.
+- **Cẩm nang** (./info.html): chính sách mua hàng, đổi trả, chăm sóc cây, chọn cây, hỏi đáp.
 
 ## Tài khoản
 Khách cần đăng ký tài khoản bằng tên đăng nhập, email và mật khẩu mạnh, sau đó xác minh email bằng mã 6 số. Chỉ khi đăng nhập mới đặt hàng được. Địa chỉ giao hàng, giỏ hàng, lịch sử mua và voucher đều gắn với tài khoản.
 Quên mật khẩu: vào trang Đăng nhập, chọn quên mật khẩu, nhập email để nhận mã đặt lại.
 
 ## Điều chatbot không làm
-Chatbot không đặt hàng hộ, không đổi trạng thái đơn, không hoàn tiền. Khi cần các việc này khách dùng trang tương ứng hoặc gửi góp ý/khiếu nại cho cửa hàng.
+Chatbot chỉ tư vấn và hướng dẫn, KHÔNG thao tác thay khách: không đặt hàng, không thêm vào giỏ, không hủy hay sửa đơn, không thanh toán hay hoàn tiền, không áp hay tặng voucher, không đổi giá, không sửa tài khoản, không xem số dư ngân hàng. Khi khách nhờ làm các việc này, chatbot nói rõ là không làm được và chỉ từng bước để khách tự làm trên website.

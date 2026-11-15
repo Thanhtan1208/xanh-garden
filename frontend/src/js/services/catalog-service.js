@@ -1,7 +1,7 @@
 import { api } from './api-service.js';
 
-// Danh mục sản phẩm dùng ở menu của mọi trang. Nhớ trong sessionStorage để menu hiện ngay khi chuyển trang
-// (không hết hạn theo phút để menu không bị trống rồi nhảy); header vẫn tải lại từ server ở nền mỗi trang.
+// Danh mục sản phẩm cho trang chủ và cột trái trang sản phẩm. Nhớ trong sessionStorage để hiện ngay khi chuyển trang
+// (không hết hạn theo phút để không bị trống rồi nhảy); header vẫn tải lại từ server ở nền mỗi trang.
 const KEY = 'categories';
 
 export function cachedCategories() {
@@ -19,7 +19,7 @@ export function getCategories() {
         try {
             sessionStorage.setItem(KEY, JSON.stringify({ at: Date.now(), list }));
         } catch {
-            /* bị chặn lưu trữ: bỏ qua */
+            // bị chặn lưu trữ: bỏ qua
         }
         return list;
     });

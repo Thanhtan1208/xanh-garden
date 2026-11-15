@@ -34,7 +34,7 @@ function sessionId() {
         if (last && Date.now() - last > SESSION_IDLE_MS) sessionStorage.removeItem('xg_sid');
         sessionStorage.setItem('xg_last', String(Date.now()));
     } catch {
-        /* bỏ qua */
+        // bỏ qua
     }
     return stored(sessionStorage, 'xg_sid', randomId);
 }
@@ -56,7 +56,7 @@ function send(event) {
         keepalive: true,
         body: JSON.stringify({ events: [{ v: visitorId, s: sessionId(), dev: device, ...event }] })
     }).catch(() => {
-        /* theo dõi lỗi không được làm hỏng trang */
+        // theo dõi lỗi không được làm hỏng trang
     });
 }
 
@@ -69,7 +69,7 @@ export function trackOrderOnce(code) {
         if (sessionStorage.getItem(`xg_ord_${code}`)) return;
         sessionStorage.setItem(`xg_ord_${code}`, '1');
     } catch {
-        /* bỏ qua */
+        // bỏ qua
     }
     send({ type: 'order', page });
 }

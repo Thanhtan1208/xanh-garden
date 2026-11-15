@@ -2,26 +2,25 @@ import { api } from '../services/api-service.js';
 import { getCurrentUser } from '../utils/auth.js';
 import { isManagementRole } from '../utils/permissions.js';
 import { escapeHtml, formatDate, formatPrice } from '../utils/format.js';
-import { icon } from '../utils/icons.js';
 import { toast } from '../components/notify.js';
 import '../components/header.js';
 
+// Một trang duy nhất: Voucher của bạn → Voucher có thể nhận → Đã dùng / hết hạn (thu gọn)
 const box = document.querySelector('#voucherBox');
-const tabs = document.querySelector('#voucherTabs');
 const birthdayBox = document.querySelector('#birthdayBox');
 const user = getCurrentUser();
+const isCustomer = Boolean(user) && !isManagementRole(user);
 
-let tab = 'hall';
 let hall = [];
 let wallet = [];
 let birthday = null;
 
-const SOURCE = { claim: 'Đã nhận', newUser: 'Quà người dùng mới', birthday: 'Quà sinh nhật' };
-const STATUS = {
-    available: ['Còn dùng được', 'status-delivered'],
-    used: ['Đã dùng', 'status-confirmed'],
-    expired: ['Hết hạn', 'status-cancelled']
-};
+// Chỉ ghi nguồn cho quà tặng; voucher tự bấm nhận thì không cần nhãn
+const SOURCE = { newUser: 'Quà người dùng mới', birthday: 'Quà sinh nhật' };
+const sourceTag = (row) => (SOURCE[row.source] ? `<small>${SOURCE[row.source]}</small>` : '');
+const DONE = { used: ['Đã dùng', 'status-confirmed'], expired: ['Hết hạn', 'status-cancelled'] };
+// Voucher đã có trong ví: hạn dùng theo ví, không hiện "Còn x lượt nhận" của kho
+const owned = (row) => ({ ...row.voucher, endAt: row.expiresAt, remaining: null });
 
 function scopeText(voucher) {
     if (voucher.scope === 'newProduct') return 'Chỉ sản phẩm mới';
@@ -30,7 +29,7 @@ function scopeText(voucher) {
     return 'Toàn bộ sản phẩm';
 }
 
-// Một thẻ voucher: bên trái là mức giảm, bên phải là điều kiện và nút hành động.
+// Một thẻ voucher: bên trái là mức giảm, bên phải là điều kiện và nút hành động
 function card(voucher, { action = '', extra = '', state = '' } = {}) {
     return `
         <article class="voucher-ticket${state ? ` ${state}` : ''}">
@@ -49,72 +48,84 @@ function card(voucher, { action = '', extra = '', state = '' } = {}) {
         </article>`;
 }
 
-function renderHall() {
-    if (!hall.length) {
-        box.innerHTML = '<div class="empty-state"><h2>Hiện chưa có voucher nào để nhận</h2><p>Hãy quay lại sau nhé.</p></div>';
-        return;
-    }
-    box.innerHTML = hall
-        .map((voucher) =>
-            card(voucher, {
-                state: voucher.claimed ? 'claimed' : '',
-                action: voucher.claimed
-                    ? `<span class="status status-delivered">${icon('check', { size: 14 })} Đã nhận</span>`
-                    : `<button type="button" class="btn btn-sm" data-claim="${voucher.id}">Nhận</button>`
-            })
-        )
-        .join('');
+const heading = (title, count = 0) => `<h2 class="voucher-heading">${title}${count ? ` (${count})` : ''}</h2>`;
+const note = (html) => `<p class="voucher-note muted">${html}</p>`;
+
+// Voucher còn dùng được (cả quà tặng tự vào ví); sắp hết hạn xếp trước
+function mineHtml() {
+    if (!user) return heading('Voucher của bạn') + note('<a href="./login.html" data-login>Đăng nhập</a> để nhận và xem voucher của bạn.');
+    if (!isCustomer) return '';
+    const rows = wallet
+        .filter((row) => row.voucher && row.status === 'available')
+        .sort((a, b) => Date.parse(a.expiresAt) - Date.parse(b.expiresAt));
+    if (!rows.length) return heading('Voucher của bạn') + note('Bạn chưa có voucher nào. Bấm "Nhận" ở danh sách bên dưới.');
+    const cards = rows.map((row) => {
+        // Còn dưới 3 ngày thì nhắc rõ để khách dùng kịp
+        const daysLeft = Math.ceil((Date.parse(row.expiresAt) - Date.now()) / 86400000);
+        const soon = daysLeft <= 3 ? `<small class="error-message">Sắp hết hạn: còn ${daysLeft} ngày</small>` : '';
+        return card(owned(row), {
+            extra: `${sourceTag(row)}${soon}`,
+            action: '<a class="btn btn-sm" href="./cart.html">Dùng ngay</a>'
+        });
+    });
+    return heading('Voucher của bạn', rows.length) + cards.join('');
 }
 
-function renderWallet() {
-    if (!user) {
-        box.innerHTML =
-            '<div class="empty-state"><h2>Đăng nhập để xem ví voucher</h2><a class="btn" href="./login.html">Đăng nhập</a></div>';
-        return;
-    }
-    const rows = wallet.filter((row) => row.voucher);
-    if (!rows.length) {
-        box.innerHTML = '<div class="empty-state"><h2>Ví voucher đang trống</h2><p>Nhận voucher ở tab Kho voucher.</p></div>';
-        return;
-    }
-    box.innerHTML = rows
-        .map((row) => {
-            const [label, css] = STATUS[row.status];
-            return card(
-                { ...row.voucher, endAt: row.expiresAt },
-                {
-                    state: row.status === 'available' ? '' : 'disabled',
-                    extra: `<small>${SOURCE[row.source] || 'Voucher'}</small>`,
-                    action: `<span class="status ${css}">${label}</span>${row.status === 'available' ? '<a class="btn btn-sm btn-outline" href="./cart.html">Dùng ngay</a>' : ''}`
-                }
-            );
-        })
-        .join('');
+// Voucher ai cũng nhận được; cái đã nhận nằm ở mục trên nên không lặp lại
+function hallHtml() {
+    const open = hall.filter((voucher) => !voucher.claimed);
+    if (!open.length)
+        return (
+            heading('Voucher có thể nhận') +
+            note(hall.length ? 'Bạn đã nhận hết voucher đang có.' : 'Hiện chưa có voucher nào để nhận, hãy quay lại sau nhé.')
+        );
+    const cards = open.map((voucher) =>
+        card(voucher, { action: `<button type="button" class="btn btn-sm" data-claim="${voucher.id}">Nhận</button>` })
+    );
+    return heading('Voucher có thể nhận', open.length) + cards.join('');
+}
+
+function historyHtml() {
+    const rows = wallet.filter((row) => row.voucher && row.status !== 'available');
+    if (!rows.length) return '';
+    const cards = rows.map((row) => {
+        const [label, css] = DONE[row.status] || DONE.expired;
+        return card(owned(row), {
+            state: 'disabled',
+            extra: sourceTag(row),
+            action: `<span class="status ${css}">${label}</span>`
+        });
+    });
+    return `<details class="voucher-history"><summary>Đã dùng / hết hạn (${rows.length})</summary><div class="voucher-grid">${cards.join('')}</div></details>`;
 }
 
 function render() {
-    tabs.querySelectorAll('.tab').forEach((button) => button.classList.toggle('active', button.dataset.tab === tab));
-    birthdayBox.classList.toggle('hidden', !(tab === 'wallet' && user && !isManagementRole(user) && !birthday));
-    if (tab === 'hall') renderHall();
-    else renderWallet();
+    birthdayBox.classList.toggle('hidden', !(isCustomer && !birthday));
+    // Giữ mục lịch sử đang mở khi vẽ lại
+    const historyOpen = box.querySelector('.voucher-history')?.open;
+    box.innerHTML = mineHtml() + hallHtml() + historyHtml();
+    if (historyOpen) box.querySelector('.voucher-history').open = true;
 }
 
-tabs.addEventListener('click', (event) => {
-    const button = event.target.closest('.tab');
-    if (!button) return;
-    tab = button.dataset.tab;
-    render();
-});
+// Đăng nhập xong quay lại trang này
+function goLogin() {
+    sessionStorage.setItem('redirectAfterLogin', 'vouchers.html');
+    window.location.assign('./login.html');
+}
 
 box.addEventListener('click', async (event) => {
+    if (event.target.closest('[data-login]')) {
+        event.preventDefault();
+        goLogin();
+        return;
+    }
     const button = event.target.closest('[data-claim]');
     if (!button) return;
     if (!user) {
-        sessionStorage.setItem('redirectAfterLogin', 'vouchers.html');
-        window.location.assign('./login.html');
+        goLogin();
         return;
     }
-    if (isManagementRole(user)) {
+    if (!isCustomer) {
         toast('Tài khoản quản lý không nhận voucher khách hàng.', { type: 'info' });
         return;
     }
@@ -123,8 +134,8 @@ box.addEventListener('click', async (event) => {
         const entry = await api.post('/vouchers/claim', { voucherId: button.dataset.claim });
         wallet.unshift(entry);
         hall = hall.map((voucher) => (voucher.id === button.dataset.claim ? { ...voucher, claimed: true } : voucher));
-        toast(`Đã nhận voucher “${entry.voucher.name}”. Xem ở tab Ví của tôi.`, { type: 'success' });
-        renderHall();
+        toast(`Đã nhận voucher “${entry.voucher.name}”, xem ở mục Voucher của bạn.`, { type: 'success' });
+        render(); // voucher vừa nhận chuyển lên mục trên
     } catch (error) {
         toast(error.message, { type: 'error' });
         button.disabled = false;
@@ -152,8 +163,7 @@ document.querySelector('#birthdayBtn').addEventListener('click', async () => {
 
 async function initialize() {
     document.querySelector('#birthdayInput').max = new Date().toISOString().slice(0, 10);
-    if (new URLSearchParams(window.location.search).get('tab') === 'wallet') tab = 'wallet';
-    const paths = user && !isManagementRole(user) ? ['/vouchers', '/vouchers/mine'] : ['/vouchers'];
+    const paths = isCustomer ? ['/vouchers', '/vouchers/mine'] : ['/vouchers'];
     try {
         // Có bản nhớ thì vẽ ngay, dữ liệu mới từ server về thì vẽ lại tại chỗ
         await api.load(paths, (hallData, mine) => {

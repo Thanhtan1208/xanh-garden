@@ -1,11 +1,14 @@
 import { byId, db, save } from '../core/store.js';
+import { AUTO_RECEIVE_DAYS } from '../core/rules.js';
 import { logStock } from './inventory.js';
 import { releaseVouchers } from './vouchers.js';
+import { sendThanksMail } from './order-mail.js';
 
 // Bản trả về client: không lộ dữ liệu nội bộ (bản băm mã xác nhận email của đơn cũ).
 export function publicOrder(order) {
     const { emailConfirm, ...rest } = order;
-    return rest;
+    const receiveBy = autoReceiveAt(order);
+    return receiveBy ? { ...rest, autoReceiveAt: new Date(receiveBy).toISOString() } : rest;
 }
 
 export function setStatus(order, status, by, note) {
@@ -15,11 +18,9 @@ export function setStatus(order, status, by, note) {
     order.history.push({ status, at: now, by, ...(note ? { note } : {}) });
 }
 
-/**
- * Ghi nhận đơn đã thanh toán (webhook SePay báo tiền về, hoặc admin ghi nhận tay).
- * Đơn trên 1 triệu đang "chờ thanh toán" (unconfirmed) được XÁC NHẬN TỰ ĐỘNG: chuyển sang "chờ cửa hàng xác nhận" (pending).
- * Trả về true nếu đơn vừa được xác nhận tự động.
- */
+// Ghi nhận đơn đã thanh toán (webhook SePay báo tiền về, hoặc admin ghi nhận tay).
+// Đơn trên 1 triệu đang "chờ thanh toán" (unconfirmed) được XÁC NHẬN TỰ ĐỘNG: chuyển sang "chờ cửa hàng xác nhận" (pending).
+// Trả về true nếu đơn vừa được xác nhận tự động.
 export function markPaid(order, { by, note }) {
     const now = new Date().toISOString();
     order.paymentStatus = 'paid';
@@ -51,6 +52,24 @@ export function cancelOrder(order, by) {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Đơn đã giao xong: khách bấm "Đã nhận được hàng", nhân viên xác nhận, hoặc hệ thống tự xác nhận quá hạn.
+// COD thì coi như đã thu tiền; gửi email cảm ơn (mỗi đơn một lần).
+export function markDelivered(order, by, note) {
+    setStatus(order, 'delivered', by, note);
+    if (order.paymentMethod === 'cod') {
+        order.paymentStatus = 'paid';
+        order.paidAt = order.updatedAt;
+    }
+    sendThanksMail(order);
+}
+
+// Thời điểm hệ thống tự xác nhận đã giao: N ngày sau lúc bắt đầu giao (null nếu đơn không đang giao)
+export function autoReceiveAt(order) {
+    if (order.status !== 'shipping') return null;
+    const started = [...(order.history || [])].reverse().find((entry) => entry.status === 'shipping')?.at || order.updatedAt;
+    return Date.parse(started) + AUTO_RECEIVE_DAYS * DAY_MS;
+}
 
 // Hủy đơn theo yêu cầu của khách (đã được đồng ý, hoặc cửa hàng không phản hồi quá hạn): ghi lý do và đóng yêu cầu.
 export function approveCancelRequest(order, by) {
@@ -89,6 +108,15 @@ export function sweepExpired() {
         const request = order.cancelRequest;
         if (request?.status === 'pending' && order.status === 'confirmed' && now > Date.parse(request.expiresAt)) {
             approveCancelRequest(order, 'Hệ thống (cửa hàng không phản hồi đúng hạn)');
+            changed = true;
+        }
+    });
+
+    // Đang giao quá N ngày mà khách chưa bấm "Đã nhận được hàng": tự xác nhận đã giao (giống Shopee)
+    db.orders.forEach((order) => {
+        const deadline = autoReceiveAt(order);
+        if (deadline && now > deadline) {
+            markDelivered(order, 'Hệ thống', `Tự xác nhận đã giao sau ${AUTO_RECEIVE_DAYS} ngày kể từ lúc giao`);
             changed = true;
         }
     });

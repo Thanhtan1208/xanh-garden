@@ -46,7 +46,7 @@ export function getSite() {
             try {
                 localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), site }));
             } catch {
-                /* bỏ qua nếu bị chặn */
+                // bỏ qua nếu bị chặn
             }
             applyTheme(site.event?.theme);
             return site;

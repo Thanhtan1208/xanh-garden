@@ -6,6 +6,7 @@ import { fail, handle, requirePermission, requireRole } from '../core/http.js';
 import { MAX_IMAGE_BYTES, BANNER_DIR, PRODUCT_DIR, removeBannerFile, sniff } from '../services/uploads.js';
 import { parseBanner, parseEvent, parseVoucher, parseVoucherUpdate } from '../core/rules.js';
 import { eventWindow } from '../services/site.js';
+import { sweepAutoVouchers } from '../services/vouchers.js';
 
 // Nội dung cửa hàng do admin quản lý: banner, sự kiện (giao diện theo chủ đề), voucher và nhật ký kho.
 const router = Router();
@@ -126,7 +127,29 @@ router.delete(
 );
 
 // Voucher
-const voucherRow = (voucher) => ({ ...voucher, claimedCount: voucher.claimedCount || 0, usedCount: voucher.usedCount || 0 });
+// Một dòng voucher cho admin: thêm số đơn đã dùng voucher và tổng tiền đã giảm (không tính đơn đã hủy)
+function voucherRow(voucher) {
+    const used = db.orders
+        .filter((order) => order.status !== 'cancelled')
+        .flatMap((order) => order.vouchers || [])
+        .filter((row) => row.code === voucher.code);
+    return {
+        ...voucher,
+        claimedCount: voucher.claimedCount || 0,
+        usedCount: voucher.usedCount || 0,
+        orderCount: used.length,
+        discountTotal: used.reduce((sum, row) => sum + (row.amount || 0), 0)
+    };
+}
+
+// Voucher "người dùng mới" / "sinh nhật" vừa tạo hoặc sửa thì tặng luôn cho khách đủ điều kiện,
+// không phải chờ lần quét 10 phút. Trả về số voucher vừa được tặng.
+function grantNow(voucher) {
+    if (voucher.audience === 'all') return 0;
+    const before = voucher.claimedCount || 0;
+    sweepAutoVouchers();
+    return (voucher.claimedCount || 0) - before;
+}
 
 router.get(
     '/vouchers',
@@ -142,8 +165,9 @@ router.post(
         if (db.vouchers.some((voucher) => voucher.code === data.code)) fail(409, 'Mã voucher đã tồn tại.');
         const voucher = { id: newId(), ...data, claimedCount: 0, usedCount: 0, createdAt: now() };
         db.vouchers.push(voucher);
+        const granted = grantNow(voucher);
         save();
-        res.status(201).json(voucherRow(voucher));
+        res.status(201).json({ ...voucherRow(voucher), granted });
     })
 );
 
@@ -180,8 +204,9 @@ router.put(
             if (db.vouchers.some((other) => other !== voucher && other.code === data.code)) fail(409, 'Mã voucher đã tồn tại.');
         }
         Object.assign(voucher, data);
+        const granted = grantNow(voucher);
         save();
-        res.json(voucherRow(voucher));
+        res.json({ ...voucherRow(voucher), granted });
     })
 );
 

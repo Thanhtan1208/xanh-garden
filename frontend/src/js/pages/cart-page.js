@@ -1,5 +1,14 @@
 import { api } from '../services/api-service.js';
-import { cartReady, clearCart, getCart, removeFromCart, setCartQuantity } from '../services/cart-service.js';
+import {
+    cartReady,
+    clearCart,
+    getCart,
+    isSelected,
+    removeFromCart,
+    selectAll,
+    setCartQuantity,
+    setSelected
+} from '../services/cart-service.js';
 import { updateCartBadge } from '../components/header.js';
 import { getCurrentUser } from '../utils/auth.js';
 import { isManagementRole } from '../utils/permissions.js';
@@ -35,13 +44,21 @@ function render() {
         return;
     }
 
-    const subtotal = items.reduce((total, item) => total + item.product.price * item.qty, 0);
+    // Chỉ món được tích mới tính tiền và sang bước thanh toán (giống Shopee)
+    const chosen = items.filter((item) => isSelected(item.id));
+    const chosenCount = chosen.reduce((total, item) => total + item.qty, 0);
+    const allChosen = chosen.length === items.length;
+    const subtotal = chosen.reduce((total, item) => total + item.product.price * item.qty, 0);
     const missing = Math.max(0, RULES.freeShippingFrom - subtotal);
     const rows = items
         .map(({ product, qty }) => {
             const name = escapeHtml(product.name);
             return `
-        <article class="cart-row">
+        <article class="cart-row${isSelected(product.id) ? '' : ' unpicked'}">
+            <label class="cart-pick" title="Chọn để mua">
+                <input type="checkbox" class="cart-check" data-id="${product.id}" aria-label="Chọn ${name}"
+                       ${isSelected(product.id) ? 'checked' : ''}>
+            </label>
             <a href="./product-detail.html?id=${product.id}"><img src="${productImage(product.image)}" alt="${name}"></a>
             <div class="cart-name">
                 <a href="./product-detail.html?id=${product.id}">${name}</a>
@@ -65,24 +82,27 @@ function render() {
         <div class="cart-layout">
             <section>
                 <div class="cart-toolbar">
-                    <span>${items.length} loại sản phẩm · ${items.reduce((total, item) => total + item.qty, 0)} cái</span>
+                    <label class="check-inline">
+                        <input type="checkbox" id="selectAll" ${allChosen ? 'checked' : ''}>
+                        Chọn tất cả (${items.length})
+                    </label>
                     <button type="button" class="btn btn-sm btn-danger" id="clearCartBtn" title="Xóa toàn bộ giỏ hàng">${icon('trash', { size: 15 })} Xóa tất cả</button>
                 </div>
-                <div class="cart-head"><span>Sản phẩm</span><span></span><span>Số lượng</span><span>Thành tiền</span><span></span></div>
+                <div class="cart-head"><span></span><span>Sản phẩm</span><span></span><span>Số lượng</span><span>Thành tiền</span><span></span></div>
                 ${rows}
                 <a class="back" href="./products.html">${icon('back', { size: 16 })} Tiếp tục mua sắm</a>
             </section>
             <aside class="order-summary">
                 <h2>Tóm tắt đơn hàng</h2>
-                <div class="summary-line"><span>Tạm tính</span><b>${formatPrice(subtotal)}</b></div>
+                <div class="summary-line"><span>Đã chọn</span><b>${chosen.length}/${items.length} loại · ${chosenCount} cái</b></div>
                 <div class="summary-line"><span>Phí vận chuyển</span><span>Tính ở bước thanh toán</span></div>
                 <div class="freeship">
                     ${missing ? `Mua thêm <b>${formatPrice(missing)}</b> để được <b>miễn phí vận chuyển</b>` : `${icon('check', { size: 15 })} Đơn hàng được <b>miễn phí vận chuyển</b> (giao tiêu chuẩn)`}
                     <div class="freeship-bar"><i style="width:${Math.min(100, (subtotal / RULES.freeShippingFrom) * 100)}%"></i></div>
                 </div>
                 <div class="summary-total"><span>Tạm tính</span><b>${formatPrice(subtotal)}</b></div>
-                <button class="btn btn-block btn-lg btn-accent" id="checkoutBtn">Tiến hành đặt hàng</button>
-                <p class="muted continue-link">Áp dụng mã giảm giá ở bước thanh toán</p>
+                <button class="btn btn-block btn-lg btn-accent" id="checkoutBtn" ${chosen.length ? '' : 'disabled'}>Mua hàng (${chosenCount})</button>
+                <p class="muted continue-link">${chosen.length ? 'Áp dụng mã giảm giá ở bước thanh toán' : 'Hãy tích chọn sản phẩm muốn mua'}</p>
             </aside>
         </div>`;
 }
@@ -125,6 +145,18 @@ cartBox.addEventListener('click', async (event) => {
 });
 
 cartBox.addEventListener('change', (event) => {
+    // Tích chọn món để mua
+    if (event.target.id === 'selectAll') {
+        selectAll(event.target.checked);
+        render();
+        return;
+    }
+    if (event.target.classList.contains('cart-check')) {
+        setSelected(event.target.dataset.id, event.target.checked);
+        render();
+        return;
+    }
+
     const input = event.target.closest('.cart-qty-input');
     const product = input && productsById.get(String(input.dataset.id));
     if (!product) return;

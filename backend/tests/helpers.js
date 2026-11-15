@@ -79,7 +79,7 @@ export function fixture() {
     };
 }
 
-/** Khởi động server trên dữ liệu mẫu. Gọi một lần ở đầu mỗi file test. */
+// Khởi động server trên dữ liệu mẫu. Gọi một lần ở đầu mỗi file test.
 export async function startServer({ data = fixture() } = {}) {
     const dir = mkdtempSync(join(tmpdir(), 'xanhgarden-test-'));
     writeFileSync(join(dir, 'db.json'), JSON.stringify(data));
@@ -113,7 +113,7 @@ export async function startServer({ data = fixture() } = {}) {
             server.close();
             rmSync(dir, { recursive: true, force: true });
         },
-        /** Mã 6 số trong email gần nhất gửi tới `to`. */
+        // Mã 6 số trong email gần nhất gửi tới `to`.
         lastCode(to) {
             const mail = [...mails].reverse().find((item) => item.to === to);
             return /là: (\d{6})/.exec(mail?.text || '')?.[1] || null;
@@ -121,7 +121,7 @@ export async function startServer({ data = fixture() } = {}) {
     };
 }
 
-/** Gọi API. Trả về { status, body }. */
+// Gọi API. Trả về { status, body }.
 export async function call(ctx, method, path, { token, body, headers = {}, raw } = {}) {
     const init = { method, headers: { ...headers } };
     if (token) init.headers.Authorization = `Bearer ${token}`;
@@ -149,7 +149,7 @@ export async function login(ctx, username, password = PASSWORD) {
 }
 
 let counter = 0;
-/** Đăng ký + xác minh email một khách mới, trả về { token, user, email }. */
+// Đăng ký + xác minh email một khách mới, trả về { token, user, email }.
 export async function newCustomer(ctx, extra = {}) {
     counter += 1;
     const name = `khach${Date.now().toString(36).slice(-4)}${counter}`;
@@ -161,17 +161,23 @@ export async function newCustomer(ctx, extra = {}) {
     return { token: verify.body.token, user: verify.body.user, email, name };
 }
 
-/** Thêm một địa chỉ cho khách, trả về id địa chỉ. */
+// Thêm một địa chỉ cho khách, trả về id địa chỉ.
 export async function addAddress(ctx, token) {
     const result = await call(ctx, 'POST', '/addresses', {
         token,
-        body: { fullName: 'Nguyễn Văn A', phone: '0901234567', address: '12 Lê Lợi, Quận 1, TP. Hồ Chí Minh' }
+        body: {
+            fullName: 'Nguyễn Văn A',
+            phone: '0901234567',
+            street: '12 Lê Lợi',
+            province: 'Thành phố Hồ Chí Minh',
+            ward: 'Phường Tân Định'
+        }
     });
     if (result.status !== 201) throw new Error(`Thêm địa chỉ thất bại: ${JSON.stringify(result.body)}`);
     return result.body.at(-1).id;
 }
 
-/** Đặt đơn; items dạng [[productId, qty], ...]. */
+// Đặt đơn; items dạng [[productId, qty], ...].
 export function placeOrder(ctx, token, addressId, items, extra = {}) {
     return call(ctx, 'POST', '/orders', {
         token,

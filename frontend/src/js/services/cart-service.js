@@ -193,3 +193,48 @@ export function clearCart() {
 export function cartCount() {
     return getCart().reduce((total, item) => total + item.qty, 0);
 }
+
+// Chọn món để mua (giống Shopee): chỉ món được tích mới sang bước thanh toán.
+// Lưu món BỎ CHỌN nên món mới thêm vào giỏ mặc định được chọn.
+const UNSELECTED_KEY = 'cartUnselected';
+
+function readUnselected() {
+    try {
+        return new Set(JSON.parse(sessionStorage.getItem(UNSELECTED_KEY) || '[]'));
+    } catch {
+        return new Set();
+    }
+}
+
+function writeUnselected(ids) {
+    try {
+        sessionStorage.setItem(UNSELECTED_KEY, JSON.stringify([...ids]));
+    } catch {
+        // trình duyệt chặn lưu trữ: coi như chọn hết
+    }
+}
+
+export const isSelected = (productId) => !readUnselected().has(normalizeId(productId));
+
+export function setSelected(productId, selected) {
+    const ids = readUnselected();
+    if (selected) ids.delete(normalizeId(productId));
+    else ids.add(normalizeId(productId));
+    writeUnselected(ids);
+}
+
+export function selectAll(selected) {
+    writeUnselected(selected ? [] : getCart().map((item) => item.id));
+}
+
+// "Mua ngay" / "Mua lại": chỉ chọn đúng các sản phẩm đó
+export function selectOnly(...productIds) {
+    const keep = new Set(productIds.map(normalizeId));
+    writeUnselected(
+        getCart()
+            .map((item) => item.id)
+            .filter((id) => !keep.has(id))
+    );
+}
+
+export const selectedCart = () => getCart().filter((item) => isSelected(item.id));

@@ -24,14 +24,21 @@
                         <div id="addressForm" class="address-form hidden">
                             <h3 id="addressFormTitle">Địa chỉ mới</h3>
                             <div class="form-grid">
-                                <label>Tên người nhận
+                                <label><span>Tên người nhận <span class="req">*</span></span>
                                     <input type="text" id="addrName" autocomplete="name" minlength="2" maxlength="60">
                                 </label>
-                                <label>Số điện thoại
+                                <label><span>Số điện thoại <span class="req">*</span></span>
                                     <input type="tel" id="addrPhone" autocomplete="tel" inputmode="tel" placeholder="Số di động VN, VD: 0901234567">
                                 </label>
-                                <label class="full-column">Địa chỉ giao hàng
-                                    <input type="text" id="addrAddress" autocomplete="street-address" minlength="10" maxlength="200" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành (bắt buộc)">
+                                <label><span>Tỉnh/Thành phố <span class="req">*</span></span>
+                                    <span class="combo"><input type="text" id="addrProvince" placeholder="Chọn hoặc gõ để tìm"></span>
+                                </label>
+                                <label><span>Phường/Xã <span class="req">*</span></span>
+                                    <span class="combo"><input type="text" id="addrWard"></span>
+                                </label>
+                                <p class="muted full-column hint-line">Từ 1/7/2025 cả nước có 34 tỉnh/thành, dưới tỉnh là phường/xã (không còn quận/huyện).</p>
+                                <label class="full-column"><span>Số nhà, tên đường <span class="req">*</span></span>
+                                    <input type="text" id="addrStreet" autocomplete="address-line1" maxlength="100" placeholder="VD: 12 Lê Lợi, hẻm 5">
                                 </label>
                                 <label class="check-inline full-column"><input type="checkbox" id="addrDefault"> Đặt làm địa chỉ mặc định</label>
                             </div>
@@ -69,7 +76,7 @@
                         </div>
                         <p id="voucherMessage" class="error-message" role="alert"></p>
                         <div id="voucherList" class="voucher-pick"></div>
-                        <p class="muted">Mỗi đơn dùng tối đa 1 voucher giảm giá và 1 voucher phí vận chuyển. <a href="./vouchers.html">Xem Kho voucher</a></p>
+                        <p class="muted">Mỗi đơn dùng tối đa 1 voucher giảm giá và 1 voucher phí vận chuyển. <a href="./vouchers.html">Nhận thêm voucher</a></p>
                     </section>
 
                     <section class="form-section">
@@ -85,7 +92,7 @@
                     </section>
 
                     <p id="checkoutMessage" class="error-message" role="alert"></p>
-                    <button type="submit" class="btn btn-lg btn-block">Xác nhận đặt hàng</button>
+                    <button type="submit" class="btn btn-lg btn-block btn-accent">Xác nhận đặt hàng</button>
                 </form>
                 <aside id="checkoutSummary" class="order-summary"></aside>
             </div>

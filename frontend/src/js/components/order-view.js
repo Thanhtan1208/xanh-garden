@@ -46,11 +46,25 @@ export function renderTimeline(order) {
     const current = STATUS_FLOW.indexOf(order.status);
     return `<ol class="timeline">${STATUS_FLOW.map(
         (status, index) => `
-        <li class="${index <= current ? 'done' : ''}"><i>${index < current ? '✓' : index + 1}</i><span>${ORDER_STATUS[status]}</span></li>`
+        <li class="${index <= current ? 'done' : ''}">
+            <i>${index < current ? '✓' : index + 1}</i><span>${ORDER_STATUS[status]}</span>
+            ${index <= current && stepTime(order, status) ? `<small>${stepTime(order, status)}</small>` : ''}
+        </li>`
     ).join('')}</ol>${cancelRequestNote(order)}`;
 }
 
-export function renderOrderItems(order) {
+// Giờ đơn vào mỗi bước (lấy lần đầu trong lịch sử), giống dòng thời gian của Shopee
+function stepTime(order, status) {
+    const at = (order.history || []).find((entry) => entry.status === status)?.at || (status === 'pending' ? order.createdAt : '');
+    const date = new Date(at);
+    if (!at || Number.isNaN(date.getTime())) return '';
+    const two = (number) => String(number).padStart(2, '0');
+    return `${two(date.getHours())}:${two(date.getMinutes())} ${two(date.getDate())}/${two(date.getMonth() + 1)}`;
+}
+
+// review: đơn đã giao thì mỗi sản phẩm có nút "Đánh giá" mở thẳng tab đánh giá
+export function renderOrderItems(order, { review = false } = {}) {
+    const canReview = review && order.status === 'delivered';
     return order.items
         .map(
             (item) => `
@@ -59,6 +73,7 @@ export function renderOrderItems(order) {
             <div>
                 <a href="./product-detail.html?id=${item.id}"><b>${escapeHtml(item.name)}</b></a>
                 <small>${formatPrice(item.price)} × ${item.qty}</small>
+                ${canReview ? `<a class="btn btn-sm btn-outline line-review" href="./product-detail.html?id=${item.id}#reviews">Đánh giá</a>` : ''}
             </div>
             <span>${formatPrice(item.price * item.qty)}</span>
         </div>`
@@ -72,7 +87,7 @@ const voucherCodes = (order, kind) => {
     return codes.length ? ` (${codes.join(', ')})` : '';
 };
 
-export function renderOrderDetails(order) {
+export function renderOrderDetails(order, options = {}) {
     const customer = order.customer;
     return `
         <div class="order-detail-grid">
@@ -90,7 +105,7 @@ export function renderOrderDetails(order) {
                 <p class="muted">Đặt lúc ${formatDate(order.createdAt)}</p>
             </div>
         </div>
-        <div class="line-items">${renderOrderItems(order)}</div>
+        <div class="line-items">${renderOrderItems(order, options)}</div>
         <div class="summary-line"><span>Tạm tính</span><b>${formatPrice(order.subtotal)}</b></div>
         ${order.discount ? `<div class="summary-line discount"><span>Giảm giá${voucherCodes(order, 'order')}</span><b>− ${formatPrice(order.discount)}</b></div>` : ''}
         <div class="summary-line"><span>Phí vận chuyển</span><b>${order.shippingFee ? formatPrice(order.shippingFee) : 'Miễn phí'}</b></div>

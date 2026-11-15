@@ -1,12 +1,5 @@
 // Quy tắc số điện thoại và địa chỉ giao hàng (Việt Nam).
-
-// Bỏ dấu, chữ thường: "Hồ Chí Minh" -> "ho chi minh"
-const plain = (value) =>
-    String(value || '')
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .replace(/đ/g, 'd');
+import { readFileSync } from 'node:fs';
 
 // Số di động Việt Nam: 03x, 05x, 07x, 08x, 09x (10 số), viết 0xxxxxxxxx hoặc +84xxxxxxxxx
 const MOBILE_PATTERN = /^(?:0|\+?84)(3[2-9]|5[25689]|7[06-9]|8[1-9]|9\d)\d{7}$/;
@@ -18,91 +11,22 @@ export function normalizePhone(value) {
     return match ? `0${raw.slice(raw.length - 9)}` : null;
 }
 
-// 63 tỉnh/thành (đã bỏ dấu) và vài cách viết tắt hay gặp
-const PROVINCES = [
-    'ha noi',
-    'ho chi minh',
-    'hcm',
-    'tphcm',
-    'sai gon',
-    'hai phong',
-    'da nang',
-    'can tho',
-    'hue',
-    'thua thien hue',
-    'an giang',
-    'ba ria',
-    'vung tau',
-    'bac giang',
-    'bac kan',
-    'bac lieu',
-    'bac ninh',
-    'ben tre',
-    'binh dinh',
-    'binh duong',
-    'binh phuoc',
-    'binh thuan',
-    'ca mau',
-    'cao bang',
-    'dak lak',
-    'dak nong',
-    'dien bien',
-    'dong nai',
-    'dong thap',
-    'gia lai',
-    'ha giang',
-    'ha nam',
-    'ha tinh',
-    'hai duong',
-    'hau giang',
-    'hoa binh',
-    'hung yen',
-    'khanh hoa',
-    'kien giang',
-    'kon tum',
-    'lai chau',
-    'lam dong',
-    'lang son',
-    'lao cai',
-    'long an',
-    'nam dinh',
-    'nghe an',
-    'ninh binh',
-    'ninh thuan',
-    'phu tho',
-    'phu yen',
-    'quang binh',
-    'quang nam',
-    'quang ngai',
-    'quang ninh',
-    'quang tri',
-    'soc trang',
-    'son la',
-    'tay ninh',
-    'thai binh',
-    'thai nguyen',
-    'thanh hoa',
-    'tien giang',
-    'tra vinh',
-    'tuyen quang',
-    'vinh long',
-    'vinh phuc',
-    'yen bai'
-];
+// Đơn vị hành chính hiện hành (từ 1/7/2025): 34 tỉnh/thành, mỗi tỉnh gồm các phường/xã, không còn cấp quận/huyện.
+// Dạng [[tỉnh, [phường/xã...]]...], nguồn provinces.open-api.vn (bản v2).
+// Giao diện lấy cùng dữ liệu này qua GET /api/divisions để làm ô chọn.
+export const DIVISIONS = JSON.parse(readFileSync(new URL('../data/vn-divisions.json', import.meta.url), 'utf8'));
 
-// Có từ khóa đơn vị hành chính (phường, xã, quận...) đứng riêng và có tên theo sau
-const hasUnit = (text, words) => new RegExp(`(^|[\\s,])(${words})\\s*\\S`).test(text);
-
-// Trả về câu báo lỗi, hoặc null nếu địa chỉ đủ: số nhà, phường/xã (hoặc quận/huyện), tỉnh/thành phố
-export function addressProblem(value) {
-    const text = plain(value);
-    const missing = [];
-    // Phần đầu (trước dấu phẩy đầu tiên) phải có số nhà
-    if (!/\d/.test(text.split(',')[0])) missing.push('số nhà');
-    if (!hasUnit(text, 'phuong|xa|thi tran|p\\.|x\\.|tt\\.|quan|huyen|thi xa|q\\.|h\\.|tx\\.'))
-        missing.push('phường/xã/thị trấn hoặc quận/huyện');
-    const padded = ` ${text.replace(/[.,]/g, ' ')} `;
-    if (!PROVINCES.some((name) => padded.includes(` ${name} `))) missing.push('tỉnh/thành phố');
-    if (!missing.length) return null;
-    return `Địa chỉ chưa đủ, còn thiếu: ${missing.join(', ')}. VD: 12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh.`;
+// Địa chỉ bắt buộc đủ 3 phần, kiểm tra theo thứ tự ô nhập: tỉnh/thành -> phường/xã -> số nhà, tên đường.
+// Tỉnh và phường phải có thật, phường phải thuộc tỉnh. Số nhà, tên đường khách tự gõ, chỉ cần không trống.
+// Trả về câu báo lỗi, hoặc null nếu đủ.
+export function addressProblem({ province, ward, street } = {}) {
+    const found = DIVISIONS.find(([name]) => name === province);
+    if (!found) return 'Vui lòng chọn Tỉnh/Thành phố.';
+    if (!ward) return 'Vui lòng chọn Phường/Xã.';
+    if (!found[1].includes(ward)) return `${ward} không thuộc ${province}. Vui lòng chọn lại Phường/Xã.`;
+    if (!String(street || '').trim()) return 'Vui lòng nhập số nhà, tên đường.';
+    return null;
 }
+
+// Ghép thành một dòng địa chỉ để in trên đơn hàng, hóa đơn, email: số nhà, phường/xã, tỉnh/thành
+export const joinAddress = ({ street, ward, province }) => [street, ward, province].filter(Boolean).join(', ');

@@ -3,6 +3,19 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { db } from '../core/store.js';
+import {
+    AUTO_RECEIVE_DAYS,
+    CANCEL_REQUEST_TTL_MS,
+    FREE_SHIPPING_FROM,
+    HIGH_VALUE_FROM,
+    MAX_ADDRESSES,
+    MAX_LINE_QUANTITY,
+    MAX_OPEN_UNPAID_ORDERS,
+    MAX_ORDER_TOTAL,
+    PAYMENT_TTL_MS,
+    SHIPPING_FEES
+} from '../core/rules.js';
+import { getShop } from '../services/settings.js';
 import { newestProducts, presentProduct } from '../services/inventory.js';
 import { currentEvent } from '../services/site.js';
 import { describeVoucher, isLive } from '../services/vouchers.js';
@@ -10,7 +23,7 @@ import { EMBED_MODEL, aiConfigured, embed } from './openai.js';
 
 // Cơ sở tri thức (Knowledge Base) cho chatbot theo mô hình RAG:
 //   1. Tài liệu viết tay trong server/ai/kb/*.md (cửa hàng, chính sách, chăm sóc cây, tư vấn chọn cây, FAQ).
-//   2. Dữ liệu SỐNG dựng từ db mỗi lần hỏi: sản phẩm, danh mục, khuyến mãi đang chạy (không bao giờ lỗi thời).
+//   2. Dữ liệu SỐNG dựng từ db mỗi lần hỏi: sản phẩm, danh mục, khuyến mãi, liên hệ, quy định (không bao giờ lỗi thời).
 // Truy xuất: ưu tiên so khớp ngữ nghĩa bằng embedding; không có khóa/API lỗi thì dùng so khớp từ khóa (có bỏ dấu tiếng Việt).
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -57,6 +70,7 @@ function loadDocChunks() {
     return chunks;
 }
 const DOC_CHUNKS = loadDocChunks();
+export const docChunks = () => DOC_CHUNKS;
 
 // Dữ liệu sống từ cửa hàng
 const categoryName = (id) => db.categories.find((category) => Number(category.id) === Number(id))?.name || 'Khác';
@@ -132,12 +146,46 @@ function liveChunks() {
                 `Voucher ${voucher.name} (mã ${voucher.code}): ${describeVoucher(voucher)}, hạn đến ${new Date(voucher.endAt).toLocaleDateString('vi-VN')}.`
         )
     ];
-    if (!vouchers.length) lines.push('Hiện chưa có voucher nào trong Kho voucher.');
+    if (!vouchers.length) lines.push('Hiện chưa có voucher nào để nhận ở trang Voucher.');
     chunks.push({
         id: 'live:promotions',
         source: 'live',
         title: 'Khuyến mãi và voucher đang có',
         embedText: `Khuyến mãi, voucher và sự kiện đang diễn ra.\n${lines.join('\n')}`,
+        text() {
+            return this.embedText;
+        }
+    });
+
+    // Liên hệ: lấy từ trang "Thông tin cửa hàng" của admin, đổi là chatbot nói theo ngay
+    const shop = getShop();
+    chunks.push({
+        id: 'live:contact',
+        source: 'live',
+        title: 'Thông tin liên hệ cửa hàng (hotline, email, địa chỉ, giờ làm việc)',
+        embedText: [
+            `Liên hệ cửa hàng ${shop.name}: hotline, số điện thoại, email, Zalo, Facebook, địa chỉ, giờ mở cửa.`,
+            `Hotline: ${shop.hotline}. Email: ${shop.email}. Zalo: ${shop.zalo}. Facebook: ${shop.facebook}.`,
+            `Địa chỉ: ${shop.address}. Giờ làm việc: ${shop.hours}. Bảo hành cây ${shop.warrantyDays} ngày.`
+        ].join('\n'),
+        text() {
+            return this.embedText;
+        }
+    });
+
+    // Con số nghiệp vụ lấy thẳng từ core/rules.js nên không bao giờ lệch với cách server xử lý
+    chunks.push({
+        id: 'live:rules',
+        source: 'live',
+        title: 'Quy định mua hàng (phí ship, thanh toán, giới hạn đơn, hủy đơn, nhận hàng)',
+        embedText: [
+            'Quy định mua hàng hiện tại của cửa hàng.',
+            `Phí giao tiêu chuẩn ${money(SHIPPING_FEES.standard)}, miễn phí cho đơn có tiền hàng từ ${money(FREE_SHIPPING_FROM)}; giao nhanh ${money(SHIPPING_FEES.express)}.`,
+            `Đơn có tiền hàng trên ${money(HIGH_VALUE_FROM)} phải chuyển khoản QR; chuyển khoản phải xong trong ${PAYMENT_TTL_MS / 60000} phút, quá hạn đơn tự hủy.`,
+            `Mỗi sản phẩm tối đa ${MAX_LINE_QUANTITY} cái/đơn; mỗi đơn tối đa ${money(MAX_ORDER_TOTAL)}; tối đa ${MAX_OPEN_UNPAID_ORDERS} đơn chờ xác nhận/chờ thanh toán cùng lúc; tối đa ${MAX_ADDRESSES} địa chỉ.`,
+            `Yêu cầu hủy đơn đã xác nhận: cửa hàng không phản hồi trong ${CANCEL_REQUEST_TTL_MS / 3600000} giờ thì tự đồng ý.`,
+            `Đơn đang giao tự xác nhận đã giao sau ${AUTO_RECEIVE_DAYS} ngày nếu khách không bấm "Đã nhận được hàng".`
+        ].join('\n'),
         text() {
             return this.embedText;
         }

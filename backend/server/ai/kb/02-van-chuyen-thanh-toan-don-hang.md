@@ -24,14 +24,21 @@
 1. **Chờ thanh toán** (chỉ đơn trên 1 triệu): chờ khách chuyển khoản; tiền về là đơn tự được xác nhận.
 2. **Chờ xác nhận**: chờ cửa hàng xác nhận (đơn chuyển khoản phải nhận được tiền trước).
 3. **Đã xác nhận**: cửa hàng đang chuẩn bị hàng.
-4. **Đang giao**: nếu giao không thành công (khách không nhận hàng, không liên lạc được) thì đơn bị hủy, hàng hoàn về kho; đơn đã chuyển khoản được cửa hàng hoàn tiền.
+4. **Đang giao**: nhận hàng xong khách bấm "Đã nhận được hàng". Nếu giao không thành công (khách không nhận hàng, không liên lạc được) thì đơn bị hủy, hàng hoàn về kho; đơn đã chuyển khoản được cửa hàng hoàn tiền.
 5. **Đã giao**: khách đã nhận hàng; từ lúc này khách mới đánh giá được sản phẩm.
 6. **Đã hủy**: hàng được hoàn lại kho; voucher đã dùng được trả về ví nếu còn hạn.
 
 ## Hủy đơn
-- Khách tự hủy được khi đơn chưa thanh toán và cửa hàng chưa xác nhận đơn (trạng thái Chờ thanh toán hoặc Chờ xác nhận). Đơn đã được xác nhận thì liên hệ cửa hàng.
-- Đơn đã chuyển khoản mà muốn hủy: liên hệ cửa hàng qua trang Góp ý để được hủy và hoàn tiền.
-- Hoàn tiền thực hiện thủ công bởi cửa hàng sau khi xác nhận hủy.
+- **Chờ thanh toán / Chờ xác nhận**: khách tự hủy ngay trong "Đơn hàng của tôi", bấm "Hủy đơn" và chọn lý do. Đơn đã chuyển khoản thì cửa hàng hoàn tiền.
+- **Đã xác nhận**: bấm "Yêu cầu hủy đơn" và chọn lý do; cửa hàng đồng ý hoặc từ chối. Cửa hàng không phản hồi trong 48 giờ thì yêu cầu tự được đồng ý.
+- **Đang giao, Đã giao**: không hủy được nữa. Hàng có vấn đề thì gửi khiếu nại ở trang Góp ý kèm mã đơn.
+- Hoàn tiền do cửa hàng thực hiện sau khi đơn bị hủy.
+
+## Nhận hàng
+Đơn đang giao có nút "Đã nhận được hàng": khách bấm sau khi nhận và kiểm tra hàng, đơn chuyển sang "Đã giao" (đơn COD coi như đã trả tiền) và khách nhận email cảm ơn. Nếu khách không bấm, hệ thống tự xác nhận đã giao sau 7 ngày kể từ lúc bắt đầu giao; ngày đó hiện ngay trên thẻ đơn.
+
+## Hóa đơn
+Hóa đơn được gửi tự động qua email: ngay khi đặt đơn COD, hoặc khi đã nhận được tiền chuyển khoản. Khách có thể tải hóa đơn PDF bằng nút "Xuất hóa đơn" trong "Đơn hàng của tôi" (trừ đơn đã hủy).
 
 ## Mua lại
-Trong "Đơn hàng của tôi" có nút mua lại để đưa các sản phẩm của đơn cũ vào giỏ hàng (chỉ thêm được sản phẩm còn hàng).
+Trong "Đơn hàng của tôi", đơn đã giao hoặc đã hủy có nút "Mua lại": các sản phẩm của đơn được thêm vào giỏ và chỉ chúng được chọn sẵn để thanh toán (chỉ thêm được sản phẩm còn hàng).

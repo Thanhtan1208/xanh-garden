@@ -15,7 +15,7 @@ Khi không chắc, khách cứ gửi khiếu nại, cửa hàng sẽ xem xét t�
 - Cây có thể rụng vài lá do thay đổi môi trường khi vận chuyển, đó là bình thường, cây sẽ ổn định sau 1–2 tuần.
 
 ## Đánh giá sản phẩm
-Chỉ khách **đã nhận hàng** (đơn ở trạng thái "Đã giao") mới đánh giá được, mỗi sản phẩm một lần. Đánh giá có thể kèm ảnh (tối đa 5 ảnh) và 1 video. Khách chỉ xóa được đánh giá của chính mình.
+Chỉ khách **đã nhận hàng** (đơn ở trạng thái "Đã giao") mới đánh giá được, mỗi sản phẩm một lần. Trong "Đơn hàng của tôi", đơn đã giao có nút "Đánh giá" cho từng sản phẩm. Đánh giá có thể kèm ảnh (tối đa 5 ảnh) và 1 video. Khách ẩn được đánh giá của chính mình (nút "Đóng") nhưng không xóa được.
 
 ## Góp ý và khiếu nại
 Trang **Góp ý** nhận 4 loại: góp ý, khiếu nại, khen ngợi, khác. Mỗi tài khoản có tối đa 5 phản hồi đang chờ trả lời. Cửa hàng trả lời ngay trong trang này.

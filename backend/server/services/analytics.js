@@ -16,7 +16,7 @@ function load() {
             const event = JSON.parse(line);
             if (event.t >= cutoff) kept.push(event);
         } catch {
-            /* bỏ qua dòng hỏng */
+            // bỏ qua dòng hỏng
         }
     });
     // Dọn dữ liệu quá hạn lưu trữ khi khởi động.
@@ -55,7 +55,7 @@ process.on('exit', () => {
         try {
             writeFileSync(FILE, pending.join('\n') + '\n', { flag: 'a' });
         } catch {
-            /* bỏ qua */
+            // bỏ qua
         }
     }
 });

@@ -88,7 +88,7 @@ function writeCache(path, text) {
     try {
         sessionStorage.setItem(cacheKey(path), text);
     } catch {
-        /* bộ nhớ đầy hoặc bị chặn: bỏ qua */
+        // bộ nhớ đầy hoặc bị chặn: bỏ qua
     }
 }
 
@@ -98,7 +98,7 @@ export function clearApiCache() {
             .filter((key) => key.startsWith(CACHE_PREFIX))
             .forEach((key) => sessionStorage.removeItem(key));
     } catch {
-        /* bỏ qua */
+        // bỏ qua
     }
 }
 

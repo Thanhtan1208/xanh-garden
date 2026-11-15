@@ -1,4 +1,5 @@
 import { iconButton } from '../utils/icons.js';
+import './table-sort.js';
 
 // Nút chuyển kiểu xem cho bảng quản trị: "Dạng bảng" (hàng tên cột đứng yên khi cuộn) hoặc "Dạng thẻ".
 // Dùng: thêm data-view-key="tên-trang" vào khung .table-wrap, rồi import file này.
@@ -47,7 +48,7 @@ function enable(wrap) {
         try {
             localStorage.setItem(storageKey(key), view);
         } catch {
-            /* bỏ qua nếu bị chặn lưu trữ */
+            // bỏ qua nếu bị chặn lưu trữ
         }
     }
     bar.addEventListener('click', (event) => {

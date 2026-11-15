@@ -46,11 +46,19 @@ async function switchPayment(order, paymentMethod) {
 
 async function renderPayment(order) {
     const info = await api.get(`/orders/${order.id}/payment-info`);
+    // Nút thanh toán nhanh khi chạy thử (server bật PAYMENT_DEMO): coi như tiền đã về, không cần chuyển thật
+    const demoButton = info.demo
+        ? `<div class="demo-pay">
+            <button type="button" id="demoPayBtn" class="btn">Thanh toán ${formatPrice(info.amount)} (demo)</button>
+            <small class="muted">Chỉ có khi chạy thử: bấm để coi như đã chuyển khoản xong, không cần chuyển tiền thật.</small>
+        </div>`
+        : '';
     card(`
         <p class="eyebrow">Chờ thanh toán</p>
         <h1>Quét mã để thanh toán</h1>
         ${order.status === 'unconfirmed' ? `<p class="notice">Đơn trên ${formatPrice(RULES.highValueFrom)} được <b>xác nhận tự động</b> ngay khi hệ thống nhận đủ tiền. Không cần nhập mã nào.</p>` : ''}
         <img class="qr" src="${escapeHtml(info.qrUrl)}" alt="Mã QR thanh toán đơn ${escapeHtml(order.code)}">
+        ${demoButton}
         <dl class="pay-info">
             <div><dt>Ngân hàng</dt><dd>${escapeHtml(info.bank)}</dd></div>
             <div><dt>Số tài khoản</dt><dd>${escapeHtml(info.account)}</dd></div>
@@ -62,6 +70,16 @@ async function renderPayment(order) {
         <p id="countdown" class="msg"></p>
         ${order.total <= RULES.maxCodTotal && order.subtotal <= RULES.highValueFrom ? '<p><button type="button" id="toCodBtn" class="link-button">Đổi sang thanh toán khi nhận hàng (COD)</button></p>' : ''}
         ${links}`);
+    document.querySelector('#demoPayBtn')?.addEventListener('click', async (event) => {
+        event.target.disabled = true;
+        try {
+            render(await api.post(`/orders/${order.id}/demo-pay`, {}));
+            toast('Đã ghi nhận thanh toán (demo).', { type: 'success' });
+        } catch (error) {
+            event.target.disabled = false;
+            toast(error.message, { type: 'error' });
+        }
+    });
     document.querySelector('#toCodBtn')?.addEventListener('click', () => switchPayment(order, 'cod'));
 
     const tick = () => {
@@ -80,7 +98,7 @@ async function renderPayment(order) {
             if (fresh.paymentStatus !== order.paymentStatus || fresh.status !== order.status || fresh.paymentMethod !== order.paymentMethod)
                 render(fresh);
         } catch {
-            /* mạng chập chờn: thử lại ở lần sau */
+            // mạng chập chờn: thử lại ở lần sau
         }
     }, POLL_MS);
 }

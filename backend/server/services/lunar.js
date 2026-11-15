@@ -96,10 +96,8 @@ function leapMonthOffset(a11) {
     return i - 1;
 }
 
-/**
- * Ngày dương lịch của ngày âm lịch (lunarDay/lunarMonth) năm âm lịch lunarYear (tháng thường, không nhuận).
- * Trả về { day, month, year } dương lịch. Ví dụ Tết (1/1) năm 2027 -> { day: 6, month: 2, year: 2027 }.
- */
+// Ngày dương lịch của ngày âm lịch (lunarDay/lunarMonth) năm âm lịch lunarYear (tháng thường, không nhuận).
+// Trả về { day, month, year } dương lịch. Ví dụ Tết (1/1) năm 2027 -> { day: 6, month: 2, year: 2027 }.
 export function lunarToSolar(lunarDay, lunarMonth, lunarYear) {
     const [a11, b11] =
         lunarMonth < 11 ? [lunarMonth11(lunarYear - 1), lunarMonth11(lunarYear)] : [lunarMonth11(lunarYear), lunarMonth11(lunarYear + 1)];
