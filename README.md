@@ -182,6 +182,16 @@ If you see `EADDRINUSE :3000`, an old server is still running: `netstat -ano | f
 | root | `npm install` then `npm run format` | Format all JavaScript with Prettier |
 | root | `npm run format:check` | Check formatting without changing files |
 
+### Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on every pull request, in three parallel jobs on Node 22:
+
+1. **Định dạng code**: `npm run format:check` at the root.
+2. **Test backend**: `npm test` in `backend/`. No secrets needed: the suite uses temporary data, sends no real mail and does not call OpenAI.
+3. **Build frontend**: `npm run build` in `frontend/`.
+
+A pull request shows ✅ or ❌ for each job. Merge only when all three pass.
+
 ## Configuration
 
 Environment variables live in `backend/.env` (template: `backend/.env.example`). Never commit `.env`.
@@ -251,6 +261,7 @@ Newest first. Add a line here with every change.
 
 | Date | Change |
 |---|---|
+| 2026-11-15 | CI with GitHub Actions (`.github/workflows/ci.yml`): Prettier check, backend tests and frontend build on every push to `main` and every pull request. |
 | 2026-11-15 | SRS rewritten (`docs/SRS_XANH_GARDEN.docx`) to match the current features, business rules and API. |
 | 2026-11-15 | UI review fixes: saved addresses in the old format (no province/ward or a wrong phone) show a red note in Checkout and Account, and placing an order with one opens the edit form instead of an error from the server; voucher cards in "Voucher của bạn" no longer show "Còn x lượt nhận"; order action buttons fill the width on mobile; product card meta has no stray "·" on narrow screens. Block comments in JS changed to `//`. |
 | 2026-11-15 | Search box only on the products page (header of `products.html`, also the mobile search button); other pages no longer show it. Knowledge base updated. |
