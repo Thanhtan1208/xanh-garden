@@ -3,7 +3,9 @@ import { byId } from './store.js';
 import { hasPermission } from './permissions.js';
 
 const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const SECRET = process.env.AUTH_SECRET || 'xanh-garden-dev-secret';
+// Khóa mặc định chỉ để chạy trên máy; production bắt buộc đặt AUTH_SECRET (xem core/config.js).
+export const DEV_SECRET = 'xanh-garden-dev-secret';
+const SECRET = process.env.AUTH_SECRET || DEV_SECRET;
 
 export class ApiError extends Error {
     constructor(status, message, extra = {}) {

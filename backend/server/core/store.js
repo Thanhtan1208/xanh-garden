@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BACKUP_DIR, DB_PATH } from './paths.js';
+import { BACKUP_DIR, DB_PATH, SAMPLE_DB_PATH } from './paths.js';
 
 const COLLECTIONS = [
     'categories',
@@ -22,8 +22,11 @@ const COLLECTIONS = [
 ];
 const KEEP_BACKUPS = 7;
 
+// Chưa có db.json thì đọc dữ liệu mẫu; db.json được tạo ở lần ghi đầu tiên (lúc khởi động).
 function load() {
-    const data = existsSync(DB_PATH) ? JSON.parse(readFileSync(DB_PATH, 'utf8')) : {};
+    const source = [DB_PATH, SAMPLE_DB_PATH].find((path) => existsSync(path));
+    if (source === SAMPLE_DB_PATH) console.log('[data] Chưa có db.json: khởi động bằng dữ liệu mẫu db.sample.json.');
+    const data = source ? JSON.parse(readFileSync(source, 'utf8')) : {};
     delete data.$schema;
     COLLECTIONS.forEach((name) => {
         data[name] ||= [];

@@ -50,18 +50,34 @@ jobs:
             # Bộ test tự tạo dữ liệu tạm, không gửi mail thật, không gọi OpenAI nên không cần secret
             - run: npm test
 
-    frontend:
-        name: Build frontend
+    production:
+        name: Build và chạy thử production
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: frontend
         steps:
             - uses: actions/checkout@v5
             - uses: actions/setup-node@v5
               with:
                   node-version: 22
                   cache: npm
-                  cache-dependency-path: frontend/package-lock.json
-            - run: npm ci
+                  cache-dependency-path: |
+                      frontend/package-lock.json
+                      backend/package-lock.json
+            # Đúng lệnh dùng khi deploy: cài, build frontend, cài backend không kèm gói dev
             - run: npm run build
+            # Khóa chỉ dùng cho lượt chạy thử này, không phải khóa thật
+            - name: Chạy server production, gọi thử trang và API
+              env:
+                  NODE_ENV: production
+                  AUTH_SECRET: ci-only-secret-0123456789abcdef0123456789
+                  SEPAY_API_KEY: ci-only-sepay-key
+                  ADMIN_PASSWORD: Ci#Garden2026x
+              run: |
+                  npm start > server.log 2>&1 &
+                  for i in $(seq 1 30); do curl -fs http://localhost:3000/api/health > /dev/null && break; sleep 1; done
+                  curl -fsS http://localhost:3000/api/health
+                  curl -fsS http://localhost:3000/ | grep -qi '<!doctype html'
+                  curl -fsS http://localhost:3000/products | grep -qi '<!doctype html'
+                  curl -fsS http://localhost:3000/api/products | grep -q '"id"'
+            - name: Log server khi lỗi
+              if: failure()
+              run: cat server.log

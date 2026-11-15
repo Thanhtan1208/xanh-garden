@@ -3,7 +3,12 @@
     "version": "1.0.0",
     "private": true,
     "description": "Xanh Garden: online plant shop (frontend + backend)",
+    "engines": {
+        "node": ">=22"
+    },
     "scripts": {
+        "build": "npm ci --prefix frontend && npm run build --prefix frontend && npm ci --omit=dev --prefix backend",
+        "start": "npm start --prefix backend",
         "format": "prettier --write \"backend/**/*.{js,mjs}\" \"frontend/src/js/**/*.js\" frontend/vite.config.js",
         "format:check": "prettier --check \"backend/**/*.{js,mjs}\" \"frontend/src/js/**/*.js\" frontend/vite.config.js"
     },

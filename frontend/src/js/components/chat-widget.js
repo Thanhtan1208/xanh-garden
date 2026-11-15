@@ -126,6 +126,19 @@ function close() {
     root.classList.remove('open');
 }
 root.querySelector('#chatClose').addEventListener('click', close);
+
+// Điện thoại: nút chat ẩn khi cuộn xuống (khỏi che giá tiền, số lượng...), hiện lại khi cuộn lên hoặc ở đầu trang
+let lastScroll = window.scrollY;
+window.addEventListener(
+    'scroll',
+    () => {
+        const now = window.scrollY;
+        const away = now > 120 && now > lastScroll + 6 && root.classList.contains('open') === false;
+        if (away || now < lastScroll - 6 || now <= 120) root.classList.toggle('away', away);
+        lastScroll = now;
+    },
+    { passive: true }
+);
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !panel.classList.contains('hidden')) close();
 });

@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs';
 import express from 'express';
 import { backupDaily, db, save } from './core/store.js';
+import { IS_PRODUCTION, applyAdminPassword, checkConfig, trustProxy } from './core/config.js';
+import { FRONTEND_DIST } from './core/paths.js';
 import { ApiError, authenticate, hashPassword } from './core/http.js';
 import { ROLES } from './core/permissions.js';
 import authRoutes from './routes/auth.js';
@@ -72,6 +75,19 @@ function sweepVouchers() {
 }
 
 migrate();
+
+// Chạy thật: thiếu cấu hình bắt buộc thì dừng trước khi mở cổng (xem core/config.js).
+if (IS_PRODUCTION) {
+    const adminProblem = applyAdminPassword();
+    const { errors, warnings } = checkConfig();
+    if (adminProblem) errors.unshift(adminProblem);
+    warnings.forEach((text) => console.warn(`[config] ${text}`));
+    if (errors.length) {
+        console.error(`[config] Chưa chạy được ở chế độ production:\n- ${errors.join('\n- ')}`);
+        process.exit(1);
+    }
+}
+
 backupDaily();
 sweepExpired();
 sweepVouchers();
@@ -84,6 +100,16 @@ setInterval(sweepVouchers, 10 * 60 * 1000).unref();
 setInterval(backupDaily, 60 * 60 * 1000).unref();
 
 const app = express();
+app.disable('x-powered-by');
+// Đứng sau proxy (Caddy, Nginx, Render...): đọc IP thật của khách từ X-Forwarded-For để giới hạn tần suất đúng người
+app.set('trust proxy', trustProxy());
+// Header bảo mật cơ bản: không cho site khác nhúng trang vào iframe, trình duyệt không đoán sai loại tệp
+app.use((_req, res, next) => {
+    res.set({ 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin' });
+    next();
+});
+// Kiểm tra server còn sống (PM2, Render, UptimeRobot gọi định kỳ)
+app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: Math.round(process.uptime()) }));
 // Nhập sản phẩm từ Excel gửi nhiều dòng nên cho phép lớn hơn các API khác
 app.use('/api/admin/products/import', express.json({ limit: '2mb' }));
 app.use(express.json({ limit: '50kb' }));
@@ -103,15 +129,20 @@ app.use('/api/vouchers', voucherRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api', pageRoutes);
-// Ảnh/video khách đã tải lên. nosniff để trình duyệt không đoán sai loại tệp.
-app.use(
-    '/uploads',
-    express.static(UPLOAD_ROOT, { maxAge: '7d', index: false, setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff') })
-);
+// Ảnh/video khách đã tải lên (header nosniff đã đặt chung ở trên)
+app.use('/uploads', express.static(UPLOAD_ROOT, { maxAge: '7d', index: false }));
 app.use('/api', siteRoutes); // phải đứng trước shopRoutes: /products/featured không bị hiểu là /products/:id
 app.use('/api', shopRoutes);
 
 app.use('/api', (_req, _res, next) => next(new ApiError(404, 'Không tìm thấy đường dẫn API.')));
+
+// Giao diện đã build (npm run build trong frontend/): deploy chỉ cần chạy một server này, cùng địa chỉ với /api.
+// Tệp trong assets/ có mã băm trong tên nên cache lâu; trang HTML luôn hỏi lại bản mới. /products mở products.html.
+if (existsSync(FRONTEND_DIST)) {
+    const cacheControl = (res, path) =>
+        res.setHeader('Cache-Control', /[\\/]assets[\\/]/.test(path) ? 'public, max-age=31536000, immutable' : 'no-cache');
+    app.use(express.static(FRONTEND_DIST, { extensions: ['html'], setHeaders: cacheControl }));
+}
 
 // eslint-disable-next-line no-unused-vars
 app.use((error, _req, res, _next) => {
@@ -123,3 +154,12 @@ app.use((error, _req, res, _next) => {
 });
 
 export const server = app.listen(PORT, () => console.log(`API đang chạy tại http://localhost:${server.address().port}/api`));
+
+// Dừng êm khi PM2/Render khởi động lại hoặc bấm Ctrl+C: ngừng nhận request mới, process.exit chạy phần ghi nốt nhật ký
+// hành vi đang chờ (services/analytics.js). db.json luôn ghi ngay mỗi lần đổi nên không mất dữ liệu.
+['SIGTERM', 'SIGINT'].forEach((signal) =>
+    process.once(signal, () => {
+        server.close(() => process.exit(0));
+        setTimeout(() => process.exit(0), 5000).unref();
+    })
+);

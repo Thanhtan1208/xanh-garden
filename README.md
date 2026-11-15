@@ -27,9 +27,10 @@ The UI text is in Vietnamese. Documentation is in [`docs/`](docs):
 8. [Data and backups](#data-and-backups)
 9. [Back office settings](#back-office-settings)
 10. [Testing email and payments locally](#testing-email-and-payments-locally)
-11. [Code style](#code-style)
-12. [Known limits](#known-limits)
-13. [Change log](#change-log)
+11. [Deployment](#deployment)
+12. [Code style](#code-style)
+13. [Known limits](#known-limits)
+14. [Change log](#change-log)
 
 ## Features
 
@@ -103,8 +104,8 @@ Permissions are enforced on the server. The frontend only hides what a role cann
 .
 ├── backend/                  REST API (Node.js + Express)
 │   ├── server/               All server source code
-│   │   ├── index.js          Entry point: mounts routes, background jobs, daily backup
-│   │   ├── core/             Foundation: store (db.json), auth/http helpers, validation rules, mailer, permissions
+│   │   ├── index.js          Entry point: mounts routes, background jobs, daily backup, serves the built website
+│   │   ├── core/             Foundation: store (db.json), auth/http helpers, validation rules, mailer, permissions, production config check
 │   │   ├── routes/           HTTP endpoints, one file per feature (auth, shop, orders, cart, vouchers, admin...)
 │   │   ├── services/         Business logic used by routes (pricing, vouchers, inventory, mail templates, statistics)
 │   │   ├── ai/               Chatbot: OpenAI client, retrieval, offline answers
@@ -112,7 +113,7 @@ Permissions are enforced on the server. The frontend only hides what a role cann
 │   │   └── data/             Seed data and product specification templates
 │   ├── data/                 Runtime data (not committed except db.sample.json)
 │   │   ├── db.json           Main database: products, orders, users, vouchers, reviews...
-│   │   ├── db.sample.json    Sample data, copied to db.json on first run
+│   │   ├── db.sample.json    Sample data, used automatically when db.json does not exist yet
 │   │   ├── analytics.ndjson  Customer behavior events, one JSON per line (kept 90 days)
 │   │   ├── uploads/          Files uploaded by users: avatars, banners, products, reviews
 │   │   └── backups/          Daily copies of db.json (last 7 kept)
@@ -137,15 +138,18 @@ Permissions are enforced on the server. The frontend only hides what a role cann
 │   ├── vite.config.js        Dev server, proxy for /api and /uploads, list of pages to build
 │   └── package.json
 │
-├── docs/                     SRS, use case, SDS (Word) and diagrams (ERD, use case, architecture)
+├── docs/                     SRS, use case, SDS, deploy guide (Word) and diagrams (ERD, use case, architecture)
+├── .github/workflows/ci.yml  CI: Prettier check, backend tests, frontend build
 ├── .editorconfig             Editor settings shared by everyone (4 spaces, LF, UTF-8)
+├── .gitattributes            LF line endings on every machine
 ├── .prettierrc.json          Prettier rules
 ├── .gitignore
-├── package.json              Root only holds the formatting tool (Prettier)
+├── ecosystem.config.cjs      PM2 config for running on a VPS
+├── package.json              Root: Prettier, and the build/start scripts for deployment
 └── *.md                      Documentation
 ```
 
-How the layers talk to each other: the browser loads a page from `frontend/`, the page script in `src/js/pages/` calls the API through `src/js/services/api-service.js`, Vite forwards `/api` to Express, a file in `backend/server/routes/` handles the request, uses `services/` for business rules and `core/store.js` to read and write `db.json`.
+How the layers talk to each other: the browser loads a page from `frontend/`, the page script in `src/js/pages/` calls the API through `src/js/services/api-service.js`, Vite forwards `/api` to Express, a file in `backend/server/routes/` handles the request, uses `services/` for business rules and `core/store.js` to read and write `db.json`. In production there is no Vite: Express serves the built pages from `frontend/dist` itself.
 
 ## Getting started
 
@@ -155,8 +159,7 @@ Requires Node.js 22 or newer.
 # Terminal 1: backend, API at http://localhost:3000/api
 cd backend
 npm install
-Copy-Item data/db.sample.json data/db.json   # first run only: creates the sample data
-npm run server
+npm run server   # first run: no db.json yet, so the sample data (data/db.sample.json) is used
 
 # Terminal 2: frontend, website at http://localhost:5173
 cd frontend
@@ -166,7 +169,7 @@ npm run dev
 
 Open the site through Vite (http://localhost:5173), never port 3000. Vite forwards `/api` and `/uploads` to Express.
 
-The sample data includes one admin account for local testing: `admin` / `Demo@Garden2026`. Customers register on the website. Change or remove this account before any real deployment.
+The sample data includes one admin account for local testing: `admin` / `Demo@Garden2026`. Customers register on the website. In production the server will not start while a management account still uses this password; set `ADMIN_PASSWORD` to replace it (see [Deployment](#deployment)).
 
 If you see `EADDRINUSE :3000`, an old server is still running: `netstat -ano | findstr :3000`, then `taskkill /PID <PID> /F`.
 
@@ -174,13 +177,15 @@ If you see `EADDRINUSE :3000`, an old server is still running: `netstat -ano | f
 
 | Where | Command | Purpose |
 |---|---|---|
-| `backend/` | `npm run server` | Start the API on port 3000 |
+| `backend/` | `npm run server` (or `npm start`) | Start the API on port 3000 |
 | `backend/` | `npm test` | Run the API test suite (uses temporary data, never touches `db.json`) |
 | `backend/` | `npm run mail` | Start the fake mailbox (SMTP 1025, web 1080) |
 | `frontend/` | `npm run dev` | Start the website on port 5173 |
 | `frontend/` | `npm run build` | Production build into `frontend/dist/` |
 | root | `npm install` then `npm run format` | Format all JavaScript with Prettier |
 | root | `npm run format:check` | Check formatting without changing files |
+| root | `npm run build` | Deployment: install, build the frontend, install the backend without dev dependencies |
+| root | `npm start` | Deployment: start the server (website + API on one port) |
 
 ### Continuous integration
 
@@ -188,7 +193,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on 
 
 1. **Định dạng code**: `npm run format:check` at the root.
 2. **Test backend**: `npm test` in `backend/`. No secrets needed: the suite uses temporary data, sends no real mail and does not call OpenAI.
-3. **Build frontend**: `npm run build` in `frontend/`.
+3. **Build và chạy thử production**: root `npm run build` (the deploy command), then the server is started with `NODE_ENV=production` and the job checks `/api/health`, the home page, `/products` and `/api/products`.
 
 A pull request shows ✅ or ❌ for each job. Merge only when all three pass.
 
@@ -199,17 +204,22 @@ Environment variables live in `backend/.env` (template: `backend/.env.example`).
 | Variable | Meaning |
 |---|---|
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Send real emails. Without them, email content is printed to the server console. |
-| `SEPAY_API_KEY` | SePay webhook key (defaults to `dev-sepay-key` for local testing) |
+| `SEPAY_API_KEY` | SePay webhook key (defaults to `dev-sepay-key` for local testing; required in production) |
 | `PAYMENT_DEMO` | `on`/`off`: show the "Thanh toán … (demo)" button on the QR payment page (default: on locally, off when `NODE_ENV=production`) |
 | `SEPAY_BANK`, `SEPAY_ACCOUNT`, `SEPAY_ACCOUNT_NAME` | Receiving bank account shown on the QR code |
 | `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_EMBED_MODEL` | Chatbot. Without a valid key the chatbot uses the offline knowledge-base mode. With `npm run server` (`server/start.js`), values in `backend/.env` take priority over system environment variables of the same name, so an old system `OPENAI_API_KEY` no longer overrides the project key; the server log names any variable it replaced (names only, never values). Without a `.env` file (deploy), normal environment variables are used. |
-| `AUTH_SECRET` | Key used to sign login tokens. Required in any real deployment. |
+| `AUTH_SECRET` | Key used to sign login tokens, at least 32 random characters. Required in production. |
+| `NODE_ENV` | `production` on a real server: turns on the startup config check and turns off the demo payment button |
+| `ADMIN_PASSWORD` | Production only: replaces the sample password of management accounts that still use it, once. Can be removed afterwards. |
+| `TRUST_PROXY` | Proxies in front of the server, used to read the customer's real IP. Default `loopback` (Caddy, Nginx or Cloudflare Tunnel on the same machine); set `1` on Render. |
+| `PORT`, `DATA_DIR`, `FRONTEND_DIST` | Port (default 3000), data folder (default `backend/data`), built website folder (default `frontend/dist`) |
 
-Before deploying, set your own `AUTH_SECRET` and `SEPAY_API_KEY`: the built-in defaults are public in the source code.
+The built-in defaults of `AUTH_SECRET` and `SEPAY_API_KEY` are public in the source code. With `NODE_ENV=production` the server refuses to start until both are set; the log says exactly what is missing.
 
 ## Data and backups
 
 - Runtime data lives in `backend/data/` (see the structure above).
+- When `db.json` does not exist (first run, new server), the server starts from `db.sample.json` and writes `db.json` right away.
 - Once a day the server copies `db.json` to `backend/data/backups/db-YYYY-MM-DD.json` and keeps the last 7 copies. If the data is damaged, stop the server and copy a backup over `db.json`.
 - `backend/` is outside the Vite root, so the browser cannot download `db.json` or `.env`.
 - The server loads `db.json` into memory and overwrites the file on every save. To edit `db.json` by hand or run a script from `backend/scripts/`, stop the server first.
@@ -242,6 +252,54 @@ Simulate SePay reporting an incoming transfer (replace the order code and amount
 curl.exe -X POST http://localhost:3000/api/payments/sepay/webhook -H "Authorization: Apikey dev-sepay-key" -H "Content-Type: application/json" -d '{\"id\":1001,\"transferType\":\"in\",\"transferAmount\":2250000,\"content\":\"XG261008ABCDE\"}'
 ```
 
+## Deployment
+
+The app is one Node.js process. It keeps its data in files (`backend/data/`) and runs background jobs every minute (payment timeout, auto receive, backups). It needs a server that runs all the time and keeps its disk.
+
+- **Serverless platforms (Vercel, Netlify Functions) cannot run the backend**: their file system is temporary and nothing runs between requests. Vercel can host the built frontend alone, but the backend still needs a server.
+- In production Express serves the built website (`frontend/dist`) and the API on the same address, so one process and one port is enough.
+- Step-by-step guide in Vietnamese, with the settings to choose at each step and a troubleshooting table: `docs/HUONG_DAN_DEPLOY.docx` (Azure for Students VM, or own computer + Cloudflare Tunnel).
+
+### Checklist
+
+1. At the root: `npm run build`.
+2. Create `backend/.env` from `backend/.env.example` and set at least `NODE_ENV=production`, `AUTH_SECRET`, `SEPAY_API_KEY`, `ADMIN_PASSWORD` (first start), and the `SMTP_*` values. Use `SMTP_PORT=587` where port 465 is blocked.
+3. `npm start`, or PM2 on a VPS. If something required is missing, the server stops and lists it.
+4. Open `https://<domain>/api/health`, which should answer `{"ok":true,...}`.
+5. In SePay, set the webhook to `https://<domain>/api/payments/sepay/webhook` with the same API key.
+6. To keep current data instead of the sample, copy your `db.json` and `uploads/` into `backend/data/` before the first start.
+
+### Option A: VPS (recommended)
+
+Ubuntu with Node.js 22, PM2 and Caddy (automatic HTTPS):
+
+```bash
+git clone https://github.com/Thanhtan1208/xanh-garden.git && cd xanh-garden
+npm run build
+cp backend/.env.example backend/.env   # then fill it in
+sudo npm install -g pm2
+pm2 start ecosystem.config.cjs && pm2 save && pm2 startup
+```
+
+`/etc/caddy/Caddyfile` (point the domain's DNS to the server first):
+
+```text
+shop.example.com {
+    encode zstd gzip
+    reverse_proxy localhost:3000
+}
+```
+
+Update: `git pull && npm run build && pm2 restart xanh-garden`. Copy `backend/data/` off the server from time to time: the daily backups stay on the same disk.
+
+### Option B: own computer + Cloudflare Tunnel (free, demo only)
+
+Build, start the server with the production `.env`, then run `cloudflared tunnel --url http://localhost:3000`. It prints a temporary `https://….trycloudflare.com` address. The site is online only while the computer and the tunnel are running, and the address changes on every run.
+
+### Option C: Render (paid)
+
+Web Service on Node, build command `npm run build`, start command `npm start`. Add a Disk (for example mounted at `/var/data`), set `DATA_DIR=/var/data` and `TRUST_PROXY=1`, plus the variables from the checklist. The free instance type does not work: it has no disk, sleeps when idle and blocks SMTP.
+
 ## Code style
 
 - 4-space indentation, single quotes, no trailing commas, line width 140 (see `.editorconfig` and `.prettierrc.json`).
@@ -251,7 +309,7 @@ curl.exe -X POST http://localhost:3000/api/payments/sepay/webhook -H "Authorizat
 ## Known limits
 
 - One server process only: data is held in memory and the whole file is rewritten on every save. Fine for a small shop, not for heavy traffic.
-- The production build must be served by a web server that also forwards `/api` and `/uploads` to the backend. Express does not serve the website.
+- Cannot run on serverless platforms (Vercel, Netlify Functions): it needs a server that runs all the time and a disk that keeps `db.json` and uploads.
 - SePay can only call the webhook when the backend has a public address.
 - Login hashing (scrypt) runs on the main thread, so very many simultaneous logins slow the server.
 
@@ -261,6 +319,10 @@ Newest first. Add a line here with every change.
 
 | Date | Change |
 |---|---|
+| 2026-11-15 | Phone layout fixes found on a real phone: the red count badges on the heart and cart icons covered the icons (badge is now 18 px and anchored to the top-right corner of the icon); the floating chat button covered prices and totals (on phones it slides away while scrolling down and returns when scrolling up or at the top of the page). |
+| 2026-11-15 | Deploy guide in Vietnamese (`docs/HUONG_DAN_DEPLOY.docx`): Azure for Students VM step by step (create VM, free domain name, Node/Caddy/PM2, `.env`, copying data, HTTPS, checks, SePay), own computer + Cloudflare Tunnel for demos, daily operations, troubleshooting, security notes. |
+| 2026-11-15 | Ready for deployment. In production Express serves the built website and the API on one port. Added `GET /api/health`, basic security headers, and the customer's real IP behind a proxy (`TRUST_PROXY`), so chat and tracking limits count each customer separately. With `NODE_ENV=production` the server refuses to start without `AUTH_SECRET` and `SEPAY_API_KEY`, or while a management account still uses the sample password (`ADMIN_PASSWORD` replaces it once). The first run uses `db.sample.json` when `db.json` is missing. The server shuts down gracefully. Added root `npm run build` / `npm start`, a PM2 config and a Deployment section. CI now builds with the deploy command and test-starts the server in production mode. 12 new tests (169 in total). SRS 2.1. |
+| 2026-11-15 | `.gitattributes`: LF line endings on every machine, so the Prettier check also passes on Windows with `core.autocrlf=true`. |
 | 2026-11-15 | CI with GitHub Actions (`.github/workflows/ci.yml`): Prettier check, backend tests and frontend build on every push to `main` and every pull request. |
 | 2026-11-15 | SRS rewritten (`docs/SRS_XANH_GARDEN.docx`) to match the current features, business rules and API. |
 | 2026-11-15 | UI review fixes: saved addresses in the old format (no province/ward or a wrong phone) show a red note in Checkout and Account, and placing an order with one opens the edit form instead of an error from the server; voucher cards in "Voucher của bạn" no longer show "Còn x lượt nhận"; order action buttons fill the width on mobile; product card meta has no stray "·" on narrow screens. Block comments in JS changed to `//`. |

@@ -11,6 +11,10 @@ export const DB_PATH = join(DATA_DIR, 'db.json');
 export const ANALYTICS_PATH = join(DATA_DIR, 'analytics.ndjson');
 export const UPLOAD_ROOT = join(DATA_DIR, 'uploads');
 export const BACKUP_DIR = join(DATA_DIR, 'backups');
+// Dữ liệu mẫu có trong git: chưa có db.json (lần chạy đầu, server mới) thì khởi động bằng bản này.
+export const SAMPLE_DB_PATH = join(ROOT, 'data', 'db.sample.json');
+// Bản build của frontend để server phục vụ luôn giao diện khi deploy. Đổi bằng biến FRONTEND_DIST.
+export const FRONTEND_DIST = process.env.FRONTEND_DIST ? resolve(process.env.FRONTEND_DIST) : join(ROOT, '..', 'frontend', 'dist');
 
 mkdirSync(DATA_DIR, { recursive: true });
 
