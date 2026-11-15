@@ -16,7 +16,7 @@ Không. Giỏ hàng được lưu theo tài khoản; đăng nhập lại (kể c
 Giá luôn lấy theo giá hiện tại của cửa hàng lúc thanh toán. Sau khi đặt đơn, giá của đơn được chốt và không đổi.
 
 ## Sản phẩm "Mới" và "Mới về" là gì?
-**Mới** là sản phẩm vừa được thêm vào cửa hàng trong 14 ngày gần đây. **Mới về** là sản phẩm đã có từ trước nhưng vừa được nhập thêm hàng trong 7 ngày gần đây.
+**Mới** là sản phẩm vừa được thêm vào cửa hàng trong 30 ngày gần đây. **Mới về** là sản phẩm đã có từ trước nhưng vừa được nhập thêm hàng trong 7 ngày gần đây.
 
 ## Sản phẩm "Bán chạy" tính thế nào?
 Xếp theo số lượng bán ra trong tháng hiện tại (tính từ các đơn đã được cửa hàng xác nhận, không tính đơn bị hủy). Đầu tháng chưa đủ số liệu, hệ thống bổ sung từ tháng trước và hàng mới nhất.
@@ -27,8 +27,14 @@ Thời gian giao phụ thuộc khu vực và đơn vị vận chuyển. Giao nha
 ## Tôi muốn mua sỉ / số lượng lớn?
 Mỗi đơn tối đa 20 cái mỗi sản phẩm và 50 triệu. Với nhu cầu lớn hơn (khai trương, sự kiện), hãy gửi góp ý cho cửa hàng nêu rõ số lượng để được tư vấn riêng.
 
-## Cửa hàng có cửa hàng thực tế/số điện thoại không?
-Chatbot không có thông tin địa chỉ cửa hàng hay hotline ngoài những gì có trong dữ liệu này. Nếu khách cần liên hệ, hãy hướng dẫn gửi góp ý/khiếu nại trong trang Góp ý để cửa hàng phản hồi.
+## Liên hệ cửa hàng bằng cách nào?
+Hotline, email, Zalo, địa chỉ và giờ làm việc nằm ở chân trang của mọi trang. Muốn cửa hàng trả lời bằng văn bản (khiếu nại, hỏi về đơn) thì gửi ở trang Góp ý kèm mã đơn.
+
+## Tôi muốn đổi địa chỉ hoặc số lượng của đơn đã đặt?
+Đơn đã đặt thì không sửa được. Đơn còn ở "Chờ thanh toán" hoặc "Chờ xác nhận" thì hủy rồi đặt lại; đơn đã xác nhận thì gửi "Yêu cầu hủy đơn" (lý do "Muốn thay đổi địa chỉ nhận hàng") hoặc gọi hotline.
+
+## Tôi có ví hay số dư tài khoản ở Xanh Garden không?
+Không. Xanh Garden không có ví tiền, điểm thưởng hay số dư. Tiền chỉ trả cho từng đơn (COD hoặc chuyển khoản QR); ưu đãi xem ở trang Voucher. Cửa hàng không xem được tài khoản ngân hàng của khách.
 
 ## Những điều chatbot không trả lời được
 Chatbot chỉ hỗ trợ về cửa hàng Xanh Garden, sản phẩm, chính sách và chăm sóc cây. Với câu hỏi ngoài phạm vi (chính trị, y tế, tài chính, lập trình...), hãy lịch sự từ chối và mời khách hỏi về cây cảnh hoặc cửa hàng.

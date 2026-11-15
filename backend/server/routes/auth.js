@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { byId, db, newId, save } from '../core/store.js';
 import { createToken, fail, handle, hashPassword, publicUser, requireRole, verifyPassword } from '../core/http.js';
-import { parseRegistration, passwordProblem } from '../core/rules.js';
+import { parseProfile, parseRegistration, passwordProblem } from '../core/rules.js';
 import { CODE_TTL_MS, assertCanResend, checkCode, issueCode } from '../core/codes.js';
 import { sendMail } from '../core/mailer.js';
 import { codeMail } from '../services/code-mail.js';
@@ -216,10 +216,35 @@ router.get(
     })
 );
 
-// Khách tải ảnh đại diện: nhận thẳng nội dung ảnh như ảnh banner, chỉ nhận ảnh thật, tối đa 2 MB
+// Sửa hồ sơ: tên đăng nhập, họ tên, ngày sinh. Mọi vai trò (khách, nhân viên, chủ shop, admin) đều tự sửa được của mình.
+router.patch(
+    '/profile',
+    requireRole(),
+    handle((req, res) => {
+        const user = byId('user', req.user.id);
+        const data = parseProfile(req.body);
+        if (data.name && data.name.toLowerCase() !== user.name.toLowerCase()) {
+            if (db.user.some((other) => other !== user && other.name.toLowerCase() === data.name.toLowerCase()))
+                fail(409, 'Tên đăng nhập đã tồn tại.');
+        }
+        if (data.name !== undefined) user.name = data.name;
+        if (data.birthday !== undefined) {
+            if (data.birthday) {
+                user.birthday = data.birthday;
+                user.birthdaySetAt = new Date().toISOString();
+            } else delete user.birthday;
+        }
+        // Hôm nay đúng sinh nhật thì nhận quà ngay (mỗi năm vẫn chỉ tặng 1 lần cho mỗi voucher)
+        syncAutoVouchers(user);
+        save();
+        res.json(publicUser(user));
+    })
+);
+
+// Tải ảnh đại diện: nhận thẳng nội dung ảnh như ảnh banner, chỉ nhận ảnh thật, tối đa 2 MB
 router.post(
     '/avatar',
-    requireRole('user'),
+    requireRole(),
     express.raw({ type: 'image/*', limit: '3mb' }),
     handle(async (req, res) => {
         const buffer = req.body;

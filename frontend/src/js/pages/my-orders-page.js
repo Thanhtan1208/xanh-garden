@@ -1,5 +1,5 @@
 import { api } from '../services/api-service.js';
-import { addToCart } from '../services/cart-service.js';
+import { addToCart, selectOnly } from '../services/cart-service.js';
 import {
     canRequestCancel,
     canUserCancel,
@@ -13,7 +13,7 @@ import { xuatHoaDon } from '../components/invoice.js';
 import { updateCartBadge } from '../components/header.js';
 import { requireCustomer } from '../utils/auth.js';
 import { ORDER_STATUS, escapeHtml, formatDate, formatPrice } from '../utils/format.js';
-import { icon, iconButton } from '../utils/icons.js';
+import { icon } from '../utils/icons.js';
 import { productImage } from '../utils/images.js';
 import { choiceDialog, confirmDialog, toast } from '../components/notify.js';
 
@@ -27,15 +27,30 @@ let filterStatus = '';
 let keyword = '';
 const expanded = new Set();
 
+// Tab "Chờ thanh toán" gồm cả đơn chuyển khoản chưa trả tiền (giống Shopee), các tab khác theo trạng thái
+const TAB_MATCH = {
+    unconfirmed: needsAttention,
+    pending: (order) => order.status === 'pending' && !needsAttention(order)
+};
+const inTab = (order, status) => !status || (TAB_MATCH[status] ? TAB_MATCH[status](order) : order.status === status);
+
 // Chưa có dữ liệu thì vẽ tab không kèm số đếm, để thanh tab có sẵn chỗ ngay từ đầu
 function renderTabs() {
     const entries = [['', 'Tất cả'], ...Object.entries(ORDER_STATUS)];
     tabs.innerHTML = entries
         .map(([status, label]) => {
-            const count = status ? orders.filter((order) => order.status === status).length : orders.length;
+            const count = orders.filter((order) => inTab(order, status)).length;
             return `<button class="tab${status === filterStatus ? ' active' : ''}" data-status="${status}">${label}${loaded ? ` (${count})` : ''}</button>`;
         })
         .join('');
+}
+
+// Nút đánh giá: 1 sản phẩm thì mở thẳng tab đánh giá, nhiều sản phẩm thì mở chi tiết để chọn từng món
+function reviewButton(order) {
+    if (order.status !== 'delivered') return '';
+    return order.items.length === 1
+        ? `<a class="btn btn-accent" href="./product-detail.html?id=${order.items[0].id}#reviews">${icon('star', { size: 16 })} Đánh giá</a>`
+        : `<button type="button" class="btn btn-accent" data-action="review">${icon('star', { size: 16 })} Đánh giá (${order.items.length} sản phẩm)</button>`;
 }
 
 function orderCard(order) {
@@ -43,7 +58,7 @@ function orderCard(order) {
         <article class="order-card" data-id="${order.id}">
             <div class="order-card-head">
                 <div><b>${escapeHtml(order.code)}</b><small class="muted">${formatDate(order.createdAt)}</small></div>
-                ${statusBadge(order.status)}
+                ${statusBadge(needsAttention(order) ? 'unconfirmed' : order.status)}
             </div>
             ${renderTimeline(order)}
             <div class="order-preview">
@@ -57,17 +72,20 @@ function orderCard(order) {
                 <span class="muted">${order.items.reduce((total, item) => total + item.qty, 0)} sản phẩm</span>
                 <b class="order-total">${formatPrice(order.total)}</b>
             </div>
-            ${expanded.has(order.id) ? `<div class="order-body">${renderOrderDetails(order)}</div>` : ''}
+            ${expanded.has(order.id) ? `<div class="order-body">${renderOrderDetails(order, { review: true })}</div>` : ''}
+            ${order.status === 'shipping' && order.autoReceiveAt ? `<p class="order-hint">Nhận được hàng rồi thì bấm "Đã nhận được hàng". Nếu bạn không bấm, hệ thống tự xác nhận vào ${formatDate(order.autoReceiveAt)}.</p>` : ''}
             <div class="order-actions">
-                ${iconButton(expanded.has(order.id) ? 'chevronUp' : 'chevronDown', expanded.has(order.id) ? 'Thu gọn chi tiết' : 'Xem chi tiết đơn', { attrs: { 'data-action': 'toggle' } })}
-                ${needsAttention(order) ? `<a class="btn btn-sm btn-accent" href="./order-success.html?code=${encodeURIComponent(order.code)}">Thanh toán ngay</a>` : ''}
-                ${canUserCancel(order) ? `<button type="button" class="btn btn-sm btn-danger" data-action="cancel">${icon('close', { size: 14 })} Hủy đơn</button>` : ''}
-                ${canRequestCancel(order) ? `<button type="button" class="btn btn-sm btn-danger" data-action="cancel-request">${icon('close', { size: 14 })} Yêu cầu hủy đơn</button>` : ''}
-                ${order.status === 'delivered' ? `<a class="btn btn-sm" href="./product-detail.html?id=${order.items[0].id}">Đánh giá sản phẩm</a>` : ''}
-                ${['delivered', 'cancelled'].includes(order.status) ? iconButton('refresh', 'Mua lại đơn này', { attrs: { 'data-action': 'reorder' } }) : ''}
+                <button type="button" class="btn btn-sm btn-outline" data-action="toggle" aria-expanded="${expanded.has(order.id)}">${icon(expanded.has(order.id) ? 'chevronUp' : 'chevronDown', { size: 14 })} ${expanded.has(order.id) ? 'Thu gọn' : 'Xem chi tiết'}</button>
                 ${order.status !== 'cancelled' ? `<button type="button" class="btn btn-sm btn-outline" data-action="invoice">${icon('download', { size: 14 })} Xuất hóa đơn</button>` : ''}
-                ${order.status !== 'cancelled' ? `<button type="button" class="btn btn-sm btn-outline" data-action="invoice-email">${icon('mail', { size: 14 })} Gửi hóa đơn về email</button>` : ''}
                 <a class="btn btn-sm btn-outline" href="./feedback.html?order=${encodeURIComponent(order.code)}">Phản ánh</a>
+                <span class="order-main-actions">
+                    ${canUserCancel(order) ? `<button type="button" class="btn btn-danger" data-action="cancel">${icon('close', { size: 16 })} Hủy đơn</button>` : ''}
+                    ${canRequestCancel(order) ? `<button type="button" class="btn btn-danger" data-action="cancel-request">${icon('close', { size: 16 })} Yêu cầu hủy đơn</button>` : ''}
+                    ${['delivered', 'cancelled'].includes(order.status) ? `<button type="button" class="btn btn-outline" data-action="reorder">${icon('refresh', { size: 16 })} Mua lại</button>` : ''}
+                    ${needsAttention(order) ? `<a class="btn btn-accent" href="./order-success.html?code=${encodeURIComponent(order.code)}">Thanh toán ngay</a>` : ''}
+                    ${order.status === 'shipping' ? `<button type="button" class="btn btn-accent" data-action="received">${icon('check', { size: 16 })} Đã nhận được hàng</button>` : ''}
+                    ${reviewButton(order)}
+                </span>
             </div>
         </article>`;
 }
@@ -97,7 +115,7 @@ function applyFilter() {
     orderList.querySelectorAll('.order-card').forEach((card) => {
         const order = orders.find((entry) => entry.id === card.dataset.id);
         const match =
-            (!filterStatus || order.status === filterStatus) &&
+            inTab(order, filterStatus) &&
             (!keyword ||
                 order.code.toLowerCase().includes(keyword) ||
                 order.items.some((item) => item.name.toLowerCase().includes(keyword)));
@@ -139,20 +157,36 @@ orderList.addEventListener('click', async (event) => {
     if (button.dataset.action === 'toggle') {
         if (!expanded.delete(order.id)) expanded.add(order.id);
         updateCard(order);
-    } else if (button.dataset.action === 'invoice') {
-        // xuất hóa đơn PDF của đơn này, thông báo hiện ở #actionMessage
-        xuatHoaDon(order, button, actionMessage);
-    } else if (button.dataset.action === 'invoice-email') {
+    } else if (button.dataset.action === 'review') {
+        // mở chi tiết đơn, mỗi sản phẩm có nút "Đánh giá" riêng
+        expanded.add(order.id);
+        updateCard(order);
+        orderList.querySelector(`.order-card[data-id="${order.id}"] .line-review`)?.focus();
+    } else if (button.dataset.action === 'received') {
+        // Khách xác nhận đã nhận hàng (giống Shopee): đơn chuyển sang "Đã giao"
+        const agreed = await confirmDialog({
+            title: `Đã nhận được đơn ${order.code}?`,
+            message: 'Chỉ bấm khi bạn đã nhận và kiểm tra hàng. Sau khi xác nhận, đơn chuyển sang "Đã giao".',
+            confirmText: 'Đã nhận được hàng',
+            cancelText: 'Chưa nhận'
+        });
+        if (!agreed) return;
         button.disabled = true;
         try {
-            const result = await api.post(`/orders/${order.id}/invoice-email`);
-            toast(`Đã gửi hóa đơn ${order.code} tới ${result.sentTo}.`, { type: 'success' });
+            Object.assign(order, await api.patch(`/orders/${order.id}/status`, { status: 'delivered' }));
+            toast(`Cảm ơn bạn! Đơn ${order.code} đã hoàn thành, hãy đánh giá sản phẩm nhé.`, { type: 'success' });
         } catch (error) {
             toast(error.message, { type: 'error' });
         }
-        button.disabled = false;
+        renderTabs();
+        updateCard(order);
+    } else if (button.dataset.action === 'invoice') {
+        // xuất hóa đơn PDF của đơn này, thông báo hiện ở #actionMessage
+        xuatHoaDon(order, button, actionMessage);
     } else if (button.dataset.action === 'reorder') {
+        // Mua lại: thêm vào giỏ và chỉ chọn các món của đơn này
         order.items.forEach((item) => addToCart(item.id, item.qty));
+        selectOnly(...order.items.map((item) => item.id));
         updateCartBadge();
         window.location.assign('./cart.html');
     } else if (button.dataset.action === 'cancel' || button.dataset.action === 'cancel-request') {

@@ -172,13 +172,19 @@ describe('Giỏ hàng theo tài khoản', () => {
 describe('Sổ địa chỉ', () => {
     test('thêm, sửa, đặt mặc định, xóa địa chỉ mặc định thì địa chỉ khác thành mặc định', async () => {
         const { token } = await newCustomer(ctx);
-        const bad = await call(ctx, 'POST', '/addresses', { token, body: { fullName: 'A', phone: '123', address: 'ngắn' } });
+        const bad = await call(ctx, 'POST', '/addresses', { token, body: { fullName: 'A', phone: '123', street: 'x' } });
         assert.equal(bad.status, 400);
         await addAddress(ctx, token);
         let book = (
             await call(ctx, 'POST', '/addresses', {
                 token,
-                body: { fullName: 'Trần Thị B', phone: '0912 345 678', address: '45 Trần Phú, Phường Hải Châu, Đà Nẵng' }
+                body: {
+                    fullName: 'Trần Thị B',
+                    phone: '0912 345 678',
+                    street: '45 Trần Phú',
+                    ward: 'Phường Hải Châu',
+                    province: 'Thành phố Đà Nẵng'
+                }
             })
         ).body;
         assert.equal(book.length, 2);
@@ -199,7 +205,13 @@ describe('Sổ địa chỉ', () => {
         for (let i = 0; i < 10; i += 1) await addAddress(ctx, token);
         const eleventh = await call(ctx, 'POST', '/addresses', {
             token,
-            body: { fullName: 'Nguyễn Văn A', phone: '0901234567', address: '12 Lê Lợi, Quận 1, TP. Hồ Chí Minh' }
+            body: {
+                fullName: 'Nguyễn Văn A',
+                phone: '0901234567',
+                street: '12 Lê Lợi',
+                province: 'Thành phố Hồ Chí Minh',
+                ward: 'Phường Tân Định'
+            }
         });
         assert.equal(eleventh.status, 409);
     });
@@ -405,6 +417,93 @@ describe('Chatbot tư vấn (không có khóa OpenAI)', () => {
         newest.forEach((product) => assert.ok(reply.body.reply.includes(product.name), product.name));
     });
 
+    test('hỏi cây ít nắng: không gợi ý cây cần nắng (kể cả "nắng nhẹ")', async () => {
+        const sunny = {
+            id: 'nang1',
+            name: 'Cây Bạc Hà Thử',
+            price: 30000,
+            categoryId: '1',
+            stock: 9,
+            care: ['Ánh sáng: Nắng nhẹ hoặc sáng nhiều']
+        };
+        const shady = { id: 'bong1', name: 'Cây Ngọc Ngân Thử', price: 140000, categoryId: '1', stock: 9, care: ['Ánh sáng: Chịu bóng'] };
+        ctx.db.products.push({ ...sunny, createdAt: new Date().toISOString() }, { ...shady, createdAt: new Date().toISOString() });
+        try {
+            const { token } = await newCustomer(ctx);
+            const message = 'Mình muốn cây để bàn làm việc, ít nắng, dưới 200 nghìn';
+            const reply = (await call(ctx, 'POST', '/chat', { token, body: { message } })).body.reply;
+            assert.match(reply, /Ngọc Ngân Thử/);
+            assert.doesNotMatch(reply, /Bạc Hà Thử/);
+        } finally {
+            ctx.db.products = ctx.db.products.filter((item) => !['nang1', 'bong1'].includes(item.id));
+        }
+    });
+
+    test('câu ngoài phạm vi không bị trả lời bằng đoạn tài liệu chỉ trùng vài từ', async () => {
+        const { token } = await newCustomer(ctx);
+        const reply = (await call(ctx, 'POST', '/chat', { token, body: { message: 'Viết giúp mình bài văn về mùa thu' } })).body.reply;
+        assert.match(reply, /chỉ hỗ trợ về cây cảnh/);
+    });
+
+    test('hỏi cách làm: trả đúng mục hướng dẫn và thông tin liên hệ', async () => {
+        const { token } = await newCustomer(ctx);
+        const ask = async (message) => (await call(ctx, 'POST', '/chat', { token, body: { message } })).body;
+        const order = await ask('làm sao để đặt hàng?');
+        assert.equal(order.mode, 'offline', 'câu hỏi cách làm không bị chặn');
+        assert.match(order.reply, /Mua ngay/);
+        assert.match((await ask('cách hủy đơn')).reply, /Yêu cầu hủy đơn/);
+        assert.match((await ask('đơn đã xác nhận rồi có hủy được không')).reply, /48 giờ/);
+        assert.match((await ask('số điện thoại cửa hàng là gì')).reply, /0901 234 567/);
+        assert.match((await ask('bao lâu thì đơn tự xác nhận đã nhận hàng')).reply, /7 ngày/);
+    });
+
+    test('hỏi tiếp ngắn hiểu cây đang nói tới; hỏi về trợ lý, hỏi món không bán đều trả lời đúng', async () => {
+        const ask = async (message, history = []) =>
+            (await call(ctx, 'POST', '/chat', { body: { message, history, visitor: 'followup2026' } })).body;
+        const history = [
+            { role: 'user', content: 'có bán lưỡi hổ không' },
+            { role: 'assistant', content: '[Lưỡi hổ](./product-detail.html?id=1) – 120.000 ₫, còn 30 sản phẩm.' }
+        ];
+        assert.match((await ask('giá bao nhiêu', history)).reply, /Lưỡi hổ.*120\.000/);
+        assert.match((await ask('giá bao nhiêu')).reply, /cây nào/, 'không rõ cây thì hỏi lại, không trả lời lạc đề');
+        const bot = await ask('bạn đang dùng model AI nào');
+        assert.equal(bot.mode, 'rule');
+        assert.match(bot.reply, /trợ lý tự động/);
+        assert.match((await ask('có mô hình tiểu cảnh không')).reply, /chưa có sản phẩm này/);
+    });
+
+    test('lệnh thao tác (đặt hàng, tra số dư) bị từ chối kèm hướng dẫn, không gọi AI', async () => {
+        // Giả lập OpenAI để đếm số lần bị gọi
+        let aiCalls = 0;
+        const fake = http.createServer((req, res) => {
+            aiCalls += 1;
+            req.resume();
+            res.statusCode = 500;
+            res.end('{}');
+        });
+        await new Promise((resolve) => fake.listen(0, resolve));
+        process.env.OPENAI_BASE_URL = `http://localhost:${fake.address().port}`;
+        process.env.OPENAI_API_KEY = 'khoa-gia';
+        try {
+            const { token } = await newCustomer(ctx);
+            const ask = async (message) => (await call(ctx, 'POST', '/chat', { token, body: { message } })).body;
+            const order = await ask('đặt hàng 30 cây lưỡi hổ cho tôi');
+            assert.equal(order.mode, 'rule');
+            assert.match(order.reply, /không thể tự đặt hàng/);
+            assert.match(order.reply, /product-detail\.html\?id=1\)/, 'kèm link sản phẩm');
+            assert.match(order.reply, /tối đa 20 cái/, 'nêu giới hạn mỗi đơn');
+            const balance = await ask('tra số dư giúp mình');
+            assert.equal(balance.mode, 'rule');
+            assert.match(balance.reply, /không có ví tiền/);
+            assert.equal((await ask('hủy đơn giúp mình')).mode, 'rule');
+            assert.equal(aiCalls, 0, 'câu đã chặn không tốn lượt gọi AI');
+        } finally {
+            delete process.env.OPENAI_API_KEY;
+            delete process.env.OPENAI_BASE_URL;
+            fake.close();
+        }
+    });
+
     test('có AI: link sai mã được sửa theo tên, không có sản phẩm thì chỉ giữ chữ', async () => {
         const product = ctx.db.products[0];
         // Giả lập OpenAI: không có embedding, câu trả lời có 2 link sai mã
@@ -460,38 +559,77 @@ describe('Ghi nhận hành vi', () => {
 });
 
 describe('Quy tắc số điện thoại và địa chỉ', () => {
-    const send = (token, phone, address) => call(ctx, 'POST', '/addresses', { token, body: { fullName: 'Nguyễn Văn A', phone, address } });
+    const place = { ward: 'Phường Tân Định', province: 'Thành phố Hồ Chí Minh' };
+    const send = (token, phone, extra = {}) =>
+        call(ctx, 'POST', '/addresses', { token, body: { fullName: 'Nguyễn Văn A', phone, street: '12 Lê Lợi', ...place, ...extra } });
 
     test('số điện thoại phải là số di động Việt Nam; +84 được đổi về 0', async () => {
         const { token } = await newCustomer(ctx);
-        const address = '12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh';
         for (const phone of ['0123456789', '0201234567', '090123456', '09012345678', 'abcdefghij', '1901234567'])
-            assert.equal((await send(token, phone, address)).status, 400, phone);
-        const ok = await send(token, '+84 901 234 567', address);
+            assert.equal((await send(token, phone)).status, 400, phone);
+        const ok = await send(token, '+84 901 234 567');
         assert.equal(ok.status, 201, JSON.stringify(ok.body));
         assert.equal(ok.body[0].phone, '0901234567');
     });
 
-    test('địa chỉ phải có số nhà, phường/xã hoặc quận/huyện, và tỉnh/thành phố', async () => {
+    test('bắt buộc đủ tỉnh/thành, phường/xã (có thật, phường thuộc tỉnh) và số nhà; số nhà, đường gõ gì cũng được', async () => {
         const { token } = await newCustomer(ctx);
         const phone = '0901234567';
         const cases = [
-            ['Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh', 'số nhà'],
-            ['12 Lê Lợi, Quận 1', 'tỉnh/thành phố'],
-            ['12 Lê Lợi, Hồ Chí Minh', 'phường/xã'],
-            ['một nơi nào đó rất xa', 'số nhà']
+            [{ street: '' }, /số nhà/],
+            [{ street: '   ' }, /số nhà/],
+            [{ ward: '' }, /Phường\/Xã/],
+            [{ province: '' }, /Tỉnh/],
+            [{ province: 'Tỉnh Không Có' }, /Tỉnh/],
+            [{ ward: 'Phường Hải Châu' }, /không thuộc/], // phường của Đà Nẵng
+            [{ ward: 'Phường Ba Đình' }, /không thuộc/] // phường của Hà Nội
         ];
-        for (const [address, missing] of cases) {
-            const res = await send(token, phone, address);
-            assert.equal(res.status, 400, address);
-            assert.match(res.body.message, new RegExp(missing), address);
+        for (const [extra, message] of cases) {
+            const res = await send(token, phone, extra);
+            assert.equal(res.status, 400, JSON.stringify(extra));
+            assert.match(res.body.message, message, JSON.stringify(extra));
         }
-        for (const address of [
-            '12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-            '5/7A Nguyễn Huệ, Xã Hòa Phú, Huyện Củ Chi, Hồ Chí Minh',
-            'Số 3 ngõ 45 Cầu Giấy, P. Dịch Vọng, Hà Nội',
-            '45 Trần Phú, Phường Hải Châu, Đà Nẵng'
-        ])
-            assert.equal((await send(token, phone, address)).status, 201, address);
+        for (const street of ['12', 'Lê Lợi', 'ngõ 5 hẻm 7/2A khu tập thể', '5/7A Nguyễn Huệ'])
+            assert.equal((await send(token, phone, { street })).status, 201, street);
+    });
+
+    test('dòng địa chỉ in trên đơn được ghép theo thứ tự số nhà, phường/xã, tỉnh/thành', async () => {
+        const { token } = await newCustomer(ctx);
+        const book = (await send(token, '0901234567')).body;
+        assert.equal(book[0].address, '12 Lê Lợi, Phường Tân Định, Thành phố Hồ Chí Minh');
+        assert.equal(book[0].district, undefined, 'không còn cấp quận/huyện');
+    });
+
+    test('địa chỉ cũ (chưa chọn phường/tỉnh) bị chặn khi đặt hàng, sửa lại thì đặt được', async () => {
+        const { token, user } = await newCustomer(ctx);
+        const addressId = await addAddress(ctx, token);
+        const stored = ctx.db.user.find((item) => item.id === user.id).addresses[0];
+        Object.assign(stored, { address: '12 Lê Lợi, Quận 1, TP. Hồ Chí Minh', district: 'Quận 1' });
+        delete stored.ward;
+        delete stored.province;
+        const blocked = await placeOrder(ctx, token, addressId, [['2', 1]]);
+        assert.equal(blocked.status, 400);
+        assert.match(blocked.body.message, /Sổ địa chỉ/);
+        const fixed = await call(ctx, 'PUT', `/addresses/${addressId}`, { token, body: { ...stored, street: '12 Lê Lợi', ...place } });
+        assert.equal(fixed.status, 200, JSON.stringify(fixed.body));
+        assert.equal(fixed.body[0].district, undefined);
+        assert.equal((await placeOrder(ctx, token, addressId, [['2', 1]])).status, 201);
+    });
+
+    test('địa chỉ đã lưu mà thiếu số nhà cũng bị chặn khi đặt hàng', async () => {
+        const { token, user } = await newCustomer(ctx);
+        const addressId = await addAddress(ctx, token);
+        ctx.db.user.find((item) => item.id === user.id).addresses[0].street = '';
+        const blocked = await placeOrder(ctx, token, addressId, [['2', 1]]);
+        assert.equal(blocked.status, 400);
+        assert.match(blocked.body.message, /số nhà/);
+    });
+
+    test('danh sách 34 tỉnh/thành và phường/xã hiện hành có sẵn cho giao diện', async () => {
+        const res = await call(ctx, 'GET', '/divisions');
+        assert.equal(res.status, 200);
+        assert.equal(res.body.length, 34);
+        assert.ok(res.body.reduce((sum, [, wards]) => sum + wards.length, 0) > 3000);
+        assert.ok(res.body.every(([name, wards]) => name && wards.length));
     });
 });

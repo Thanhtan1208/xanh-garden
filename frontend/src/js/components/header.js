@@ -1,6 +1,6 @@
 import { api, clearApiCache } from '../services/api-service.js';
 import { cartCount, cartReady, flushCart, forgetAccountCart } from '../services/cart-service.js';
-import { cachedCategories, getCategories } from '../services/catalog-service.js';
+import { getCategories } from '../services/catalog-service.js';
 import { favoritesReady, paintFavorites } from '../services/favorite-service.js';
 import { clearSession, getCurrentUser, getToken, setSession } from '../utils/auth.js';
 import { hasPermission, isManagementRole, ROLE_LABELS } from '../utils/permissions.js';
@@ -18,16 +18,6 @@ const admin = isManagementRole(user);
 const navLink = (href, label, active = currentPage === href.split('?')[0] && !href.includes('?')) =>
     `<a href="./${href}"${active ? ' class="active"' : ''}>${label}</a>`;
 
-function categoryLinks(categories) {
-    const selected = currentPage === 'products.html' ? params.get('category') : null;
-    return (categories || [])
-        .map(
-            (category) =>
-                `<a href="./products.html?category=${encodeURIComponent(category.id)}"${String(category.id) === selected ? ' class="active"' : ''}>${escapeHtml(category.name)}</a>`
-        )
-        .join('');
-}
-
 // Header cửa hàng
 function storeHeader() {
     const account = user
@@ -37,14 +27,26 @@ function storeHeader() {
                     <a href="./account.html">${icon('user', { size: 16 })} Tài khoản của tôi</a>
                     <a href="./my-orders.html">${icon('box', { size: 16 })} Đơn hàng của tôi</a>
                     <a href="./account.html?tab=favorites">${icon('heart', { size: 16 })} Sản phẩm yêu thích</a>
-                    <a href="./vouchers.html">${icon('ticket', { size: 16 })} Ví voucher</a>
+                    <a href="./vouchers.html">${icon('ticket', { size: 16 })} Voucher</a>
                     <a href="./feedback.html">${icon('chat', { size: 16 })} Góp ý & khiếu nại</a>
                     <button type="button" data-logout>${icon('logout', { size: 16 })} Đăng xuất</button>
                 </div>
             </details>`
         : `<a class="header-action" href="./login.html" aria-label="Đăng nhập" title="Đăng nhập">${icon('user', { size: 22 })}<span><small>Đăng nhập</small><b>Tài khoản</b></span></a>`;
 
-    // Header gọn 1 khối: logo, ô tìm kiếm, tài khoản/yêu thích/giỏ hàng; hotline và chính sách để ở chân trang
+    // Ô tìm kiếm chỉ dùng để tìm sản phẩm nên chỉ có ở trang Sản phẩm
+    const onProducts = currentPage === 'products.html';
+    const searchBox = onProducts
+        ? `<form class="header-search" action="./products.html" role="search">
+                    <input type="search" name="q" value="${escapeHtml(params.get('q') || '')}" placeholder="Bạn tìm cây gì? VD: kim tiền, sen đá, cây để bàn..." aria-label="Tìm sản phẩm" autocomplete="off">
+                    <button type="submit" aria-label="Tìm kiếm">${icon('search', { size: 20 })}</button>
+                </form>`
+        : '';
+    const searchToggle = onProducts
+        ? `<button type="button" class="header-action search-toggle" aria-label="Tìm kiếm">${icon('search', { size: 22 })}</button>`
+        : '';
+
+    // Header gọn 1 khối: logo, ô tìm kiếm (trang Sản phẩm), tài khoản/yêu thích/giỏ hàng; hotline và chính sách để ở chân trang
     return `
         <div class="header-main">
             <div class="container header-main-inner">
@@ -53,12 +55,9 @@ function storeHeader() {
                     <span class="logo-mark">${icon('sprout', { size: 26 })}</span>
                     <span class="logo-text"><b>${escapeHtml(SHOP.name)}</b><small>${escapeHtml(SHOP.tagline)}</small></span>
                 </a>
-                <form class="header-search" action="./products.html" role="search">
-                    <input type="search" name="q" value="${currentPage === 'products.html' ? escapeHtml(params.get('q') || '') : ''}" placeholder="Bạn tìm cây gì? VD: kim tiền, sen đá, cây để bàn..." aria-label="Tìm sản phẩm" autocomplete="off">
-                    <button type="submit" aria-label="Tìm kiếm">${icon('search', { size: 20 })}</button>
-                </form>
+                ${searchBox}
                 <div class="header-actions">
-                    <button type="button" class="header-action search-toggle" aria-label="Tìm kiếm">${icon('search', { size: 22 })}</button>
+                    ${searchToggle}
                     ${account}
                     <a class="header-action header-icon-only header-favorites" href="${user ? './account.html?tab=favorites' : './login.html'}" aria-label="Sản phẩm yêu thích" title="Sản phẩm yêu thích">${icon('heart', { size: 22 })}<span class="count" id="favCount" hidden>0</span></a>
                     <a class="header-action header-cart" href="./cart.html" aria-label="Giỏ hàng">${icon('cart', { size: 24 })}<span class="count" id="cartCount"${cartCount() ? '' : ' hidden'}>${cartCount()}</span></a>
@@ -69,12 +68,8 @@ function storeHeader() {
             <div class="container main-nav-inner">
                 <div class="drawer-head"><b>Danh mục</b><button type="button" class="drawer-close" aria-label="Đóng menu">${icon('close', { size: 22 })}</button></div>
                 ${navLink('index.html', `${icon('home', { size: 17 })} Trang chủ`)}
-                ${navLink('products.html', `${icon('leaf', { size: 17 })} Sản phẩm`, currentPage === 'products.html' && !params.get('category'))}
-                <details class="category-menu"${currentPage === 'products.html' && params.get('category') ? ' data-active="true"' : ''}>
-                    <summary>${icon('grid', { size: 17 })} Danh mục ${icon('chevronDown', { size: 15, cls: 'category-chevron' })}</summary>
-                    <div class="nav-categories" id="navCategories">${categoryLinks(cachedCategories())}</div>
-                </details>
-                ${navLink('vouchers.html', `${icon('gift', { size: 17 })} Khuyến mãi`)}
+                ${navLink('products.html', `${icon('leaf', { size: 17 })} Sản phẩm`)}
+                ${navLink('vouchers.html', `${icon('gift', { size: 17 })} Voucher`)}
                 ${navLink('info.html?page=cham-soc', `${icon('book', { size: 17 })} Cẩm nang`, currentPage === 'info.html')}
                 <span class="drawer-extra">
                     ${user ? navLink('account.html', 'Tài khoản của tôi') + navLink('my-orders.html', 'Đơn hàng của tôi') : navLink('login.html', 'Đăng nhập') + navLink('dangky.html', 'Đăng ký')}
@@ -141,7 +136,7 @@ function adminHeader() {
             <a href="./admin-dashboard.html" class="logo"><span class="logo-mark">${icon('sprout', { size: 20 })}</span><span class="logo-text"><b>${escapeHtml(SHOP.name)}</b><small>Khu vực quản lý</small></span></a>
             <span class="admin-user">
                 <a class="admin-store-link" href="./index.html" title="Xem cửa hàng">${icon('home', { size: 16 })} <span>Xem cửa hàng</span></a>
-                <span class="admin-who"><b>${escapeHtml(user.name)}</b><span class="role-tag role-tag-${user.role}">${ROLE_LABELS[user.role]}</span></span>
+                <a class="admin-who" href="./account.html" title="Hồ sơ cá nhân"><b>${escapeHtml(user.name)}</b><span class="role-tag role-tag-${user.role}">${ROLE_LABELS[user.role]}</span></a>
                 <button type="button" data-logout aria-label="Đăng xuất" title="Đăng xuất">${icon('logout', { size: 18 })}</button>
             </span>
         </div>
@@ -150,7 +145,7 @@ function adminHeader() {
 }
 
 // Chân trang
-function footer(categories) {
+function footer() {
     return `
         <div class="footer-main">
             <div class="container footer-grid">
@@ -170,7 +165,7 @@ function footer(categories) {
                         <a href="./info.html?page=mua-hang">Vận chuyển & thanh toán</a>
                         <a href="./info.html?page=doi-tra">Bảo hành & đổi trả</a>
                         <a href="./info.html?page=hoi-dap">Câu hỏi thường gặp</a>
-                        <a href="./vouchers.html">Chương trình khuyến mãi</a>
+                        <a href="./vouchers.html">Voucher</a>
                     </nav>
                 </div>
                 <div>
@@ -214,16 +209,12 @@ export function renderHeader() {
         if (document.body.classList.contains('nav-open') && !event.target.closest('.main-nav, .admin-side, .nav-toggle')) setOpen(false);
         const menu = element.querySelector('.account-menu[open]');
         if (menu && !event.target.closest('.account-menu')) menu.open = false;
-        const categoryMenu = element.querySelector('.category-menu[open]');
-        if (categoryMenu && !event.target.closest('.category-menu')) categoryMenu.open = false;
     });
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
         setOpen(false);
         const accountMenu = element.querySelector('.account-menu[open]');
-        const categoryMenu = element.querySelector('.category-menu[open]');
         if (accountMenu) accountMenu.open = false;
-        if (categoryMenu) categoryMenu.open = false;
     });
     element.querySelector('.search-toggle')?.addEventListener('click', () => {
         element.classList.toggle('search-open');
@@ -253,7 +244,7 @@ function renderFooter() {
     if (admin || document.querySelector('.site-footer')) return;
     const element = document.createElement('footer');
     element.className = 'site-footer';
-    element.innerHTML = footer(cachedCategories());
+    element.innerHTML = footer();
     document.body.append(element);
 }
 
@@ -281,22 +272,13 @@ onShopChange(() => {
             element.textContent = SHOP.tagline;
         });
     const footerElement = document.querySelector('.site-footer');
-    if (footerElement) footerElement.innerHTML = footer(cachedCategories());
+    if (footerElement) footerElement.innerHTML = footer();
 });
 cartReady.then(updateCartBadge); // giỏ trên server về tới nơi thì cập nhật số trên biểu tượng giỏ hàng
 favoritesReady.then(() => paintFavorites());
 
-// Danh mục mới nhất từ server cho menu.
-if (!admin) {
-    getCategories()
-        .then((categories) => {
-            // Chỉ vẽ lại khi danh mục thật sự thay đổi, tránh menu chớp
-            const html = categoryLinks(categories);
-            const nav = document.querySelector('#navCategories');
-            if (nav && nav.innerHTML !== html) nav.innerHTML = html;
-        })
-        .catch(() => {});
-}
+// Nhớ sẵn danh mục mới nhất để trang chủ và trang sản phẩm vẽ cột danh mục ngay khi mở
+if (!admin) getCategories().catch(() => {});
 
 // Chatbot tư vấn nổi ở góc phải mọi trang (trừ trang quản trị).
 if (!admin) import('./chat-widget.js');

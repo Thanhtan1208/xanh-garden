@@ -1,5 +1,5 @@
 import { fail } from './http.js';
-import { addressProblem, normalizePhone } from './address.js';
+import { addressProblem, joinAddress, normalizePhone } from './address.js';
 
 export const FREE_SHIPPING_FROM = 500000;
 export const SHIPPING_FEES = { standard: 30000, express: 50000 };
@@ -29,6 +29,9 @@ export const CANCEL_REASONS = Object.freeze({
     other: 'Lý do khác'
 });
 export const CANCEL_REQUEST_TTL_MS = 48 * 60 * 60 * 1000;
+// Nhận hàng (giống Shopee): đơn đang giao thì khách bấm "Đã nhận được hàng";
+// khách không bấm thì sau N ngày kể từ lúc bắt đầu giao hệ thống tự xác nhận đã giao.
+export const AUTO_RECEIVE_DAYS = 7;
 
 // Hàng mới / hàng mới về
 export const NEW_PRODUCT_DAYS = 30; // sản phẩm tạo trong N ngày gần đây: nhãn "Mới"
@@ -58,12 +61,12 @@ export const CHAT_LIMIT_PER_DAY = 120; // giới hạn mỗi người/IP để k
 
 // Luồng trạng thái hợp lệ: trạng thái hiện tại -> { trạng thái mới: ai được phép }.
 export const ORDER_TRANSITIONS = {
-    // 'customer' = khách đặt đơn: chỉ được tự hủy khi cửa hàng chưa xác nhận; các bước còn lại do admin/owner/staff làm
+    // 'customer' = khách đặt đơn: tự hủy khi cửa hàng chưa xác nhận, bấm "Đã nhận được hàng" khi đang giao; các bước còn lại do admin/owner/staff làm
     unconfirmed: { cancelled: ['admin', 'owner', 'customer'] }, // sang "pending" chỉ khi đã nhận đủ tiền (webhook SePay hoặc admin ghi nhận) - xem markPaid
     pending: { confirmed: ['admin', 'owner', 'staff'], cancelled: ['admin', 'owner', 'staff', 'customer'] },
     confirmed: { shipping: ['admin', 'owner', 'staff'], cancelled: ['admin', 'owner', 'staff'] },
     // Đang giao mà khách không nhận hàng (giao không thành công): admin hủy đơn, hàng hoàn về kho, đã trả trước thì hoàn tiền
-    shipping: { delivered: ['admin', 'owner', 'staff'], cancelled: ['admin', 'owner', 'staff'] },
+    shipping: { delivered: ['admin', 'owner', 'staff', 'customer'], cancelled: ['admin', 'owner', 'staff'] },
     delivered: {},
     cancelled: {}
 };
@@ -114,17 +117,28 @@ export function parseRegistration(body = {}) {
     return { name, email, password, birthday };
 }
 
+// Sửa hồ sơ cá nhân (khách, nhân viên, chủ shop, admin đều dùng): chỉ đổi các trường có gửi lên.
+// Email không đổi ở đây vì phải xác minh lại bằng mã gửi về email mới.
+export function parseProfile(body = {}) {
+    const data = {};
+    if (body.name !== undefined) {
+        data.name = textField(body.name, 'Tên đăng nhập', 3, 20);
+        if (!NAME_PATTERN.test(data.name)) fail(400, 'Tên đăng nhập chỉ gồm chữ, số, dấu gạch dưới và dấu chấm.');
+    }
+    if (body.birthday !== undefined) data.birthday = text(body.birthday) ? parseBirthday(body.birthday) : '';
+    return data;
+}
+
 export function parseAddress(body = {}) {
+    const fullName = textField(body.fullName, 'Tên người nhận', 2, 60);
     const phone = normalizePhone(text(body.phone));
     if (!phone) fail(400, 'Số điện thoại không hợp lệ. Cần số di động Việt Nam 10 số (VD: 0901234567 hoặc +84901234567).');
-    const address = textField(body.address, 'Địa chỉ giao hàng', 10, 200);
-    const problem = addressProblem(address);
+    // Bắt buộc đủ tỉnh/thành, phường/xã, số nhà (báo lỗi theo thứ tự ô nhập)
+    const place = { province: text(body.province), ward: text(body.ward), street: text(body.street) };
+    const problem = addressProblem(place);
     if (problem) fail(400, problem);
-    return {
-        fullName: textField(body.fullName, 'Tên người nhận', 2, 60),
-        phone,
-        address
-    };
+    const street = textField(place.street, 'Số nhà, tên đường', 1, 100);
+    return { fullName, phone, ...place, street, address: joinAddress(place) };
 }
 
 export function parseOrderOptions(body = {}) {

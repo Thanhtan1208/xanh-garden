@@ -1,5 +1,6 @@
 import { db } from '../core/store.js';
 import {
+    AUTO_RECEIVE_DAYS,
     CANCEL_REASONS,
     CANCEL_REQUEST_TTL_MS,
     FREE_SHIPPING_FROM,
@@ -33,6 +34,7 @@ export function publicRules() {
         maxCodTotal: MAX_COD_TOTAL,
         paymentMinutes: Math.round(PAYMENT_TTL_MS / 60000),
         cancelReasons: CANCEL_REASONS,
-        cancelRequestHours: Math.round(CANCEL_REQUEST_TTL_MS / 3600000)
+        cancelRequestHours: Math.round(CANCEL_REQUEST_TTL_MS / 3600000),
+        autoReceiveDays: AUTO_RECEIVE_DAYS
     };
 }

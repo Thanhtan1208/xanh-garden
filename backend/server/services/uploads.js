@@ -41,7 +41,7 @@ export async function removeFile(file) {
     try {
         await unlink(join(REVIEW_DIR, file));
     } catch {
-        /* tệp đã mất thì bỏ qua */
+        // tệp đã mất thì bỏ qua
     }
 }
 
@@ -52,7 +52,7 @@ export async function removeBannerFile(url) {
     try {
         await unlink(join(BANNER_DIR, file));
     } catch {
-        /* tệp đã mất thì bỏ qua */
+        // tệp đã mất thì bỏ qua
     }
 }
 
@@ -63,7 +63,7 @@ export async function removeAvatarFile(url) {
     try {
         await unlink(join(AVATAR_DIR, file));
     } catch {
-        /* tệp đã mất thì bỏ qua */
+        // tệp đã mất thì bỏ qua
     }
 }
 
@@ -94,7 +94,7 @@ function sweepAdminImages(cutoff) {
             try {
                 if (statSync(join(dir, file)).mtimeMs < cutoff) unlinkSync(join(dir, file));
             } catch {
-                /* tệp vừa bị xóa: bỏ qua */
+                // tệp vừa bị xóa: bỏ qua
             }
         });
     });

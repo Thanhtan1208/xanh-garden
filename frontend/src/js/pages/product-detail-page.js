@@ -1,5 +1,5 @@
 import { api } from '../services/api-service.js';
-import { addToCart } from '../services/cart-service.js';
+import { addToCart, selectOnly } from '../services/cart-service.js';
 import { isFavorite } from '../services/favorite-service.js';
 import { trackAddToCart } from '../services/tracker.js';
 import {
@@ -84,7 +84,6 @@ function renderProduct(category) {
             <div class="detail-meta">
                 <span id="ratingLine"></span>
                 ${product.sold ? `<span>Đã bán ${product.sold}</span>` : ''}
-                <span>Mã SP: ${escapeHtml(String(product.id).toUpperCase())}</span>
                 <span class="stock ${soldOut ? 'out' : ''}">${soldOut ? 'Hết hàng' : product.stock <= 5 ? `Chỉ còn ${product.stock} sản phẩm` : 'Còn hàng'}</span>
             </div>
             <div class="price-box">${priceBlock(product)}${percent ? `<span class="badge badge-sale">-${percent}%</span>` : ''}</div>
@@ -161,8 +160,10 @@ function renderProduct(category) {
             });
         }
     });
+    // Mua ngay (giống Shopee): thêm vào giỏ rồi sang giỏ hàng với chỉ sản phẩm này được chọn
     $('#buyNowBtn').addEventListener('click', () => {
         addCurrent();
+        selectOnly(product.id);
         window.location.assign('./cart.html');
     });
 }

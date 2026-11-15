@@ -26,10 +26,10 @@
                     </div>
                     <nav id="accountNav" aria-label="Tài khoản">
                         <a href="./account.html?tab=info" data-tab="info" data-nav-icon="user">Thông tin tài khoản</a>
-                        <a href="./my-orders.html" data-nav-icon="box">Đơn hàng của tôi</a>
-                        <a href="./account.html?tab=addresses" data-tab="addresses" data-nav-icon="mapPin">Sổ địa chỉ</a>
-                        <a href="./account.html?tab=favorites" data-tab="favorites" data-nav-icon="heart">Sản phẩm yêu thích</a>
-                        <a href="./vouchers.html" data-nav-icon="ticket">Ví voucher</a>
+                        <a href="./my-orders.html" data-nav-icon="box" data-customer-only>Đơn hàng của tôi</a>
+                        <a href="./account.html?tab=addresses" data-tab="addresses" data-customer-only data-nav-icon="mapPin">Sổ địa chỉ</a>
+                        <a href="./account.html?tab=favorites" data-tab="favorites" data-customer-only data-nav-icon="heart">Sản phẩm yêu thích</a>
+                        <a href="./vouchers.html" data-nav-icon="ticket" data-customer-only>Voucher</a>
                         <a href="./account.html?tab=password" data-tab="password" data-nav-icon="shield">Đổi mật khẩu</a>
                         <button type="button" class="logout" data-logout data-nav-icon="logout">Đăng xuất</button>
                     </nav>
@@ -39,11 +39,19 @@
                     <section class="panel-card hidden" data-panel="info">
                         <h2>Thông tin tài khoản</h2>
                         <dl class="info-rows" id="infoRows"></dl>
-                        <form id="birthdayForm" class="narrow-form hidden">
-                            <p class="muted">Khai ngày sinh để nhận voucher quà tặng đúng ngày sinh nhật mỗi năm (chỉ khai được một lần).</p>
-                            <label>Ngày sinh <input type="date" id="birthdayInput" required></label>
-                            <button type="submit" class="btn btn-sm">Lưu ngày sinh</button>
-                            <p id="birthdayMessage" class="error-message" role="alert"></p>
+                        <button type="button" id="editProfileBtn" class="btn btn-sm">Sửa thông tin</button>
+                        <form id="profileForm" class="narrow-form hidden" novalidate>
+                            <label>Tên đăng nhập <small class="muted block">3-20 ký tự: chữ, số, dấu gạch dưới, dấu chấm. Dùng để đăng nhập.</small>
+                                <input type="text" name="name" maxlength="20" autocomplete="username"></label>
+                            <label>Ngày sinh <small class="muted block">Khai ngày sinh để nhận quà sinh nhật mỗi năm.</small>
+                                <input type="date" name="birthday"></label>
+                            <label>Email <small class="muted block">Email không đổi ở đây được.</small>
+                                <input type="email" name="email" disabled></label>
+                            <p id="profileMessage" class="error-message" role="alert"></p>
+                            <div class="button-row">
+                                <button type="submit" class="btn btn-sm">Lưu</button>
+                                <button type="button" id="cancelProfileBtn" class="btn btn-sm btn-outline">Hủy</button>
+                            </div>
                         </form>
                     </section>
                     <section class="panel-card hidden" data-panel="info" id="summaryCard">
@@ -56,9 +64,18 @@
                         <form id="addressForm" class="address-form hidden" novalidate>
                             <h3 id="addressFormTitle">Địa chỉ mới</h3>
                             <div class="form-grid">
-                                <label>Tên người nhận <input type="text" name="fullName" autocomplete="name" maxlength="60"></label>
-                                <label>Số điện thoại <input type="tel" name="phone" autocomplete="tel" placeholder="Số di động VN, VD: 0901234567"></label>
-                                <label class="full-column">Địa chỉ giao hàng <input type="text" name="address" autocomplete="street-address" maxlength="200" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành (bắt buộc)"></label>
+                                <label><span>Tên người nhận <span class="req">*</span></span> <input type="text" name="fullName" autocomplete="name" maxlength="60"></label>
+                                <label><span>Số điện thoại <span class="req">*</span></span> <input type="tel" name="phone" autocomplete="tel" placeholder="Số di động VN, VD: 0901234567"></label>
+                                <label><span>Tỉnh/Thành phố <span class="req">*</span></span>
+                                    <span class="combo"><input type="text" name="province" placeholder="Chọn hoặc gõ để tìm"></span>
+                                </label>
+                                <label><span>Phường/Xã <span class="req">*</span></span>
+                                    <span class="combo"><input type="text" name="ward"></span>
+                                </label>
+                                <p class="muted full-column hint-line">Từ 1/7/2025 cả nước có 34 tỉnh/thành, dưới tỉnh là phường/xã (không còn quận/huyện).</p>
+                                <label class="full-column"><span>Số nhà, tên đường <span class="req">*</span></span>
+                                    <input type="text" name="street" autocomplete="address-line1" maxlength="100" placeholder="VD: 12 Lê Lợi, hẻm 5">
+                                </label>
                                 <label class="check-inline full-column"><input type="checkbox" name="isDefault"> Đặt làm địa chỉ mặc định</label>
                             </div>
                             <p id="addressMessage" class="error-message" role="alert"></p>

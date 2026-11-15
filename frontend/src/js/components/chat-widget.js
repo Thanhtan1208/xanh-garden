@@ -76,7 +76,7 @@ function persistGuest() {
     try {
         sessionStorage.setItem(GUEST_KEY, JSON.stringify(messages.slice(-20)));
     } catch {
-        /* bỏ qua nếu bị chặn */
+        // bỏ qua nếu bị chặn
     }
 }
 
@@ -94,7 +94,7 @@ async function ask(text) {
         try {
             visitor = localStorage.getItem('xg_vid') || undefined;
         } catch {
-            /* bị chặn lưu trữ */
+            // bị chặn lưu trữ
         }
         const result = await api.post(
             '/chat',

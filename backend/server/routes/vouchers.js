@@ -25,7 +25,7 @@ const publicVoucher = (voucher) => ({
     remaining: voucher.totalQuantity ? Math.max(0, voucher.totalQuantity - (voucher.claimedCount || 0)) : null
 });
 
-// Kho voucher: những voucher ai cũng có thể bấm nhận (đang diễn ra, còn số lượng).
+// Voucher có thể nhận: ai cũng bấm nhận được (đang diễn ra, còn số lượng).
 router.get(
     '/',
     handle((req, res) => {
@@ -55,7 +55,7 @@ const walletRow = ({ entry, voucher, status }) => ({
     voucher: voucher ? publicVoucher(voucher) : null
 });
 
-// Ví voucher của tôi. Mỗi lần xem sẽ cấp nốt voucher người dùng mới / sinh nhật nếu đủ điều kiện mà chưa được cấp.
+// Voucher của tôi (ví). Mỗi lần xem sẽ cấp nốt voucher người dùng mới / sinh nhật nếu đủ điều kiện mà chưa được cấp.
 router.get(
     '/mine',
     requireRole('user'),
@@ -91,13 +91,12 @@ router.post(
     })
 );
 
-// Ngày sinh chỉ khai báo được một lần (chống đổi ngày sinh liên tục để nhận quà nhiều lần).
+// Khai hoặc đổi ngày sinh. Đổi thoải mái cũng không nhận thêm quà: mỗi voucher sinh nhật chỉ tặng 1 lần mỗi năm.
 router.put(
     '/birthday',
     requireRole('user'),
     handle((req, res) => {
         const user = byId('user', req.user.id);
-        if (user.birthday) fail(409, 'Bạn đã khai ngày sinh. Vui lòng liên hệ cửa hàng nếu cần thay đổi.');
         user.birthday = parseBirthday(req.body?.birthday);
         user.birthdaySetAt = new Date().toISOString();
         syncAutoVouchers(user); // hôm nay đúng sinh nhật thì nhận quà ngay

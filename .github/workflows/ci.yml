@@ -1,0 +1,67 @@
+# CI: kiểm định dạng code, chạy test backend, build frontend mỗi lần push hoặc mở PR
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+# Push mới lên cùng nhánh thì hủy lượt chạy cũ
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    # Cùng múi giờ với cửa hàng để test ngày giờ cho kết quả như trên máy
+    TZ: Asia/Ho_Chi_Minh
+
+jobs:
+    format:
+        name: Định dạng code (Prettier)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+                  cache: npm
+                  cache-dependency-path: package-lock.json
+            - run: npm ci
+            - run: npm run format:check
+
+    backend:
+        name: Test backend
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: backend
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+                  cache: npm
+                  cache-dependency-path: backend/package-lock.json
+            - run: npm ci
+            # Bộ test tự tạo dữ liệu tạm, không gửi mail thật, không gọi OpenAI nên không cần secret
+            - run: npm test
+
+    frontend:
+        name: Build frontend
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+                  cache: npm
+                  cache-dependency-path: frontend/package-lock.json
+            - run: npm ci
+            - run: npm run build

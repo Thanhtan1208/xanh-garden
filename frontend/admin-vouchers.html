@@ -17,53 +17,64 @@
                 <h1>Voucher</h1>
                 <button type="button" id="newBtn" class="btn btn-sm">Tạo voucher</button>
             </div>
-            <p class="muted">Quy tắc: mỗi đơn dùng tối đa 1 voucher giảm đơn + 1 voucher phí vận chuyển. Giảm theo % bắt buộc có mức giảm tối đa. Voucher đã có người nhận thì chỉ đổi được tên, ngày kết thúc, tổng số lượng và bật/tắt.</p>
+            <p class="muted">Cách hoạt động: khách giữ voucher trong ví, lúc thanh toán chọn tối đa 1 voucher giảm đơn và 1 voucher giảm phí ship. Voucher đã có người nhận thì chỉ sửa được tên, ngày kết thúc, tổng số lượng và bật/tắt; muốn đổi mức giảm thì tắt voucher cũ rồi tạo cái mới.</p>
 
             <form id="voucherForm" class="form-section hidden" novalidate>
                 <h2 id="formTitle">Voucher mới</h2>
                 <div class="form-grid">
-                    <label>Mã voucher (chữ in hoa/số) <input type="text" name="code" maxlength="20" placeholder="SALE25"></label>
-                    <label>Tên hiển thị <input type="text" name="name" maxlength="80" placeholder="Giảm 25% đơn từ 500k"></label>
-                    <label>Loại
+                    <label>Mã voucher <small class="muted block">Khách nhập mã này để nhận. 4-20 ký tự, chữ in hoa hoặc số, không dấu cách.</small>
+                        <input type="text" name="code" maxlength="20" placeholder="SALE25"></label>
+                    <label>Tên voucher <small class="muted block">Tên khách nhìn thấy trong ví và khi thanh toán.</small>
+                        <input type="text" name="name" maxlength="80" placeholder="Giảm 25% đơn từ 500k"></label>
+                    <label>Voucher giảm gì?
                         <select name="kind">
-                            <option value="order">Giảm giá đơn hàng</option>
-                            <option value="shipping">Giảm phí vận chuyển</option>
+                            <option value="order">Giảm tiền hàng</option>
+                            <option value="shipping">Giảm phí ship</option>
                         </select>
                     </label>
-                    <label>Đối tượng
+                    <label>Ai được nhận?
                         <select name="audience">
-                            <option value="all">Mọi khách (khách tự nhận trong Kho voucher)</option>
-                            <option value="newUser">Người dùng mới (tự tặng khi xác minh tài khoản, dùng cho đơn đầu tiên)</option>
-                            <option value="birthday">Sinh nhật (tự tặng đúng ngày sinh nhật)</option>
+                            <option value="all">Mọi khách: khách tự bấm nhận ở trang Voucher</option>
+                            <option value="newUser">Khách mới: hệ thống tự tặng khi xác minh email, dùng cho đơn đầu tiên</option>
+                            <option value="birthday">Sinh nhật: hệ thống tự tặng đúng ngày sinh nhật</option>
                         </select>
+                        <small class="muted block" id="audienceHint"></small>
                     </label>
-                    <label>Kiểu giảm
+                    <label>Giảm theo
                         <select name="type">
-                            <option value="percent">Theo phần trăm</option>
-                            <option value="fixed">Số tiền cố định</option>
+                            <option value="percent">Phần trăm (%)</option>
+                            <option value="fixed">Số tiền cố định (₫)</option>
                         </select>
                     </label>
                     <label>Mức giảm <span class="muted" id="valueHint">(%)</span>
                         <input type="number" name="value" min="1" list="percentTiers">
                         <datalist id="percentTiers"><option value="10"><option value="15"><option value="25"><option value="30"><option value="35"></datalist>
                     </label>
-                    <label id="maxField">Giảm tối đa (₫) <input type="number" name="maxDiscount" min="1000" step="1000"></label>
-                    <label>Đơn tối thiểu (₫) <input type="number" name="minOrder" min="0" step="1000" value="0"></label>
-                    <label>Phạm vi
+                    <label id="maxField">Giảm tối đa (₫) <small class="muted block">Giảm theo % thì phải đặt trần, để một đơn lớn không giảm quá nhiều.</small>
+                        <input type="number" name="maxDiscount" min="1000" step="1000"></label>
+                    <label>Đơn tối thiểu (₫) <small class="muted block">Tiền hàng phải từ mức này mới dùng được. Để 0 là không yêu cầu.</small>
+                        <input type="number" name="minOrder" min="0" step="1000" value="0"></label>
+                    <label>Áp dụng cho
                         <select name="scope">
-                            <option value="all">Toàn bộ sản phẩm</option>
+                            <option value="all">Mọi sản phẩm</option>
                             <option value="newProduct">Chỉ sản phẩm mới</option>
-                            <option value="category">Theo danh mục</option>
-                            <option value="product">Theo sản phẩm</option>
+                            <option value="category">Một số danh mục</option>
+                            <option value="product">Một số sản phẩm</option>
                         </select>
+                        <small class="muted block" id="scopeHint"></small>
                     </label>
-                    <fieldset class="full-column spec-box hidden" id="scopeBox"><legend>Chọn mục áp dụng</legend><div id="scopeList" class="check-grid"></div></fieldset>
-                    <label>Bắt đầu <input type="datetime-local" name="startAt"></label>
-                    <label>Kết thúc <input type="datetime-local" name="endAt"></label>
-                    <label>Tổng số lượng (0 = không giới hạn) <input type="number" name="totalQuantity" min="0" value="0"></label>
-                    <label>Mỗi người được nhận <input type="number" name="perUserLimit" min="1" max="5" value="1"></label>
-                    <label>Hiệu lực sau khi tặng (ngày, voucher tự tặng) <input type="number" name="validDays" min="1" max="365" value="30"></label>
-                    <label class="check-inline"><input type="checkbox" name="active" checked> Đang bật</label>
+                    <fieldset class="full-column spec-box hidden" id="scopeBox"><legend>Tick các mục được áp dụng</legend><div id="scopeList" class="check-grid"></div></fieldset>
+                    <label>Chương trình bắt đầu lúc <input type="datetime-local" name="startAt"></label>
+                    <label>Chương trình kết thúc lúc <small class="muted block">Sau giờ này voucher không dùng được nữa, kể cả khách đã nhận.</small>
+                        <input type="datetime-local" name="endAt"></label>
+                    <label>Tổng số voucher phát ra <small class="muted block">Nhập 0 nếu không giới hạn. Phát hết là khách không nhận thêm được.</small>
+                        <input type="number" name="totalQuantity" min="0" value="0"></label>
+                    <label>Mỗi khách nhận tối đa <small class="muted block">Số lần một khách được nhận voucher này (1 đến 5).</small>
+                        <input type="number" name="perUserLimit" min="1" max="5" value="1"></label>
+                    <label>Dùng được trong bao nhiêu ngày <small class="muted block">Chỉ áp dụng voucher hệ thống tự tặng (khách mới, sinh nhật), tính từ ngày tặng. Voucher khách tự nhận dùng được đến hết chương trình.</small>
+                        <input type="number" name="validDays" min="1" max="365" value="30"></label>
+                    <label class="check-inline"><input type="checkbox" name="active" checked> Đang bật (bỏ tick để tạm dừng)</label>
+                    <div class="full-column spec-box" id="preview" aria-live="polite"></div>
                 </div>
                 <p id="formMessage" class="error-message" role="alert"></p>
                 <div class="button-row">
@@ -74,7 +85,7 @@
 
             <div class="table-wrap" data-view-key="vouchers">
                 <table class="data-table">
-                    <thead><tr><th>Voucher</th><th>Mức giảm</th><th>Điều kiện</th><th>Thời gian</th><th>Đã nhận / đã dùng</th><th>Trạng thái</th><th></th></tr></thead>
+                    <thead><tr><th>Voucher</th><th>Mức giảm</th><th>Điều kiện</th><th>Thời gian</th><th>Khách đã nhận</th><th>Đã dùng</th><th>Tiền đã giảm</th><th>Trạng thái</th><th></th></tr></thead>
                     <tbody id="body"></tbody>
                 </table>
             </div>

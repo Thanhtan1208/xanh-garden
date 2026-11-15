@@ -174,12 +174,31 @@ describe('Áp dụng voucher khi thanh toán', () => {
 });
 
 describe('Voucher tự tặng', () => {
+    test('người dùng mới: voucher WELCOME15 dùng được cho đơn đầu tiên và được trừ tiền đúng', async () => {
+        const { token } = await newCustomer(ctx);
+        const wallet = (await call(ctx, 'GET', '/vouchers/mine', { token })).body.vouchers;
+        const welcome = wallet.find((row) => row.voucher.code === 'WELCOME15');
+        assert.ok(welcome, 'có trong ví ngay sau khi xác minh');
+        const preview = await quote(token, [['3', 2]], [welcome.id]);
+        assert.equal(preview.status, 200, JSON.stringify(preview.body));
+        assert.deepEqual(preview.body.problems, [], 'không có lý do bị từ chối');
+        const order = await placeOrder(ctx, token, await addAddress(ctx, token), [['3', 2]], { voucherIds: [welcome.id] });
+        assert.equal(order.status, 201, JSON.stringify(order.body));
+        const row = order.body.vouchers.find((item) => item.code === 'WELCOME15');
+        assert.ok(row && row.amount > 0 && row.amount <= 50000, 'giảm 15%, tối đa 50k');
+        assert.equal(order.body.discount, row.amount);
+        const after = (await call(ctx, 'GET', '/vouchers/mine', { token })).body.vouchers.find((item) => item.id === welcome.id);
+        assert.equal(after.status, 'used');
+    });
+
     test('người dùng mới: chỉ dùng cho đơn đầu tiên; đã từng đặt đơn (kể cả đơn đã hủy) thì không dùng được nữa', async () => {
         const { token } = await newCustomer(ctx);
         const wallet = (await call(ctx, 'GET', '/vouchers/mine', { token })).body.vouchers;
         const welcome = wallet.find((row) => row.voucher.code === 'WELCOME15');
         assert.equal(welcome.source, 'newUser');
         assert.ok(Date.parse(welcome.expiresAt) - Date.now() <= 30 * 86400000 + 1000, 'hạn dùng 30 ngày kể từ lúc tặng');
+        const hall = (await call(ctx, 'GET', '/vouchers', { token })).body;
+        assert.ok(!hall.some((voucher) => voucher.code === 'WELCOME15'), 'voucher khách mới vào thẳng ví, không nằm trong Kho voucher');
 
         const addressId = await addAddress(ctx, token);
         const first = await placeOrder(ctx, token, addressId, [['1', 1]]); // không dùng voucher
@@ -195,7 +214,7 @@ describe('Voucher tự tặng', () => {
         assert.match(again.body.problems[0].reason, /đơn hàng đầu tiên/);
     });
 
-    test('khai ngày sinh trùng hôm nay thì nhận quà ngay; chỉ khai được một lần', async () => {
+    test('khai ngày sinh trùng hôm nay thì nhận quà ngay; đổi ngày sinh vẫn không nhận thêm quà', async () => {
         const { token } = await newCustomer(ctx);
         const vn = new Date(Date.now() + 7 * 3600000);
         const birthday = `${vn.getUTCFullYear() - 25}-${String(vn.getUTCMonth() + 1).padStart(2, '0')}-${String(vn.getUTCDate()).padStart(2, '0')}`;
@@ -204,7 +223,8 @@ describe('Voucher tự tặng', () => {
         const wallet = (await call(ctx, 'GET', '/vouchers/mine', { token })).body;
         assert.equal(wallet.birthday, birthday);
         assert.ok(wallet.vouchers.some((row) => row.voucher.code === 'SINHNHAT25' && row.source === 'birthday'));
-        assert.equal((await call(ctx, 'PUT', '/vouchers/birthday', { token, body: { birthday: '2000-01-01' } })).status, 409);
+        assert.equal((await call(ctx, 'PUT', '/vouchers/birthday', { token, body: { birthday: '2000-01-01' } })).status, 200);
+        await call(ctx, 'PUT', '/vouchers/birthday', { token, body: { birthday } });
         await call(ctx, 'GET', '/vouchers/mine', { token });
         const count = ctx.db.userVouchers.filter(
             (entry) => entry.code === 'SINHNHAT25' && entry.userId === ctx.db.user.find((user) => user.birthday === birthday).id
@@ -252,5 +272,55 @@ describe('Quản trị voucher', () => {
         assert.equal((await call(ctx, 'DELETE', `/admin/vouchers/${voucher.id}`, { token: admin })).status, 409);
         const fresh = voucherByCode('TESTQT');
         assert.equal((await call(ctx, 'DELETE', `/admin/vouchers/${fresh.id}`, { token: admin })).status, 204);
+    });
+});
+
+describe('Tạo voucher tự tặng và báo cáo hiệu quả', () => {
+    test('tạo voucher người dùng mới thì khách mới hiện có được tặng ngay, không chờ vòng quét', async () => {
+        const customer = await newCustomer(ctx);
+        const created = await call(ctx, 'POST', '/admin/vouchers', {
+            token: admin,
+            body: {
+                code: 'CHAOMOI50',
+                name: 'Chào mừng giảm 50k',
+                kind: 'order',
+                type: 'fixed',
+                value: 50000,
+                audience: 'newUser',
+                startAt: new Date(Date.now() - 1000).toISOString(),
+                endAt: new Date(Date.now() + 86400000).toISOString()
+            }
+        });
+        assert.equal(created.status, 201, JSON.stringify(created.body));
+        assert.ok(created.body.granted >= 1, 'báo số khách vừa được tặng');
+        const wallet = await call(ctx, 'GET', '/vouchers/mine', { token: customer.token });
+        assert.ok(wallet.body.vouchers.some((row) => row.voucher.code === 'CHAOMOI50'));
+    });
+
+    test('voucher cho mọi khách thì không tự tặng ai', async () => {
+        const created = await call(ctx, 'POST', '/admin/vouchers', {
+            token: admin,
+            body: {
+                code: 'AICUNGCO',
+                name: 'Khách tự nhận',
+                kind: 'order',
+                type: 'fixed',
+                value: 10000,
+                startAt: new Date(Date.now() - 1000).toISOString(),
+                endAt: new Date(Date.now() + 86400000).toISOString()
+            }
+        });
+        assert.equal(created.body.granted, 0);
+    });
+
+    test('danh sách của admin có số đơn đã dùng và tổng tiền đã giảm', async () => {
+        const { token } = await newCustomer(ctx);
+        const entry = await claim(token, 'SALE10');
+        const before = (await call(ctx, 'GET', '/admin/vouchers', { token: admin })).body.find((row) => row.code === 'SALE10');
+        const order = await placeOrder(ctx, token, await addAddress(ctx, token), [['3', 2]], { voucherIds: [entry] });
+        assert.equal(order.status, 201, JSON.stringify(order.body));
+        const after = (await call(ctx, 'GET', '/admin/vouchers', { token: admin })).body.find((row) => row.code === 'SALE10');
+        assert.equal(after.orderCount, before.orderCount + 1);
+        assert.ok(after.discountTotal > before.discountTotal);
     });
 });

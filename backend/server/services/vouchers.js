@@ -35,7 +35,8 @@ export function claimProblem(user, voucher, { checkPerUser = true } = {}) {
     if (!isLive(voucher)) return 'Voucher đã hết hạn hoặc chưa bắt đầu.';
     if (voucher.totalQuantity && (voucher.claimedCount || 0) >= voucher.totalQuantity) return 'Voucher đã được nhận hết.';
     if (checkPerUser && claimsOf(user.id, voucher.id).length >= voucher.perUserLimit) return 'Bạn đã nhận voucher này rồi.';
-    if (activeInWallet(user.id) >= MAX_WALLET_VOUCHERS) return `Ví voucher đã đầy (tối đa ${MAX_WALLET_VOUCHERS} voucher còn hạn).`;
+    if (activeInWallet(user.id) >= MAX_WALLET_VOUCHERS)
+        return `Bạn đang giữ tối đa ${MAX_WALLET_VOUCHERS} voucher còn hạn, hãy dùng bớt rồi nhận thêm.`;
     return null;
 }
 
@@ -131,7 +132,7 @@ function sendBirthdayMail(user, entries) {
     return sendMail({
         to: user.email,
         subject: 'Chúc mừng sinh nhật từ Xanh Garden',
-        text: `Chúc mừng sinh nhật ${user.name}!\n\nXanh Garden tặng bạn quà sinh nhật:\n${lines.join('\n')}\n\nVoucher đã nằm sẵn trong "Ví voucher" của bạn, chọn khi thanh toán.\nXanh Garden`
+        text: `Chúc mừng sinh nhật ${user.name}!\n\nXanh Garden tặng bạn quà sinh nhật:\n${lines.join('\n')}\n\nVoucher đã nằm sẵn ở mục "Voucher của bạn" trên trang Voucher, chọn khi thanh toán.\nXanh Garden`
     });
 }
 

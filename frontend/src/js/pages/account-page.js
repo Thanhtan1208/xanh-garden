@@ -1,19 +1,24 @@
+import { bindDivisions } from '../components/division-select.js';
 import { api } from '../services/api-service.js';
 import { bindAddToCart, renderProductCard } from '../components/product-card.js';
 import { paintFavorites } from '../services/favorite-service.js';
 import { confirmDialog, toast } from '../components/notify.js';
-import { getToken, requireCustomer, setSession } from '../utils/auth.js';
+import { getToken, isManagementRole, requireLogin, setSession } from '../utils/auth.js';
 import { ORDER_STATUS, escapeHtml, formatPrice } from '../utils/format.js';
 import { icon, iconButton } from '../utils/icons.js';
 import { bindPasswordHints, passwordProblem } from '../utils/password.js';
+import { ADDRESS_UPDATE_NOTE, addressNeedsUpdate, checkRequired } from '../utils/validate.js';
 import { bindSendCode } from '../services/password-otp.js';
 import '../components/header.js';
 import '../utils/password-toggle.js';
 
 // Trang "Tài khoản của tôi": thông tin, sổ địa chỉ, sản phẩm yêu thích, đổi mật khẩu.
-const user = requireCustomer();
+// Khách dùng đủ các tab; nhân viên, chủ shop, admin chỉ có thông tin cá nhân và đổi mật khẩu.
+const user = requireLogin();
+const staff = Boolean(user) && isManagementRole(user);
+const ROLE_NAME = { staff: 'Nhân viên', owner: 'Chủ cửa hàng', admin: 'Quản trị viên' };
 const $ = (selector) => document.querySelector(selector);
-const TABS = ['info', 'addresses', 'favorites', 'password'];
+const TABS = staff ? ['info', 'password'] : ['info', 'addresses', 'favorites', 'password'];
 let addresses = [];
 let favorites = [];
 let editingId = null;
@@ -46,16 +51,22 @@ $('#accountNav').addEventListener('click', (event) => {
 // Thông tin
 // Có bản nhớ thì vẽ ngay, dữ liệu mới từ server về thì vẽ lại tại chỗ
 function loadInfo() {
-    return api.load(['/vouchers/mine', '/orders'], renderInfo);
+    if (staff) return api.get('/auth/me').then((me) => renderInfo(me));
+    return api.load(['/auth/me', '/vouchers/mine', '/orders'], renderInfo);
 }
 
-function renderInfo(wallet, orders) {
+const showDate = (value) =>
+    value ? new Date(`${value}T00:00:00`).toLocaleDateString('vi-VN') : '<span class="muted">Chưa khai báo</span>';
+
+function renderInfo(me, wallet, orders) {
+    profile = me;
     $('#infoRows').innerHTML = `
-        <div><dt>Tên đăng nhập</dt><dd>${escapeHtml(user.name)}</dd></div>
-        <div><dt>Email</dt><dd>${escapeHtml(user.email)}</dd></div>
-        <div><dt>Ngày sinh</dt><dd>${wallet.birthday ? new Date(`${wallet.birthday}T00:00:00`).toLocaleDateString('vi-VN') : '<span class="muted">Chưa khai báo</span>'}</dd></div>`;
-    $('#birthdayForm').classList.toggle('hidden', Boolean(wallet.birthday));
-    $('#birthdayInput').max = new Date().toISOString().slice(0, 10);
+        <div><dt>Tên đăng nhập</dt><dd>${escapeHtml(me.name)}</dd></div>
+        <div><dt>Email</dt><dd>${escapeHtml(me.email)}</dd></div>
+        ${staff ? `<div><dt>Vai trò</dt><dd>${ROLE_NAME[me.role] || me.role}</dd></div>` : ''}
+        <div><dt>Ngày sinh</dt><dd>${showDate(me.birthday)}</dd></div>`;
+    $('#accName').textContent = me.name;
+    if (staff) return;
 
     const active = orders.filter((order) => !['delivered', 'cancelled'].includes(order.status));
     const delivered = orders.filter((order) => order.status === 'delivered');
@@ -64,26 +75,56 @@ function renderInfo(wallet, orders) {
     $('#summaryList').innerHTML = `
         <a class="tx-row" href="./my-orders.html"><span class="tx-icon tone-orange">${active.length}</span><span class="tx-body"><b>Đơn đang xử lý</b><small>Chờ xác nhận, đang chuẩn bị hoặc đang giao</small></span><span class="tx-amount">›</span></a>
         <a class="tx-row" href="./my-orders.html"><span class="tx-icon tone-green">${delivered.length}</span><span class="tx-body"><b>Đơn đã nhận</b><small>Tổng chi tiêu ${formatPrice(delivered.reduce((sum, order) => sum + order.total, 0))}</small></span><span class="tx-amount">›</span></a>
-        <a class="tx-row" href="./vouchers.html"><span class="tx-icon tone-blue">${vouchers}</span><span class="tx-body"><b>Voucher có thể dùng</b><small>Trong ví voucher của bạn</small></span><span class="tx-amount">›</span></a>
+        <a class="tx-row" href="./vouchers.html"><span class="tx-icon tone-blue">${vouchers}</span><span class="tx-body"><b>Voucher có thể dùng</b><small>Xem ở trang Voucher</small></span><span class="tx-amount">›</span></a>
         ${latest ? `<a class="tx-row" href="./my-orders.html"><span class="tx-icon tone-gray">#</span><span class="tx-body"><b>Đơn gần nhất ${escapeHtml(latest.code)}</b><small>${ORDER_STATUS[latest.status] || latest.status} · ${formatPrice(latest.total)}</small></span><span class="tx-amount">›</span></a>` : ''}`;
 }
 
-$('#birthdayForm').addEventListener('submit', async (event) => {
+// Sửa hồ sơ: tên đăng nhập, họ tên, ngày sinh
+const profileForm = $('#profileForm');
+const profileField = (name) => profileForm.elements.namedItem(name);
+let profile = null;
+
+$('#editProfileBtn').addEventListener('click', () => {
+    profileField('name').value = profile?.name ?? user.name;
+    profileField('birthday').value = profile?.birthday ?? '';
+    profileField('birthday').max = new Date().toISOString().slice(0, 10);
+    profileField('email').value = profile?.email ?? user.email;
+    $('#profileMessage').textContent = '';
+    profileForm.classList.remove('hidden');
+    $('#editProfileBtn').classList.add('hidden');
+    profileField('name').focus();
+});
+$('#cancelProfileBtn').addEventListener('click', () => {
+    profileForm.classList.add('hidden');
+    $('#editProfileBtn').classList.remove('hidden');
+});
+profileForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const message = $('#birthdayMessage');
-    message.textContent = '';
     try {
-        await api.put('/vouchers/birthday', { birthday: $('#birthdayInput').value });
-        toast('Đã lưu ngày sinh. Quà sinh nhật sẽ tự vào ví voucher đúng ngày.', { type: 'success' });
+        const saved = await api.patch('/auth/profile', {
+            name: profileField('name').value.trim(),
+            birthday: profileField('birthday').value
+        });
+        Object.assign(user, { name: saved.name, birthday: saved.birthday });
+        setSession({ token: getToken(), user });
+        profileForm.classList.add('hidden');
+        $('#editProfileBtn').classList.remove('hidden');
+        toast('Đã lưu thông tin.', { type: 'success' });
         loadInfo();
     } catch (error) {
-        message.textContent = error.message;
+        $('#profileMessage').textContent = error.message;
     }
 });
 
 // Sổ địa chỉ
 const addressForm = $('#addressForm');
 const addressField = (name) => addressForm.elements.namedItem(name);
+let divisions = null; // ô chọn tỉnh/thành và phường/xã, có sau khi tải xong danh sách
+// Chọn tỉnh/thành trước, rồi phường/xã thuộc tỉnh đó
+if (!staff)
+    bindDivisions(addressField('province'), addressField('ward')).then((bound) => {
+        divisions = bound;
+    });
 
 function renderAddresses() {
     $('#addressBook').innerHTML = addresses.length
@@ -94,6 +135,7 @@ function renderAddresses() {
             <span>
                 <b>${escapeHtml(item.fullName)} · ${escapeHtml(item.phone)} ${item.isDefault ? '<em class="tag tag-praise">Mặc định</em>' : ''}</b>
                 <small>${escapeHtml(item.address)}</small>
+                ${addressNeedsUpdate(item) ? `<small class="address-warning">${ADDRESS_UPDATE_NOTE}</small>` : ''}
             </span>
             <span class="row-actions">
                 ${item.isDefault ? '' : iconButton('star', 'Đặt làm mặc định', { attrs: { 'data-action': 'default' } })}
@@ -116,8 +158,10 @@ function openAddressForm(entry) {
     $('#addressFormTitle').textContent = entry ? 'Sửa địa chỉ' : 'Địa chỉ mới';
     addressField('fullName').value = entry?.fullName ?? '';
     addressField('phone').value = entry?.phone ?? '';
-    addressField('address').value = entry?.address ?? '';
+    divisions?.set(entry);
+    addressField('street').value = entry?.street ?? '';
     addressField('isDefault').checked = entry?.isDefault ?? !addresses.length;
+    addressForm.querySelectorAll('.invalid').forEach((item) => item.classList.remove('invalid'));
     $('#addressMessage').textContent = '';
     addressForm.classList.remove('hidden');
     addressField('fullName').focus();
@@ -130,9 +174,22 @@ addressForm.addEventListener('submit', async (event) => {
     const data = {
         fullName: addressField('fullName').value.trim(),
         phone: addressField('phone').value.trim(),
-        address: addressField('address').value.trim(),
+        ...divisions?.value(), // tỉnh/thành và phường/xã đã chọn
+        street: addressField('street').value.trim(),
         isDefault: addressField('isDefault').checked
     };
+    // Bắt buộc đủ các mục, thiếu mục nào thì tô đỏ mục đó
+    const filled = checkRequired(
+        [
+            [addressField('fullName'), 'Tên người nhận', !data.fullName],
+            [addressField('phone'), 'Số điện thoại', !data.phone],
+            [addressField('province'), 'Tỉnh/Thành phố', !data.province],
+            [addressField('ward'), 'Phường/Xã', !data.ward],
+            [addressField('street'), 'Số nhà, tên đường', !data.street]
+        ],
+        $('#addressMessage')
+    );
+    if (!filled) return;
     try {
         addresses = editingId ? await api.put(`/addresses/${editingId}`, data) : await api.post('/addresses', data);
         addressForm.classList.add('hidden');
@@ -244,6 +301,8 @@ $('#avatarFile').addEventListener('change', async (event) => {
 
 if (user) {
     renderAvatar();
+    // Nhân viên/chủ shop/admin không có đơn, địa chỉ, yêu thích, voucher: ẩn các mục đó
+    if (staff) document.querySelectorAll('[data-customer-only], #summaryCard').forEach((item) => item.remove());
     $('#accName').textContent = user.name;
     $('#accEmail').textContent = user.email;
     showTab(new URLSearchParams(window.location.search).get('tab'));

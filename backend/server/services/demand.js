@@ -13,10 +13,8 @@ const median = (list) => {
     return sorted[Math.floor(sorted.length / 2)];
 };
 
-/**
- * Tổng hợp nhu cầu khách hàng từ nhật ký hành vi (events) và đơn hàng thật (db.orders).
- * Mọi con số đều tính lại từ dữ liệu gốc mỗi lần gọi, không có số liệu sinh sẵn.
- */
+// Tổng hợp nhu cầu khách hàng từ nhật ký hành vi (events) và đơn hàng thật (db.orders).
+// Mọi con số đều tính lại từ dữ liệu gốc mỗi lần gọi, không có số liệu sinh sẵn.
 export function buildDemand(days) {
     const since = Date.now() - days * 86400000;
     const list = events.filter((event) => event.t >= since);

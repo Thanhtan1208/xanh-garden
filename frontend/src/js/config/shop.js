@@ -22,6 +22,7 @@ export const RULES = {
     maxCodTotal: 5000000,
     paymentMinutes: 30,
     cancelRequestHours: 48,
+    autoReceiveDays: 7,
     cancelReasons: {
         change_mind: 'Tôi đổi ý, không còn nhu cầu mua',
         change_items: 'Muốn đổi sản phẩm hoặc số lượng',
@@ -40,7 +41,7 @@ function apply(data) {
 try {
     apply(JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'));
 } catch {
-    /* chưa có bản nhớ thì dùng mặc định */
+    // chưa có bản nhớ thì dùng mặc định
 }
 
 const snapshot = () => JSON.stringify({ shop: SHOP, rules: RULES });
@@ -58,7 +59,7 @@ export const shopReady = fetch('/api/shop')
         try {
             localStorage.setItem(CACHE_KEY, snapshot());
         } catch {
-            /* bỏ qua nếu bị chặn lưu trữ */
+            // bỏ qua nếu bị chặn lưu trữ
         }
         if (snapshot() !== before) listeners.forEach((callback) => callback());
     })

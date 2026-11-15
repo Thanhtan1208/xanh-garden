@@ -14,24 +14,21 @@
         <header class="header" id="siteHeader"><div class="container header-placeholder"><a href="./index.html" class="logo">Xanh Garden</a></div></header>
         <main class="container page">
             <h1>Voucher</h1>
-            <div class="tabs" id="voucherTabs" role="tablist">
-                <button type="button" class="tab active" data-tab="hall" role="tab">Kho voucher</button>
-                <button type="button" class="tab" data-tab="wallet" role="tab">Ví của tôi</button>
-            </div>
+            <p class="muted">Chọn voucher ở bước Thanh toán. Mỗi đơn dùng được 1 voucher giảm giá và 1 voucher giảm phí vận chuyển.</p>
+
+            <div id="loading" class="loading">Đang tải voucher...</div>
+            <div id="error" class="error hidden"></div>
+            <div id="voucherBox" class="voucher-grid"></div>
 
             <section id="birthdayBox" class="form-section birthday-box hidden">
                 <h2>Quà sinh nhật</h2>
-                <p class="muted">Khai ngày sinh để nhận voucher tặng đúng ngày sinh nhật mỗi năm. Ngày sinh chỉ khai được một lần.</p>
+                <p class="muted">Khai ngày sinh để nhận voucher tặng đúng ngày sinh nhật mỗi năm (mỗi năm một lần). Sau này có thể sửa ở trang Tài khoản.</p>
                 <div class="voucher-input">
                     <input type="date" id="birthdayInput" aria-label="Ngày sinh">
                     <button type="button" id="birthdayBtn" class="btn btn-sm">Lưu ngày sinh</button>
                 </div>
                 <p id="birthdayMessage" class="error-message" role="alert"></p>
             </section>
-
-            <div id="loading" class="loading">Đang tải voucher...</div>
-            <div id="error" class="error hidden"></div>
-            <div id="voucherBox" class="voucher-grid"></div>
         </main>
         <script type="module" src="./src/js/pages/vouchers-page.js"></script>
     </body>

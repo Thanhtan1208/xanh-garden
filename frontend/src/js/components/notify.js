@@ -49,10 +49,8 @@ function schedule(duration) {
     timer = setTimeout(hide, duration);
 }
 
-/**
- * Hiện thông báo. options: { type, title, duration, action: { label, href } }
- * Lỗi/lưu ý giữ 6 giây, còn lại 3,2 giây; rê chuột vào thì tạm dừng. Cùng một nội dung lặp lại thì hiện số đếm ×2, ×3...
- */
+// Hiện thông báo. options: { type, title, duration, action: { label, href } }
+// Lỗi/lưu ý giữ 6 giây, còn lại 3,2 giây; rê chuột vào thì tạm dừng. Cùng một nội dung lặp lại thì hiện số đếm ×2, ×3...
 export function toast(message, options = {}) {
     const { type = 'info', title = TITLES[type], action } = options;
     const duration = options.duration ?? (type === 'error' || type === 'warning' ? 6000 : 3200);
@@ -112,10 +110,8 @@ function copyButton(value) {
     return button;
 }
 
-/**
- * Hộp thoại xác nhận, trả về Promise<boolean>.
- * options: { title, message, rows: [[nhãn, giá trị, in đậm, có nút sao chép]], confirmText, cancelText (null = chỉ có nút đóng), tone: 'primary'|'danger' }
- */
+// Hộp thoại xác nhận, trả về Promise<boolean>.
+// options: { title, message, rows: [[nhãn, giá trị, in đậm, có nút sao chép]], confirmText, cancelText (null = chỉ có nút đóng), tone: 'primary'|'danger' }
 export function confirmDialog({ title, message, rows = [], confirmText = 'Xác nhận', cancelText = 'Hủy', tone = 'primary' }) {
     return new Promise((resolve) => {
         const previous = document.activeElement;
@@ -173,10 +169,8 @@ export function confirmDialog({ title, message, rows = [], confirmText = 'Xác n
     });
 }
 
-/**
- * Hộp thoại chọn lý do (hủy đơn...). Trả về Promise<{ reasonId, note } | null>.
- * options: { title, message, choices: { id: nhãn } (bỏ trống = chỉ ô ghi chú), noteLabel, noteRequiredFor: id, confirmText, cancelText, tone }
- */
+// Hộp thoại chọn lý do (hủy đơn...). Trả về Promise<{ reasonId, note } | null>.
+// options: { title, message, choices: { id: nhãn } (bỏ trống = chỉ ô ghi chú), noteLabel, noteRequiredFor: id, confirmText, cancelText, tone }
 export function choiceDialog({
     title,
     message,

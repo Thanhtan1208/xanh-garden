@@ -3,6 +3,7 @@ import { handle } from '../core/http.js';
 import { newestProducts, presentProduct } from '../services/inventory.js';
 import { bestSellers } from '../services/sales.js';
 import { activeBanners, currentEvent } from '../services/site.js';
+import { DIVISIONS } from '../core/address.js';
 import { getShop, publicRules } from '../services/settings.js';
 
 // API công khai phục vụ trang chủ: giao diện theo sự kiện, banner, sản phẩm bán chạy theo tháng, hàng mới về.
@@ -19,6 +20,12 @@ router.get(
         });
     })
 );
+
+// Tỉnh/thành, quận/huyện, phường/xã cho ô chọn địa chỉ (dữ liệu tĩnh, cho trình duyệt nhớ 1 ngày)
+router.get('/divisions', (_req, res) => {
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.json(DIVISIONS);
+});
 
 // Thông tin cửa hàng và các con số nghiệp vụ (phí ship, ngưỡng chuyển khoản...) để giao diện hiển thị, không viết cứng trong code giao diện.
 router.get(

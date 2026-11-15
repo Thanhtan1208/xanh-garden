@@ -1,4 +1,5 @@
 import { api } from '../services/api-service.js';
+import '../components/table-sort.js';
 import '../components/header.js';
 import { getCurrentUser, requirePermission } from '../utils/auth.js';
 import { hasPermission } from '../utils/permissions.js';
@@ -51,7 +52,7 @@ function showTab(name) {
     try {
         sessionStorage.setItem('dashTab', name);
     } catch {
-        /* bỏ qua nếu bị chặn lưu trữ */
+        // bỏ qua nếu bị chặn lưu trữ
     }
 }
 el('dashTabs').addEventListener('click', (event) => {
@@ -73,7 +74,7 @@ function showView(view) {
     try {
         localStorage.setItem('dashView', view);
     } catch {
-        /* bỏ qua nếu bị chặn lưu trữ */
+        // bỏ qua nếu bị chặn lưu trữ
     }
 }
 el('viewSeg').addEventListener('click', (event) => {
@@ -241,7 +242,7 @@ function renderMonthChart(data) {
 
     const rowName = (row) => (labeled ? row.label : byDay ? `Ngày ${row.day}` : `Tháng ${row.month}`);
     el('monthTable').innerHTML =
-        `<thead><tr><th>${filter.period === 'day' ? 'Giờ' : byDay ? 'Ngày' : 'Tháng'}</th><th>${curName}</th><th>Số đơn</th><th>${prevName}</th></tr></thead><tbody>${rows
+        `<thead><tr><th>${filter.period === 'day' ? 'Giờ' : byDay ? 'Ngày' : 'Tháng'}</th><th>Doanh thu ${curName}</th><th>Số đơn ${curName}</th><th>Doanh thu ${prevName}</th></tr></thead><tbody>${rows
             .map(
                 (row, index) =>
                     `<tr><td>${rowName(row)}</td><td>${formatPrice(row.revenue)}</td><td>${row.orders}</td><td>${formatPrice(prevRows[index].revenue)}</td></tr>`
@@ -315,7 +316,7 @@ function renderLists(data) {
         )
         .join('');
     el('quarterTable').innerHTML =
-        `<thead><tr><th>Quý</th><th>Doanh thu</th><th>Đơn</th><th>Sản phẩm</th></tr></thead><tbody>${quarters.map((row) => `<tr><td>Quý ${row.quarter}</td><td>${formatPrice(row.revenue)}</td><td>${row.orders}</td><td>${row.units}</td></tr>`).join('')}</tbody>`;
+        `<thead><tr><th>Quý</th><th>Doanh thu</th><th>Số đơn đã giao</th><th>Số sản phẩm đã bán</th></tr></thead><tbody>${quarters.map((row) => `<tr><td>Quý ${row.quarter}</td><td>${formatPrice(row.revenue)}</td><td>${row.orders}</td><td>${row.units}</td></tr>`).join('')}</tbody>`;
 
     const goods = summary.goods || 0;
     el('categoryList').innerHTML = byCategory.length
@@ -359,7 +360,7 @@ function renderLists(data) {
             .join('')}</div>`
         : emptyRow('Chưa có đơn đã giao trong kỳ này.');
     el('paymentTable').innerHTML =
-        `<thead><tr><th>Phương thức</th><th>Doanh thu</th><th>Đơn</th></tr></thead><tbody>${methods.map(([key, label]) => `<tr><td>${label}</td><td>${formatPrice(byPayment[key].revenue)}</td><td>${byPayment[key].orders}</td></tr>`).join('')}</tbody>`;
+        `<thead><tr><th>Phương thức</th><th>Doanh thu</th><th>Số đơn đã giao</th></tr></thead><tbody>${methods.map(([key, label]) => `<tr><td>${label}</td><td>${formatPrice(byPayment[key].revenue)}</td><td>${byPayment[key].orders}</td></tr>`).join('')}</tbody>`;
 
     el('topProducts').innerHTML = topProducts.length
         ? topProducts
@@ -375,7 +376,7 @@ function renderLists(data) {
               .join('')
         : emptyRow('Chưa có đơn đã giao trong kỳ này.');
     el('topProductsTable').innerHTML =
-        `<thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Doanh thu hàng</th></tr></thead><tbody>${topProducts.length ? topProducts.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${row.qty}</td><td>${formatPrice(row.revenue)}</td></tr>`).join('') : '<tr><td colspan="3">Chưa có dữ liệu.</td></tr>'}</tbody>`;
+        `<thead><tr><th>Sản phẩm</th><th>Số lượng đã giao</th><th>Doanh thu hàng</th></tr></thead><tbody>${topProducts.length ? topProducts.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${row.qty}</td><td>${formatPrice(row.revenue)}</td></tr>`).join('') : '<tr><td colspan="3">Chưa có dữ liệu.</td></tr>'}</tbody>`;
 }
 
 el('quarterList').addEventListener('click', (event) => {
@@ -541,7 +542,12 @@ async function exportRevenueReport() {
                       {
                           name: filter.period === 'day' ? 'Theo gio' : 'Theo ngay',
                           rows: [
-                              [filter.period === 'day' ? 'Giờ' : 'Ngày', periodText(filter), 'Số đơn', previous.label],
+                              [
+                                  filter.period === 'day' ? 'Giờ' : 'Ngày',
+                                  `Doanh thu ${periodText(filter)}`,
+                                  `Số đơn ${periodText(filter)}`,
+                                  `Doanh thu ${previous.label}`
+                              ],
                               ...days.map((row, index) => [row.label ?? row.day, row.revenue, row.orders, prevDays[index].revenue])
                           ]
                       }
@@ -550,19 +556,22 @@ async function exportRevenueReport() {
             {
                 name: 'Theo thang',
                 rows: [
-                    ['Tháng', String(filter.year), 'Số đơn', String(filter.year - 1)],
+                    ['Tháng', `Doanh thu ${filter.year}`, `Số đơn ${filter.year}`, `Doanh thu ${filter.year - 1}`],
                     ...months.map((row, index) => [row.month, row.revenue, row.orders, prevMonths[index].revenue])
                 ]
             },
             {
                 name: 'Theo quy',
-                rows: [['Quý', 'Doanh thu', 'Đơn', 'Sản phẩm'], ...quarters.map((row) => [row.quarter, row.revenue, row.orders, row.units])]
+                rows: [
+                    ['Quý', 'Doanh thu', 'Số đơn đã giao', 'Số sản phẩm đã bán'],
+                    ...quarters.map((row) => [row.quarter, row.revenue, row.orders, row.units])
+                ]
             },
             { name: 'Danh muc', rows: [['Danh mục', 'Doanh thu'], ...byCategory.map((row) => [row.name, row.revenue])] },
             {
                 name: 'Thanh toan',
                 rows: [
-                    ['Phương thức', 'Doanh thu', 'Đơn'],
+                    ['Phương thức', 'Doanh thu', 'Số đơn đã giao'],
                     ...[
                         ['COD', byPayment.cod],
                         ['SePay', byPayment.sepay]

@@ -35,6 +35,7 @@ router.put(
     handle((req, res) => {
         const entry = find(req);
         Object.assign(entry, parseAddress(req.body));
+        delete entry.district; // địa chỉ lưu theo cách chia cũ (còn quận/huyện)
         if (req.body?.isDefault === true)
             book(req).forEach((item) => {
                 item.isDefault = item === entry;

@@ -123,6 +123,44 @@ describe('Đặt hàng', () => {
         assert.match(info.body.qrUrl, /qr\.sepay\.vn/);
     });
 
+    test('nút "Đã chuyển khoản (demo)": ghi nhận thanh toán, đơn tự xác nhận; không bấm lại được, người khác không bấm được', async () => {
+        const { token } = await newCustomer(ctx);
+        const addressId = await addAddress(ctx, token);
+        const qr = await placeOrder(ctx, token, addressId, [['5', 3]], { paymentMethod: 'sepay' });
+        const info = await call(ctx, 'GET', `/orders/${qr.body.id}/payment-info`, { token });
+        assert.equal(info.body.demo, true);
+        const stranger = await newCustomer(ctx);
+        assert.equal((await call(ctx, 'POST', `/orders/${qr.body.id}/demo-pay`, { token: stranger.token, body: {} })).status, 403);
+        const paid = await call(ctx, 'POST', `/orders/${qr.body.id}/demo-pay`, { token, body: {} });
+        assert.equal(paid.status, 200, JSON.stringify(paid.body));
+        assert.equal(paid.body.paymentStatus, 'paid');
+        assert.equal(paid.body.status, 'pending', 'đơn lớn tự xác nhận khi đã trả tiền');
+        assert.equal((await call(ctx, 'POST', `/orders/${qr.body.id}/demo-pay`, { token, body: {} })).status, 409);
+    });
+
+    test('gửi hóa đơn tự động khi đặt COD / sau khi thanh toán QR, và email cảm ơn khi đã giao (chỉ 1 lần)', async () => {
+        const customer = await newCustomer(ctx);
+        const addressId = await addAddress(ctx, customer.token);
+        const mailsFor = (subject) => ctx.mails.filter((mail) => mail.to === customer.email && mail.subject.startsWith(subject));
+        const cod = await placeOrder(ctx, customer.token, addressId, [['2', 1]]);
+        assert.equal(mailsFor('Hóa đơn').length, 1, 'COD: hóa đơn gửi ngay khi đặt');
+        assert.equal(mailsFor('Cảm ơn').length, 0);
+        const qr = await placeOrder(ctx, customer.token, addressId, [['5', 3]], { paymentMethod: 'sepay' });
+        assert.equal(mailsFor('Hóa đơn').length, 1, 'QR: chưa trả tiền thì chưa gửi hóa đơn');
+        await call(ctx, 'POST', `/orders/${qr.body.id}/demo-pay`, { token: customer.token, body: {} });
+        assert.equal(mailsFor('Hóa đơn').length, 2, 'QR: gửi hóa đơn sau khi thanh toán');
+        for (const status of ['confirmed', 'shipping'])
+            await call(ctx, 'PATCH', `/orders/${cod.body.id}/status`, { token: admin, body: { status } });
+        assert.equal(mailsFor('Cảm ơn').length, 0, 'chưa giao thì chưa cảm ơn');
+        assert.equal(
+            (await call(ctx, 'PATCH', `/orders/${cod.body.id}/status`, { token: admin, body: { status: 'delivered' } })).status,
+            200
+        );
+        assert.equal(mailsFor('Cảm ơn').length, 1);
+        assert.match(mailsFor('Cảm ơn')[0].text, new RegExp(cod.body.code));
+        assert.equal(ctx.db.orders.find((order) => order.id === cod.body.id).thanksSent, true);
+    });
+
     test('giá trị đơn tối đa 50 triệu', async () => {
         const { token } = await newCustomer(ctx);
         const addressId = await addAddress(ctx, token);
@@ -174,6 +212,39 @@ describe('Luồng trạng thái đơn', () => {
             ['pending', 'confirmed', 'shipping', 'delivered']
         );
         assert.equal((await set('cancelled')).status, 409);
+    });
+
+    test('khách bấm "Đã nhận được hàng" khi đơn đang giao: đơn hoàn tất, COD tính đã thu tiền, gửi email cảm ơn', async () => {
+        const { token, email } = await newCustomer(ctx);
+        const other = await newCustomer(ctx);
+        const order = (await placeOrder(ctx, token, await addAddress(ctx, token), [['2', 1]])).body;
+        const set = (status, who) => call(ctx, 'PATCH', `/orders/${order.id}/status`, { token: who, body: { status } });
+        assert.equal((await set('delivered', token)).status, 409, 'chưa giao thì chưa bấm nhận hàng được');
+        await set('confirmed', admin);
+        const shipping = await set('shipping', admin);
+        assert.ok(Date.parse(shipping.body.autoReceiveAt) > Date.now(), 'đơn đang giao có hạn tự xác nhận');
+        assert.equal((await set('delivered', other.token)).status, 403, 'khách khác không bấm được');
+        const received = await set('delivered', token);
+        assert.equal(received.status, 200, JSON.stringify(received.body));
+        assert.equal(received.body.paymentStatus, 'paid');
+        assert.equal(received.body.autoReceiveAt, undefined);
+        assert.equal(received.body.history.at(-1).note, 'Khách xác nhận đã nhận được hàng');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        assert.ok(ctx.mails.some((mail) => mail.to === email && mail.subject.includes('Cảm ơn')));
+    });
+
+    test('khách không bấm nhận hàng: quá hạn hệ thống tự xác nhận đã giao', async () => {
+        const { token } = await newCustomer(ctx);
+        const order = (await placeOrder(ctx, token, await addAddress(ctx, token), [['3', 1]])).body;
+        await call(ctx, 'PATCH', `/orders/${order.id}/status`, { token: admin, body: { status: 'confirmed' } });
+        await call(ctx, 'PATCH', `/orders/${order.id}/status`, { token: admin, body: { status: 'shipping' } });
+        // Lùi thời điểm bắt đầu giao về 8 ngày trước (hạn là 7 ngày)
+        const stored = ctx.db.orders.find((item) => item.id === order.id);
+        stored.history.at(-1).at = new Date(Date.now() - 8 * 86400000).toISOString();
+        const fresh = (await call(ctx, 'GET', `/orders/${order.id}`, { token })).body; // đọc đơn sẽ chạy vòng dọn quá hạn
+        assert.equal(fresh.status, 'delivered');
+        assert.equal(fresh.paymentStatus, 'paid');
+        assert.match(fresh.history.at(-1).note, /Tự xác nhận đã giao/);
     });
 
     test('khách hủy đơn: hoàn kho đúng một lần, ghi nhật ký hoàn kho', async () => {
@@ -555,29 +626,39 @@ describe('Gửi hóa đơn qua email', () => {
         assert.ok(mail?.text.includes('đã nhận đủ'));
     });
 
-    test('chỉ chủ đơn hoặc nhân viên gửi được, nội dung đúng đơn, giới hạn 3 lần mỗi giờ, đơn hủy không có hóa đơn', async () => {
+    test('nút gửi lại hóa đơn: chỉ nhân viên, chủ cửa hàng, admin gửi được; khách (kể cả chủ đơn) thì không', async () => {
         const { token, email } = await newCustomer(ctx);
-        const other = await newCustomer(ctx);
+        const admin = await login(ctx, 'admin');
+        const [staff, owner] = [await newCustomer(ctx), await newCustomer(ctx)];
+        for (const [member, role] of [
+            [staff, 'staff'],
+            [owner, 'owner']
+        ])
+            await call(ctx, 'PATCH', `/admin/users/${member.user.id}/role`, { token: admin, body: { role } });
         const order = (await placeOrder(ctx, token, await addAddress(ctx, token), [['8', 2]])).body;
         const send = (who) => call(ctx, 'POST', `/orders/${order.id}/invoice-email`, { token: who });
 
         assert.equal((await call(ctx, 'POST', `/orders/${order.id}/invoice-email`)).status, 401);
-        assert.equal((await send(other.token)).status, 403, 'khách khác không gửi được');
-        const sent = await send(token);
+        assert.equal((await send(token)).status, 403, 'chủ đơn không tự bấm gửi (hóa đơn đã tự gửi khi đặt/thanh toán)');
+        assert.equal((await send((await newCustomer(ctx)).token)).status, 403, 'khách khác không gửi được');
+
+        const sent = await send(staff.token);
         assert.equal(sent.status, 200, JSON.stringify(sent.body));
         assert.match(sent.body.sentTo, /\*\*\*@/);
         const mail = ctx.mails.filter((item) => item.to === email && item.subject.includes('Hóa đơn')).at(-1);
-        assert.ok(mail, 'đã gửi thư hóa đơn');
+        assert.ok(mail, 'đã gửi thư hóa đơn về email khách');
         assert.ok(mail.subject.includes(order.code));
         assert.ok(mail.text.includes('TỔNG THANH TOÁN'));
+        assert.equal((await send(owner.token)).status, 200, 'chủ cửa hàng gửi được');
+        assert.equal((await send(admin)).status, 200, 'admin gửi được');
+        assert.equal((await send(admin)).status, 429, 'quá 3 lần trong 1 giờ');
+    });
 
+    test('đơn đã hủy thì không gửi hóa đơn', async () => {
+        const { token } = await newCustomer(ctx);
         const admin = await login(ctx, 'admin');
-        assert.equal((await send(admin)).status, 200, 'nhân viên gửi giúp khách');
-        assert.equal((await send(token)).status, 200);
-        assert.equal((await send(token)).status, 429, 'quá 3 lần trong 1 giờ');
-
-        const second = (await placeOrder(ctx, token, await addAddress(ctx, token), [['9', 1]])).body;
-        await call(ctx, 'PATCH', `/orders/${second.id}/status`, { token, body: { status: 'cancelled', reasonId: 'change_mind' } });
-        assert.equal((await call(ctx, 'POST', `/orders/${second.id}/invoice-email`, { token })).status, 409);
+        const order = (await placeOrder(ctx, token, await addAddress(ctx, token), [['9', 1]])).body;
+        await call(ctx, 'PATCH', `/orders/${order.id}/status`, { token, body: { status: 'cancelled', reasonId: 'change_mind' } });
+        assert.equal((await call(ctx, 'POST', `/orders/${order.id}/invoice-email`, { token: admin })).status, 409);
     });
 });
