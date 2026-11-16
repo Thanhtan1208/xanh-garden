@@ -17,6 +17,19 @@ import {
     passwordProblem
 } from '../core/rules.js';
 import { sweepExpired } from '../services/orders.js';
+import {
+    DAY_MS,
+    costOf,
+    deliveredAt,
+    goodsOf,
+    itemRevenue,
+    paidOf,
+    revenueOf,
+    salesOf,
+    unitCostOf,
+    unitsOf,
+    vnDate
+} from '../services/finance.js';
 import { buildDemand } from '../services/demand.js';
 import { assertPromoShorter, logStock } from '../services/inventory.js';
 import { getSettings, getShop } from '../services/settings.js';
@@ -28,30 +41,7 @@ const router = Router();
 const MAX_IMPORT_ROWS = 500;
 
 // Giờ Việt Nam (UTC+7) để chia tháng/quý đúng với cửa hàng, không phụ thuộc múi giờ máy chủ.
-const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEKDAY = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-const vnDate = (iso) => new Date(Date.parse(iso) + VN_OFFSET_MS);
-
-// Doanh thu tính từ chi tiết đơn (items) của đơn đã giao, không dùng số liệu sinh sẵn.
-const goodsOf = (order) => order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-// Tiền khách thực trả: hàng - giảm giá + phí ship - giảm phí ship (đối chiếu với order.total).
-const paidOf = (order) => goodsOf(order) - (order.discount || 0) + (order.shippingFee || 0) - (order.shippingDiscount || 0);
-// Giá vốn một dòng hàng: giá vốn chụp lúc đặt; đơn cũ chưa có thì lấy giá vốn hiện tại của sản phẩm.
-const unitCostOf = (item) => item.cost ?? byId('products', item.id)?.costPrice ?? 0;
-const costOf = (order) => order.items.reduce((sum, item) => sum + unitCostOf(item) * item.qty, 0);
-// Tiền bán hàng = hàng - giảm giá (không tính phí vận chuyển, vì đó là tiền trả cho đơn vị vận chuyển).
-const salesOf = (order) => goodsOf(order) - (order.discount || 0);
-// DOANH THU = tiền bán - giá vốn (giá nhập).
-const revenueOf = (order) => salesOf(order) - costOf(order);
-// Doanh thu một dòng hàng (chưa chia giảm giá của đơn).
-const itemRevenue = (item) => (item.price - unitCostOf(item)) * item.qty;
-const unitsOf = (order) => order.items.reduce((sum, item) => sum + item.qty, 0);
-
-function deliveredAt(order) {
-    const entry = [...order.history].reverse().find((item) => item.status === 'delivered');
-    return entry?.at || order.updatedAt || order.createdAt;
-}
 
 const average = (values) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
 const round1 = (value) => Math.round(value * 10) / 10;

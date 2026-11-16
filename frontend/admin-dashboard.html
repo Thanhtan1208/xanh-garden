@@ -21,6 +21,7 @@
                     <button type="button" data-tab="demand" role="tab">Nhu cầu khách <span id="demandBadge" class="tab-badge hidden"></span></button>
                     <button type="button" data-tab="reviews" role="tab">Đánh giá <span id="reviewBadge" class="tab-badge hidden"></span></button>
                     <button type="button" data-tab="customers" role="tab">Khách hàng</button>
+                    <button type="button" data-tab="insights" role="tab">Gợi ý AI</button>
                 </nav>
                 <div class="pill-seg" id="viewSeg" role="group" aria-label="Kiểu hiển thị">
                     <button type="button" data-view="chart" class="active">Biểu đồ</button>
@@ -204,6 +205,26 @@
                     <section class="bank-card">
                         <div class="bank-card-head"><h2>Khách truy cập và khách hàng theo ngày</h2></div>
                         <div class="table-wrap"><table class="data-table" id="customerDailyTable"></table></div>
+                    </section>
+                </div>
+
+                <!-- ===== Gợi ý AI (chủ cửa hàng và admin) ===== -->
+                <div class="tab-panel hidden" data-panel="insights">
+                    <div class="period-bar">
+                        <span class="period-title">Phân tích</span>
+                        <div class="pill-seg" id="insightsRange" role="group" aria-label="Kỳ phân tích">
+                            <button type="button" data-days="7">7 ngày</button>
+                            <button type="button" data-days="30" class="active">30 ngày</button>
+                            <button type="button" data-days="90">90 ngày</button>
+                        </div>
+                        <button type="button" id="insightsAiBtn" class="btn btn-sm" disabled>Phân tích bằng AI</button>
+                    </div>
+                    <p class="muted" id="insightsAiNote"></p>
+                    <section class="bank-hero" id="insightsKpi"></section>
+                    <section class="bank-card ai-box hidden" id="insightsAi"></section>
+                    <section class="bank-card">
+                        <div class="bank-card-head"><h2>Phát hiện và việc nên làm</h2></div>
+                        <div class="tx-list" id="insightsList"></div>
                     </section>
                 </div>
             </div>

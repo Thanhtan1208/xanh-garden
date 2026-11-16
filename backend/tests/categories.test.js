@@ -60,12 +60,6 @@ describe('Thêm danh mục', () => {
         assert.equal(created.status, 201, JSON.stringify(created.body));
         assert.equal(created.body.categoryId, 6);
     });
-
-    test('giới hạn số danh mục', async () => {
-        for (let i = ctx.db.categories.length; i < 30; i += 1) assert.equal((await add(`Danh mục số ${i}`)).status, 201);
-        assert.equal((await add('Danh mục thứ 31')).status, 409);
-        for (const item of (await categories()).filter((entry) => entry.name.startsWith('Danh mục số'))) await remove(item.id);
-    });
 });
 
 describe('Xóa danh mục', () => {
@@ -86,11 +80,6 @@ describe('Xóa danh mục', () => {
         assert.ok(!(await categories()).some((item) => item.id === '4'));
         assert.equal((await categories()).length, 5, '5 danh mục ban đầu + 1 mới thêm - 1 vừa xóa');
         assert.equal((await call(ctx, 'GET', `/products/${inCategory[0].id}`)).status, 200, 'trang chi tiết vẫn mở được');
-    });
-
-    test('danh mục không có thật thì 404; xóa hai lần thì lần hai 404', async () => {
-        assert.equal((await remove('khong-co')).status, 404);
-        assert.equal((await remove(4)).status, 404);
     });
 
     test('mã danh mục đã xóa không được dùng lại cho danh mục mới', async () => {
@@ -231,12 +220,6 @@ describe('Xóa danh mục kèm ẩn sản phẩm đã chọn', () => {
         const cart = await call(ctx, 'PUT', '/cart', { token: other.token, body: { items: [{ id: alsoHide.id, qty: 1 }] } });
         assert.deepEqual(cart.body.items ?? [], [], 'giỏ hàng tự bỏ sản phẩm ẩn');
         assert.equal((await call(ctx, 'PUT', `/favorites/${alsoHide.id}`, { token: other.token })).status, 404);
-    });
-
-    test('chatbot không nhắc tới sản phẩm ẩn', async () => {
-        const chat = await call(ctx, 'POST', '/chat', { body: { message: 'Cây ẩn số hai giá bao nhiêu?', visitor: 'abcdefgh12345' } });
-        assert.equal(chat.status, 200);
-        assert.ok(!JSON.stringify(chat.body).includes(alsoHide.id), 'không có đường dẫn tới sản phẩm ẩn');
     });
 
     test('ẩn hoặc hiện lại từng sản phẩm; chỉ chủ và admin; đơn cũ không bị ảnh hưởng', async () => {

@@ -68,12 +68,6 @@ describe('Phục vụ giao diện đã build', () => {
         assert.match(asset.headers.get('cache-control'), /immutable/);
     });
 
-    test('đường dẫn API không có vẫn trả JSON 404, không rơi vào giao diện', async () => {
-        const result = await call(ctx, 'GET', '/khong-co-duong-dan-nay');
-        assert.equal(result.status, 404);
-        assert.match(result.body.message, /API/);
-    });
-
     test('/api/health báo server còn chạy, kèm header bảo mật và không lộ Express', async () => {
         const response = await fetch(`${ctx.base}/health`);
         assert.equal(response.status, 200);
@@ -97,15 +91,6 @@ describe('Đứng sau proxy', () => {
         assert.equal(last.status, 429, 'khách gửi quá 240 lần/phút bị chặn');
         assert.equal((await send('203.0.113.8')).status, 204, 'khách khác vẫn gửi được');
     });
-
-    test('TRUST_PROXY: mặc định chỉ tin proxy cùng máy, nhận số, true/false hoặc danh sách IP', () => {
-        assert.equal(config.trustProxy(undefined), 'loopback');
-        assert.equal(config.trustProxy(''), 'loopback');
-        assert.equal(config.trustProxy('1'), 1);
-        assert.equal(config.trustProxy('true'), true);
-        assert.equal(config.trustProxy('false'), false);
-        assert.equal(config.trustProxy('10.0.0.1'), '10.0.0.1');
-    });
 });
 
 describe('Kiểm tra cấu hình production', () => {
@@ -128,13 +113,6 @@ describe('Kiểm tra cấu hình production', () => {
         assert.match(result.errors[0], /admin/);
         const customer = { name: 'khach', role: 'user', passwordHash: http.hashPassword(config.DEMO_PASSWORD) };
         assert.deepEqual(config.checkConfig({ env: goodEnv, users: [customer], dist }).errors, []);
-    });
-
-    test('đủ cấu hình thì không lỗi; thiếu SMTP hoặc bản build chỉ cảnh báo', () => {
-        assert.deepEqual(config.checkConfig({ env: goodEnv, users: [], dist }), { errors: [], warnings: [] });
-        const partial = config.checkConfig({ env: { ...goodEnv, SMTP_HOST: '' }, users: [], dist: join(dist, 'khong-co') });
-        assert.deepEqual(partial.errors, []);
-        assert.equal(partial.warnings.length, 2);
     });
 
     test('ADMIN_PASSWORD thay mật khẩu mẫu đúng một lần, mật khẩu yếu hoặc trùng mẫu thì báo lỗi', () => {

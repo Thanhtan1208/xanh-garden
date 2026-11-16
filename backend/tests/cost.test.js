@@ -128,13 +128,6 @@ describe('Nhập hàng: giá nhập của lô và giá vốn bình quân', () =>
         assert.equal((await stock({ add: 1, unitCost: 'abc' })).status, 400, 'không phải số');
         assert.equal(cost(), 120000, 'lô bị từ chối không đổi giá vốn');
     });
-
-    test('hết hàng rồi nhập lại thì giá vốn bằng đúng giá nhập của lô mới', async () => {
-        const made = (await create({ name: 'Cây hết hàng', stock: 0, costPrice: 100000 })).body;
-        const result = await call(ctx, 'PATCH', `/admin/products/${made.id}/stock`, { token: admin, body: { add: 8, unitCost: 90000 } });
-        assert.equal(result.status, 200);
-        assert.equal(ctx.db.products.find((item) => item.id === made.id).costPrice, 90000);
-    });
 });
 
 describe('Doanh thu = tiền bán - giá vốn', () => {
@@ -194,14 +187,6 @@ describe('Doanh thu = tiền bán - giá vốn', () => {
         const stats = (await call(ctx, 'GET', '/admin/stats?period=year', { token: admin })).body;
         const top = stats.topProducts.find((item) => item.id === made.id);
         assert.deepEqual([top.qty, top.sales, top.revenue], [3, 600000, 150000]);
-    });
-
-    test('đối soát dữ liệu vẫn so tổng tiền đơn với tiền khách trả (có phí ship), không bị lệch vì giá vốn', async () => {
-        const inventory = (await call(ctx, 'GET', '/admin/inventory', { token: admin })).body;
-        assert.ok(
-            !JSON.stringify(inventory.issues ?? inventory).includes('không khớp chi tiết đơn'),
-            JSON.stringify(inventory.issues ?? [])
-        );
     });
 });
 

@@ -10,6 +10,7 @@ import { toast } from '../components/notify.js';
 import { deltaPill, emptyRow, heroCard, txRow } from '../components/bank-ui.js';
 import { downloadWorkbook } from '../services/excel-service.js';
 import './admin-demand.js';
+import './admin-insights.js';
 import './admin-customers.js';
 
 // Trang Thống kê: 4 tab (Doanh thu, Kho & vận hành, Nhu cầu khách — xem admin-demand.js, Đánh giá).
@@ -42,7 +43,8 @@ function showTab(name) {
         inventory: hasPermission('dashboard.operations', currentUser),
         demand: canViewSales && hasPermission('customers.analytics', currentUser),
         reviews: canViewSales,
-        customers: canViewSales && hasPermission('customers.analytics', currentUser)
+        customers: canViewSales && hasPermission('customers.analytics', currentUser),
+        insights: canViewSales
     };
     if (!allowed[name]) name = canViewSales ? 'revenue' : 'inventory';
     const scrollY = window.scrollY;
@@ -311,8 +313,8 @@ function renderLists(data) {
                 title: `Quý ${row.quarter}${bestQuarter > 0 && row.revenue === bestQuarter ? ' <em class="chip chip-best">Cao nhất</em>' : ''}`,
                 sub: `${row.orders} đơn · ${row.units} sản phẩm`,
                 amount: formatPrice(row.revenue),
-                note: yearTotal ? `${Math.round((row.revenue / yearTotal) * 100)}%` : '',
-                bar: yearTotal ? (row.revenue / yearTotal) * 100 : 0,
+                note: yearTotal > 0 ? `${Math.round((row.revenue / yearTotal) * 100)}%` : '',
+                bar: yearTotal > 0 ? Math.max(0, (row.revenue / yearTotal) * 100) : 0,
                 attrs: `data-quarter="${row.quarter}"`
             })
         )
@@ -320,7 +322,9 @@ function renderLists(data) {
     el('quarterTable').innerHTML =
         `<thead><tr><th>Quý</th><th>Doanh thu</th><th>Số đơn đã giao</th><th>Số sản phẩm đã bán</th></tr></thead><tbody>${quarters.map((row) => `<tr><td>Quý ${row.quarter}</td><td>${formatPrice(row.revenue)}</td><td>${row.orders}</td><td>${row.units}</td></tr>`).join('')}</tbody>`;
 
-    const goods = summary.goods || 0;
+    // Tỉ trọng chia cho tổng doanh thu (bán - vốn) của các danh mục có lãi, nên cộng lại đủ 100% (danh mục lỗ tính 0%)
+    const categoryTotal = byCategory.reduce((sum, row) => sum + Math.max(0, row.revenue), 0);
+    const categoryShare = (row) => (categoryTotal ? Math.max(0, (row.revenue / categoryTotal) * 100) : 0);
     el('categoryList').innerHTML = byCategory.length
         ? byCategory
               .map((row) =>
@@ -329,14 +333,14 @@ function renderLists(data) {
                       tone: 'green',
                       title: escapeHtml(row.name),
                       amount: formatPrice(row.revenue),
-                      note: goods ? `${Math.round((row.revenue / goods) * 100)}%` : '',
-                      bar: goods ? (row.revenue / goods) * 100 : 0
+                      note: categoryTotal ? `${Math.round(categoryShare(row))}%` : '',
+                      bar: categoryShare(row)
                   })
               )
               .join('')
         : emptyRow('Chưa có đơn đã giao trong kỳ này.');
     el('categoryTable').innerHTML =
-        `<thead><tr><th>Danh mục</th><th>Doanh thu</th><th>Tỉ trọng</th></tr></thead><tbody>${byCategory.length ? byCategory.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${formatPrice(row.revenue)}</td><td>${goods ? Math.round((row.revenue / goods) * 100) : 0}%</td></tr>`).join('') : '<tr><td colspan="3">Chưa có dữ liệu.</td></tr>'}</tbody>`;
+        `<thead><tr><th>Danh mục</th><th>Doanh thu</th><th>Tỉ trọng</th></tr></thead><tbody>${byCategory.length ? byCategory.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${formatPrice(row.revenue)}</td><td>${Math.round(categoryShare(row))}%</td></tr>`).join('') : '<tr><td colspan="3">Chưa có dữ liệu.</td></tr>'}</tbody>`;
 
     const methods = [
         ['cod', 'Thanh toán khi nhận (COD)', 'seg-a', 'box'],

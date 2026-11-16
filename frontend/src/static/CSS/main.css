@@ -977,6 +977,11 @@ a.tx-row:hover, button.tx-row:hover { background: var(--bg-soft); }
 .tx-empty { color: var(--muted); padding: 12px 6px; }
 .chip { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #e4e7e4; font-style: normal; }
 .chip-best { background: #fff1c2; color: #6b4e00; }
+/* Tab Gợi ý AI: bản phân tích do AI viết (đoạn văn, gạch đầu dòng, đánh số) */
+.ai-box { margin-bottom: 20px; border-color: #c9d6f3; background: #f7f9ff; }
+.ai-text p { margin: 0 0 8px; }
+.ai-text ul, .ai-text ol { margin: 0 0 10px; padding-left: 22px; }
+.ai-text li { margin-bottom: 4px; }
 .line-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
 .line-chart .grid { stroke: #edf0ee; }
 .line-chart .axis { fill: var(--muted); font-size: 11px; }
