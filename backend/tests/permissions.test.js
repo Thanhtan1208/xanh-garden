@@ -54,6 +54,8 @@ const MATRIX = [
     ['GET', '/admin/stock-logs', { none: 401, user: 403, staff: 'ok', owner: 'ok', admin: 'ok' }],
     ['GET', '/admin/reviews', { none: 401, user: 403, staff: 'ok', owner: 'ok', admin: 'ok' }],
     ['POST', '/admin/products', { none: 401, user: 403, staff: 403, owner: 'ok', admin: 'ok' }],
+    ['POST', '/admin/categories', { none: 401, user: 403, staff: 403, owner: 'ok', admin: 'ok' }],
+    ['DELETE', '/admin/categories/none', { none: 401, user: 403, staff: 403, owner: 'ok', admin: 'ok' }],
     ['PATCH', '/admin/products/1/stock', { none: 401, user: 403, staff: 'ok', owner: 'ok', admin: 'ok' }],
     ['PATCH', '/orders/none/payment', { none: 401, user: 403, staff: 403, owner: 'ok', admin: 'ok' }],
     ['DELETE', '/feedbacks/none', { none: 401, user: 403, staff: 403, owner: 'ok', admin: 'ok' }],

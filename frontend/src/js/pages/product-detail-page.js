@@ -1,5 +1,6 @@
 import { api } from '../services/api-service.js';
 import { addToCart, selectOnly } from '../services/cart-service.js';
+import { NO_CATEGORY } from '../services/catalog-service.js';
 import { isFavorite } from '../services/favorite-service.js';
 import { trackAddToCart } from '../services/tracker.js';
 import {
@@ -450,7 +451,7 @@ async function initialize() {
                     ...others.filter((item) => String(item.categoryId) !== String(product.categoryId))
                 ].slice(0, 4);
 
-                renderProduct(category || { id: '', name: 'Khác' });
+                renderProduct(category || { id: NO_CATEGORY, name: 'Khác' });
                 renderReviews();
                 $('#detailTabs').classList.remove('hidden');
                 if (window.location.hash === '#reviews') openTab('reviews');

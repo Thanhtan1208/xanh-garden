@@ -35,7 +35,15 @@ describe('Sản phẩm', () => {
         for (let i = 1; i <= 5; i += 1) {
             const created = await call(ctx, 'POST', '/admin/products', {
                 token: admin,
-                body: { name: `Cây mới số ${i}`, categoryId: 1, price: 100000, stock: 5, image: 'p1.png', description: 'Mô tả cây mới' }
+                body: {
+                    name: `Cây mới số ${i}`,
+                    categoryId: 1,
+                    price: 100000,
+                    costPrice: 60000,
+                    stock: 5,
+                    image: 'p1.png',
+                    description: 'Mô tả cây mới'
+                }
             });
             assert.equal(created.status, 201, JSON.stringify(created.body));
             ids.push(created.body.id);

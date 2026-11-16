@@ -10,6 +10,7 @@ import { fromLocalInput, toLocalInput } from '../utils/dates.js';
 import { confirmDialog, toast } from '../components/notify.js';
 import { downloadWorkbook, readWorkbook } from '../services/excel-service.js';
 import { TEN_FONT, napFontTiengViet } from '../components/invoice.js';
+import { forgetCategories } from '../services/catalog-service.js';
 
 // Quản lý sản phẩm: làm theo bài B17 của cô (1 form dùng chung cho thêm và sửa, bảng có nút Sửa / Xóa)
 
@@ -26,6 +27,10 @@ const formMessage = document.getElementById('formMessage');
 const LOW_STOCK_AT = 5;
 const canManageProducts = hasPermission('products.manage', getCurrentUser());
 const canSeeSales = hasPermission('dashboard.sales', getCurrentUser());
+
+// giá trị của ô chọn danh mục khi sản phẩm không thuộc danh mục nào (gửi lên server là null)
+const NO_CATEGORY = 'none';
+const UNCATEGORIZED = 'Chưa có danh mục';
 
 // dữ liệu lấy từ server về
 let products = [];
@@ -51,6 +56,11 @@ function renderCategoryOptions() {
         option.textContent = category.name;
         categorySelect.appendChild(option);
     });
+    // sản phẩm không thuộc danh mục nào (VD danh mục của nó đã bị xóa)
+    const none = document.createElement('option');
+    none.value = NO_CATEGORY;
+    none.textContent = UNCATEGORIZED;
+    categorySelect.appendChild(none);
     categorySelect.value = current;
 }
 
@@ -64,6 +74,154 @@ function loadCategories() {
     });
 }
 
+// Tab Danh mục: thêm, xóa
+const categoryForm = document.getElementById('categoryForm');
+const categoryRows = document.getElementById('categoryRows');
+const categoryMessage = document.getElementById('categoryMessage');
+const categoryBtn = document.getElementById('categoryBtn');
+const hasNoCategory = (product) => product.categoryId === null || product.categoryId === undefined;
+
+// mỗi danh mục một dòng kèm số sản phẩm; dòng cuối là sản phẩm chưa có danh mục (chỉ hiện khi có)
+function renderCategoryTable() {
+    const countOf = (id) => products.filter((product) => String(product.categoryId) === String(id)).length;
+    const rows = categories.map(
+        (category) => `
+        <tr>
+            <td><b>${escapeHtml(category.name)}</b></td>
+            <td>${countOf(category.id)}</td>
+            <td><button type="button" class="btn btn-sm btn-danger deleteCategoryBtn" data-id="${escapeHtml(category.id)}">Xóa</button></td>
+        </tr>`
+    );
+    const none = products.filter(hasNoCategory).length;
+    if (none) {
+        rows.push(
+            `<tr><td>${UNCATEGORIZED}</td><td>${none}</td><td><span class="muted">Sửa từng sản phẩm để xếp vào danh mục</span></td></tr>`
+        );
+    }
+    categoryRows.innerHTML = rows.join('') || '<tr><td colspan="3" class="muted">Chưa có danh mục nào</td></tr>';
+}
+
+// sau khi thêm hoặc xóa danh mục: tải lại danh mục và sản phẩm (xóa danh mục làm đổi danh mục của sản phẩm)
+async function refreshCategories() {
+    forgetCategories();
+    categories = await api.get('/categories');
+    renderCategoryOptions();
+    await loadProducts();
+    renderProducts();
+}
+
+// gõ lại tên thì xóa thông báo lỗi cũ
+document.getElementById('categoryName').addEventListener('input', () => (categoryMessage.textContent = ''));
+
+categoryForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = document.getElementById('categoryName').value.trim();
+    categoryMessage.textContent = '';
+    if (name.length < 2) {
+        categoryMessage.textContent = 'Tên danh mục cần ít nhất 2 ký tự.';
+        return;
+    }
+    categoryBtn.disabled = true;
+    try {
+        await api.post('/admin/categories', { name });
+        categoryForm.reset();
+        toast(`Đã thêm danh mục “${name}”.`, { type: 'success' });
+        await refreshCategories();
+    } catch (error) {
+        categoryMessage.textContent = error.message;
+    } finally {
+        categoryBtn.disabled = false;
+    }
+});
+
+// Hộp thoại xóa danh mục: tick sản phẩm nào thì sản phẩm đó bị ẩn cùng danh mục, không tick thì chuyển sang "Chưa có danh mục".
+// Trả về mảng id sản phẩm cần ẩn, hoặc null nếu bấm Hủy.
+function askCategoryDelete(category, items) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        const intro = items.length
+            ? `Chọn sản phẩm muốn ẩn cùng danh mục này: khách không thấy và không mua được, nhưng dữ liệu và đơn cũ vẫn còn, hiện lại được ở danh sách sản phẩm. Sản phẩm không chọn chuyển sang “${UNCATEGORIZED}” và vẫn bán bình thường.`
+            : 'Danh mục này chưa có sản phẩm nào.';
+        const rows = items
+            .map(
+                (item) => `
+            <label class="pick-row">
+                <input type="checkbox" value="${escapeHtml(item.id)}">
+                <span><b>${escapeHtml(item.name)}</b><small class="muted block">${formatPrice(item.price)} · tồn ${item.stock}${item.hidden ? ' · đang ẩn' : ''}</small></span>
+            </label>`
+            )
+            .join('');
+        const list = items.length
+            ? `<label class="check-inline pick-all"><input type="checkbox" id="pickAll"> Chọn tất cả ${items.length} sản phẩm</label><div class="pick-list">${rows}</div>`
+            : '';
+        overlay.innerHTML = `
+            <div class="modal modal-danger modal-wide" role="dialog" aria-modal="true">
+                <h2 class="modal-title">Xóa danh mục “${escapeHtml(category.name)}”?</h2>
+                <p class="modal-message">${intro} Voucher chỉ áp dụng cho danh mục này (nếu có) sẽ bị tắt.</p>
+                ${list}
+                <p class="modal-message" id="pickSummary"></p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" data-act="cancel">Hủy</button>
+                    <button type="button" class="btn btn-danger-solid" data-act="ok">Xóa danh mục</button>
+                </div>
+            </div>`;
+        document.body.append(overlay);
+        document.body.classList.add('modal-open');
+
+        const boxes = [...overlay.querySelectorAll('.pick-row input')];
+        const pickAll = overlay.querySelector('#pickAll');
+        const picked = () => boxes.filter((box) => box.checked).map((box) => box.value);
+        const refresh = () => {
+            const n = picked().length;
+            if (pickAll) pickAll.checked = boxes.length > 0 && n === boxes.length;
+            overlay.querySelector('#pickSummary').textContent = items.length
+                ? `Ẩn ${n} sản phẩm, chuyển ${items.length - n} sản phẩm sang “${UNCATEGORIZED}”.`
+                : '';
+        };
+        function finish(result) {
+            document.removeEventListener('keydown', onKey);
+            document.body.classList.remove('modal-open');
+            overlay.remove();
+            resolve(result);
+        }
+        const onKey = (event) => event.key === 'Escape' && finish(null);
+        document.addEventListener('keydown', onKey);
+        pickAll?.addEventListener('change', () => {
+            boxes.forEach((box) => (box.checked = pickAll.checked));
+            refresh();
+        });
+        boxes.forEach((box) => box.addEventListener('change', refresh));
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay || event.target.closest('[data-act=cancel]')) finish(null);
+            if (event.target.closest('[data-act=ok]')) finish(picked());
+        });
+        refresh();
+    });
+}
+
+categoryRows.addEventListener('click', async (event) => {
+    const button = event.target.closest('.deleteCategoryBtn');
+    if (!button) return;
+    const category = categories.find((item) => String(item.id) === button.dataset.id);
+    if (!category) return;
+    const items = products.filter((product) => String(product.categoryId) === String(category.id));
+    const hideProductIds = await askCategoryDelete(category, items);
+    if (!hideProductIds) return;
+    try {
+        const result = await api.delete(`/admin/categories/${category.id}`, { hideProductIds });
+        const voucherNote = result.vouchersDisabled ? ` ${result.vouchersDisabled} voucher đã bị tắt.` : '';
+        const kept = result.moved - result.hidden;
+        toast(
+            `Đã xóa danh mục “${category.name}”: ${result.hidden} sản phẩm bị ẩn, ${kept} sản phẩm chuyển sang “${UNCATEGORIZED}”.${voucherNote}`,
+            { type: 'success' }
+        );
+        await refreshCategories();
+    } catch (error) {
+        toast(error.message, { type: 'error' });
+    }
+});
+
 // Danh sách sản phẩm
 const arrivalTime = (product) => Date.parse(product.lastImportedAt || product.createdAt || 0) || 0;
 const SORTS = {
@@ -71,6 +229,12 @@ const SORTS = {
     name: (a, b) => a.name.localeCompare(b.name, 'vi'),
     stock: (a, b) => a.stock - b.stock
 };
+
+// Giá vốn dưới giá bán (chỉ người quản lý thấy); sản phẩm cũ chưa nhập giá vốn thì ghi "ước tính"
+const costLine = (product) =>
+    canManageProducts && product.costPrice
+        ? `<small class="muted block">Vốn ${formatPrice(product.costPrice)}${product.costEstimated ? ' (ước tính)' : ''}</small>`
+        : '';
 
 function stockText(product) {
     if (product.stock <= 0) return '<span class="status status-cancelled">Hết hàng</span>';
@@ -91,6 +255,7 @@ function visibleProducts() {
 function renderProducts() {
     // chưa tải xong sản phẩm thì chưa vẽ (tránh hiện nhầm "Không có sản phẩm nào")
     if (!loaded) return;
+    renderCategoryTable();
     const list = visibleProducts();
 
     // danh sách luôn làm mới
@@ -107,9 +272,9 @@ function renderProducts() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><img class="table-thumb" src="${productImage(product.image)}" alt="${escapeHtml(product.name)}"></td>
-            <td><b>${escapeHtml(product.name)}</b>${product.isNew ? ' <em class="tag tag-praise">Mới</em>' : product.restocked ? ' <em class="tag tag-praise">Mới về</em>' : ''}${product.newUntil ? `<small class="muted block">Nhãn Mới đến ${formatDate(product.newUntil)}</small>` : ''}${product.promoUntil ? `<small class="muted block">Giảm giá đến ${formatDate(product.promoUntil)}</small>` : ''}</td>
-            <td>${escapeHtml(cat?.name || 'Chưa có danh mục')}</td>
-            <td>${formatPrice(product.price)}${product.oldPrice > product.price ? `<small class="muted block"><s>${formatPrice(product.oldPrice)}</s></small>` : ''}</td>
+            <td><b>${escapeHtml(product.name)}</b>${product.hidden ? ' <em class="tag tag-hidden">Đang ẩn</em>' : ''}${product.isNew ? ' <em class="tag tag-praise">Mới</em>' : product.restocked ? ' <em class="tag tag-praise">Mới về</em>' : ''}${product.newUntil ? `<small class="muted block">Nhãn Mới đến ${formatDate(product.newUntil)}</small>` : ''}${product.promoUntil ? `<small class="muted block">Giảm giá đến ${formatDate(product.promoUntil)}</small>` : ''}</td>
+            <td>${escapeHtml(cat?.name || UNCATEGORIZED)}</td>
+            <td>${formatPrice(product.price)}${product.oldPrice > product.price ? `<small class="muted block"><s>${formatPrice(product.oldPrice)}</s></small>` : ''}${costLine(product)}</td>
             <td>${stockText(product)}</td>
             ${canSeeSales ? salesCells(product.id) : ''}
             <td>${arrival ? formatDate(arrival) : '<span class="muted">—</span>'}</td>
@@ -119,6 +284,7 @@ function renderProducts() {
                     <button type="button" class="btn btn-sm btn-outline importRowBtn" data-id="${product.id}">Nhập</button>
                     <button type="button" class="btn btn-sm btn-outline historyBtn" data-id="${product.id}">Lịch sử</button>
                     ${canSeeSales ? `<button type="button" class="btn btn-sm btn-outline salesBtn" data-id="${product.id}">Doanh thu</button>` : ''}
+                    ${canManageProducts ? `<button type="button" class="btn btn-sm btn-outline toggleHideBtn" data-id="${product.id}">${product.hidden ? 'Hiện lại' : 'Ẩn'}</button>` : ''}
                     ${canManageProducts ? `<button type="button" class="btn btn-sm btn-danger deleteBtn" data-id="${product.id}">Xóa</button>` : ''}
                 </span>
             </td>`;
@@ -144,7 +310,7 @@ function loadProducts() {
             })
             .catch((error) => toast(`Không tải được doanh thu sản phẩm: ${error.message}`, { type: 'error' }));
     }
-    return api.load('/products', (data) => {
+    return api.load('/products?all=1', (data) => {
         products = data;
         loaded = true;
         renderProducts();
@@ -163,7 +329,8 @@ function renderSpecFields(categoryId, values = {}) {
             <input type="text" data-spec="${key}" maxlength="100" value="${escapeHtml(values[key] || '')}">
         </label>`
             )
-            .join('') || '<p class="muted">Chọn danh mục để nhập thông số.</p>';
+            .join('') ||
+        `<p class="muted">${categoryId && categoryId !== NO_CATEGORY ? 'Danh mục này chưa có thông số riêng.' : 'Chọn danh mục để nhập thông số.'}</p>`;
 }
 
 function collectSpecs() {
@@ -175,6 +342,22 @@ function collectSpecs() {
 categorySelect.addEventListener('change', () => renderSpecFields(categorySelect.value, collectSpecs()));
 
 // Xóa / sửa
+// ẩn / hiện lại sản phẩm: khách không thấy và không mua được sản phẩm đang ẩn
+async function toggleHidden(id) {
+    const sanpham = products.find((p) => String(p.id) === String(id));
+    if (!sanpham) return;
+    const hide = !sanpham.hidden;
+    try {
+        await api.patch(`/admin/products/${id}/visibility`, { hidden: hide });
+        toast(hide ? `Đã ẩn “${sanpham.name}”: khách không thấy và không mua được.` : `Đã hiện lại “${sanpham.name}”.`, {
+            type: 'success'
+        });
+        await loadProducts();
+    } catch (error) {
+        toast(error.message, { type: 'error' });
+    }
+}
+
 // phương thức xóa
 async function deleteProduct(id) {
     const sanpham = products.find((p) => String(p.id) === String(id));
@@ -228,11 +411,12 @@ function updateForm(id) {
     document.getElementById('productId').value = sanpham.id;
     document.getElementById('name').value = sanpham.name;
     document.getElementById('price').value = sanpham.price;
+    document.getElementById('costPrice').value = sanpham.costPrice ?? '';
     document.getElementById('oldPrice').value = sanpham.oldPrice || '';
     document.getElementById('stock').value = sanpham.stock;
     document.getElementById('newUntil').value = toLocalInput(sanpham.newUntil);
     document.getElementById('promoUntil').value = toLocalInput(sanpham.promoUntil);
-    categorySelect.value = sanpham.categoryId;
+    categorySelect.value = sanpham.categoryId ?? NO_CATEGORY;
     imageInput.value = sanpham.image;
     document.getElementById('description').value = sanpham.description || '';
     renderSpecFields(sanpham.categoryId, sanpham.specs);
@@ -247,6 +431,7 @@ productList.addEventListener('click', async (event) => {
     if (!button) return;
     const id = button.dataset.id;
     if (button.classList.contains('deleteBtn')) await deleteProduct(id);
+    if (button.classList.contains('toggleHideBtn')) await toggleHidden(id);
     if (button.classList.contains('editBtn')) editProduct(id);
     if (button.classList.contains('importRowBtn')) openImport(id);
     if (button.classList.contains('historyBtn')) showHistory(id);
@@ -309,11 +494,12 @@ form.addEventListener('submit', async (event) => {
     const sanpham = {
         name: document.getElementById('name').value.trim(),
         price: Number(document.getElementById('price').value),
+        costPrice: Number(document.getElementById('costPrice').value),
         oldPrice: oldPrice ? Number(oldPrice) : null,
         stock: Number(document.getElementById('stock').value),
         newUntil: fromLocalInput(document.getElementById('newUntil').value),
         promoUntil: fromLocalInput(document.getElementById('promoUntil').value),
-        categoryId: Number(categorySelect.value),
+        categoryId: categorySelect.value === NO_CATEGORY ? null : Number(categorySelect.value),
         image: imageInput.value.trim(),
         description: document.getElementById('description').value.trim(),
         specs: collectSpecs()
@@ -362,6 +548,7 @@ function openImport(id) {
     if (id) importForm.elements.namedItem('productId').value = id;
     importForm.elements.namedItem('add').value = '';
     importForm.elements.namedItem('note').value = '';
+    importForm.elements.namedItem('unitCost').value = '';
     document.getElementById('importMessage').textContent = '';
     importForm.classList.remove('hidden');
     importForm.scrollIntoView({ behavior: 'smooth' });
@@ -375,10 +562,11 @@ importForm.addEventListener('submit', async (event) => {
     try {
         const result = await api.patch(`/admin/products/${id}/stock`, {
             add: Number(importForm.elements.namedItem('add').value),
-            note: importForm.elements.namedItem('note').value.trim()
+            note: importForm.elements.namedItem('note').value.trim(),
+            unitCost: importForm.elements.namedItem('unitCost').value ? Number(importForm.elements.namedItem('unitCost').value) : undefined
         });
         importForm.classList.add('hidden');
-        toast(`Đã nhập kho. Tồn hiện tại: ${result.stock}.`, { type: 'success' });
+        toast(`Đã nhập kho. Tồn hiện tại: ${result.stock}, giá vốn bình quân: ${formatPrice(result.costPrice)}.`, { type: 'success' });
         await loadProducts();
     } catch (error) {
         document.getElementById('importMessage').textContent = error.message;
@@ -424,8 +612,10 @@ function showSales(id) {
     document.getElementById('salesTitle').textContent = `Doanh thu: ${sanpham?.name || ''}`;
     const cards = [
         ['Đã giao', sales?.delivered ?? 0],
-        ['Doanh thu hàng', formatPrice(sales?.revenue ?? 0)],
-        ['Giá bán trung bình', formatPrice(sales?.average ?? 0)],
+        ['Tiền bán', formatPrice(sales?.sales ?? 0)],
+        ['Giá vốn', formatPrice(sales?.cost ?? 0)],
+        ['Doanh thu (bán − vốn)', formatPrice(sales?.revenue ?? 0)],
+        ['Doanh thu TB / sản phẩm', formatPrice(sales?.average ?? 0)],
         ['Đang xử lý', sales?.inFlight ?? 0],
         ['Đã hủy', sales?.cancelled ?? 0],
         ['Số đơn đã giao', sales?.orders ?? 0]
@@ -494,12 +684,13 @@ const EXCEL_COLUMNS = [
     ['Tên sản phẩm', 'name'],
     ['Danh mục', 'category'],
     ['Giá bán', 'price'],
+    ['Giá vốn', 'costPrice'],
     ['Giá gốc', 'oldPrice'],
     ['Tồn kho', 'stock'],
     ['Ảnh', 'image'],
     ['Mô tả', 'description']
 ];
-const categoryName = (product) => categories.find((c) => c.id == product.categoryId)?.name || '';
+const categoryName = (product) => categories.find((c) => c.id == product.categoryId)?.name || UNCATEGORIZED;
 
 // file xuất ra sửa xong nhập lại được luôn nên cùng cột với file nhập
 async function exportExcel() {
@@ -514,6 +705,7 @@ async function exportExcel() {
                         product.name,
                         categoryName(product),
                         product.price,
+                        product.costPrice ?? '',
                         product.oldPrice || '',
                         product.stock,
                         product.image,
@@ -628,6 +820,7 @@ document.getElementById('closeExcelErrorsBtn').addEventListener('click', () => s
 async function initialize() {
     if (!requirePermission('products.view')) return;
     document.getElementById('addTab').classList.toggle('hidden', !canManageProducts);
+    document.getElementById('categoriesTab').classList.toggle('hidden', !canManageProducts);
     settingsForm.classList.toggle('hidden', !canManageProducts);
     document.getElementById('importExcelBtn').classList.toggle('hidden', !canManageProducts);
     renderSpecFields('');

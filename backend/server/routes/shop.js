@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { byId, db, newId, save } from '../core/store.js';
+import { byId, db, newId, save, visibleProduct, visibleProducts } from '../core/store.js';
 import { fail, handle, requirePermission, requireRole } from '../core/http.js';
 import { hasPermission } from '../core/permissions.js';
 import { parseReply, parseReview } from '../core/rules.js';
@@ -32,8 +32,16 @@ router.get('/categories', (_req, res) => res.json(db.categories));
 router.get(
     '/products',
     handle((req, res) => {
-        const list = req.query.sort === 'newest' ? [...db.products].sort((a, b) => arrivalTime(b) - arrivalTime(a)) : db.products;
-        res.json(list.map(presentProduct));
+        // ?all=1 (chỉ người quản lý sản phẩm): kèm cả sản phẩm đang ẩn, để trang quản trị hiện đủ
+        const source = req.query.all === '1' && hasPermission(req.user, 'products.view') ? db.products : visibleProducts();
+        const list = req.query.sort === 'newest' ? [...source].sort((a, b) => arrivalTime(b) - arrivalTime(a)) : source;
+        // Giá vốn chỉ trả cho người quản lý sản phẩm (chủ, admin) khi xem ?all=1; khách và nhân viên không thấy
+        const withCost = source === db.products && hasPermission(req.user, 'products.manage');
+        res.json(
+            list.map((item) =>
+                withCost ? { ...presentProduct(item), costPrice: item.costPrice, costEstimated: item.costEstimated } : presentProduct(item)
+            )
+        );
     })
 );
 
@@ -43,11 +51,11 @@ router.get(
     handle((req, res) => {
         const limit = Math.min(12, Math.max(1, Number(req.query.limit) || 6));
         const rows = db.reviews
-            .filter((review) => review.rating >= 4 && byId('products', review.productId))
+            .filter((review) => review.rating >= 4 && visibleProduct(review.productId))
             .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
             .slice(0, limit)
             .map((review) => {
-                const product = byId('products', review.productId);
+                const product = visibleProduct(review.productId);
                 return {
                     id: review.id,
                     userName: review.userName,
@@ -64,10 +72,22 @@ router.get(
     })
 );
 
+// Sản phẩm ẩn: chỉ người quản lý và khách đã từng mua nó (để xem lại đơn, đánh giá) mở được trang
+const canSeeHidden = (user, product) =>
+    Boolean(user) &&
+    (hasPermission(user, 'products.view') ||
+        db.orders.some(
+            (order) => String(order.userId) === String(user.id) && order.items.some((item) => String(item.id) === String(product.id))
+        ));
+function assertVisible(req, product) {
+    if (product?.hidden && !canSeeHidden(req.user, product)) fail(404, 'Không tìm thấy sản phẩm.');
+}
+
 router.get(
     '/products/:id',
     handle((req, res) => {
         const product = byId('products', req.params.id) || fail(404, 'Không tìm thấy sản phẩm.');
+        assertVisible(req, product);
         res.json(presentProduct(product));
     })
 );
@@ -76,6 +96,7 @@ router.get(
 router.get(
     '/products/:id/reviews',
     handle((req, res) => {
+        assertVisible(req, byId('products', req.params.id));
         const reviews = db.reviews
             .filter((review) => String(review.productId) === req.params.id)
             .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -89,7 +110,7 @@ router.get(
 router.get(
     '/products/:id/review-status',
     handle((req, res) => {
-        byId('products', req.params.id) || fail(404, 'Không tìm thấy sản phẩm.');
+        assertVisible(req, byId('products', req.params.id) || fail(404, 'Không tìm thấy sản phẩm.'));
         res.json(reviewStatus(req.user, req.params.id));
     })
 );
@@ -115,6 +136,7 @@ router.post(
     requireRole('user'),
     handle((req, res) => {
         const product = byId('products', req.body?.productId) || fail(404, 'Không tìm thấy sản phẩm.');
+        assertVisible(req, product);
         const status = reviewStatus(req.user, product.id);
         if (!status.canReview) {
             fail(

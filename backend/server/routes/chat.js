@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { byId, db, save } from '../core/store.js';
+import { byId, db, save, visibleProduct, visibleProducts } from '../core/store.js';
 import { fail, handle } from '../core/http.js';
 import { CHAT_LIMIT_PER_DAY, CHAT_LIMIT_PER_MINUTE, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE } from '../core/rules.js';
 import { arrivalTime, presentProduct } from '../services/inventory.js';
@@ -117,7 +117,7 @@ function searchProducts({ query = '', category = '', min_price: minPrice, max_pr
         .split(' ')
         .filter((word) => word.length > 1);
     const wantedCategory = normalize(category);
-    const rows = db.products
+    const rows = visibleProducts()
         .map((product) => {
             const haystack = normalize(
                 [
@@ -161,7 +161,7 @@ function listPromotions() {
 function runTool(name, args, user) {
     if (name === 'search_products') return searchProducts(args);
     if (name === 'get_product') {
-        const product = byId('products', args.id);
+        const product = visibleProduct(args.id);
         return product ? productSummary(product) : { error: 'Không tìm thấy sản phẩm.' };
     }
     if (name === 'list_promotions') return listPromotions();
@@ -225,8 +225,8 @@ function cleanHistory(raw) {
 // Mô hình có thể viết sai mã sản phẩm: tìm lại theo tên, không thấy thì chỉ giữ chữ để khách không bấm vào link hỏng.
 function fixProductLinks(text) {
     return text.replace(/\[([^\]]+)\]\(\.\/product-detail\.html\?id=([^)\s]*)\)/g, (link, name, id) => {
-        if (byId('products', id)) return link;
-        const product = db.products.find((item) => normalize(item.name) === normalize(name));
+        if (visibleProduct(id)) return link;
+        const product = visibleProducts().find((item) => normalize(item.name) === normalize(name));
         return product ? `[${name}](./product-detail.html?id=${product.id})` : name;
     });
 }

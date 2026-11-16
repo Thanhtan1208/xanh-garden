@@ -740,6 +740,15 @@ input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in 
 .tag-praise { background: #d7eedc; color: #1b5e20; }
 .tag-complaint { background: #f8d7d4; color: var(--danger); }
 .tag-suggestion { background: #d9e8f8; color: #134a85; }
+.tag-hidden { background: #e4e6e3; color: #5c635d; }
+/* Hộp thoại chọn sản phẩm cần ẩn khi xóa danh mục */
+.modal-wide { width: min(560px, 100%); }
+.pick-all { margin: 4px 0 8px; }
+.pick-list { max-height: min(300px, 40vh); overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
+.pick-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.pick-row:last-child { border-bottom: 0; }
+.pick-row:hover { background: var(--bg-soft); }
+.pick-row input { accent-color: var(--green); width: 16px; height: 16px; flex: none; }
 .role-tag { background: #ffd54f; color: #222; font-size: .7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
 .role-tag-admin { background: #cdebd8; color: #16432c; }
 .role-tag-owner { background: #d1f0e3; color: #16533c; }

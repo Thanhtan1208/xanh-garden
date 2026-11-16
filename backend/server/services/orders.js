@@ -6,7 +6,9 @@ import { sendThanksMail } from './order-mail.js';
 
 // Bản trả về client: không lộ dữ liệu nội bộ (bản băm mã xác nhận email của đơn cũ).
 export function publicOrder(order) {
-    const { emailConfirm, ...rest } = order;
+    // Giá vốn của từng dòng hàng là số nội bộ, không trả cho khách
+    const { emailConfirm, ...base } = order;
+    const rest = { ...base, items: order.items.map(({ cost, ...item }) => item) };
     const receiveBy = autoReceiveAt(order);
     return receiveBy ? { ...rest, autoReceiveAt: new Date(receiveBy).toISOString() } : rest;
 }

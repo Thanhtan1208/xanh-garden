@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { byId, db, newId, save } from '../core/store.js';
+import { byId, db, newId, save, visibleProduct } from '../core/store.js';
 import { fail, handle, requirePermission, requireRole } from '../core/http.js';
 import { hasPermission } from '../core/permissions.js';
 import { addressProblem, normalizePhone } from '../core/address.js';
@@ -74,7 +74,7 @@ const PAYMENT_LABEL = { cod: 'Thanh toán khi nhận hàng (COD)', sepay: 'Chuy�
 // Kiểm tra từng dòng hàng (tồn tại, số lượng, tồn kho) và trả về sản phẩm thật của server.
 function buildLines(quantities) {
     return [...quantities].map(([id, qty]) => {
-        const product = byId('products', id) || fail(400, 'Có sản phẩm không còn tồn tại trong cửa hàng.');
+        const product = visibleProduct(id) || fail(400, 'Có sản phẩm không còn bán trong cửa hàng.');
         if (qty > MAX_LINE_QUANTITY) fail(400, `Mỗi sản phẩm chỉ được mua tối đa ${MAX_LINE_QUANTITY} cái mỗi đơn.`);
         if (product.stock <= 0) fail(409, `“${product.name}” đã hết hàng.`);
         if (product.stock < qty) fail(409, `“${product.name}” chỉ còn ${product.stock} sản phẩm trong kho.`);
@@ -256,6 +256,7 @@ router.post(
                 id: String(product.id),
                 name: product.name,
                 price: product.price,
+                cost: product.costPrice,
                 qty,
                 image: product.image
             })),

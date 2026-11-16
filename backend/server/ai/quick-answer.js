@@ -1,4 +1,4 @@
-import { db } from '../core/store.js';
+import { db, visibleProducts } from '../core/store.js';
 import { AUTO_RECEIVE_DAYS, FREE_SHIPPING_FROM, HIGH_VALUE_FROM, SHIPPING_FEES } from '../core/rules.js';
 import { newestProducts } from '../services/inventory.js';
 import { getShop } from '../services/settings.js';
@@ -110,7 +110,7 @@ function recommend(q) {
     const vague = !(lowLight || sunny || easy || fengshui || air || gift);
     const cheap = has(q, 'gia re', 're nhat', 'binh dan', 'sinh vien', 're re');
 
-    const scored = db.products
+    const scored = visibleProducts()
         .filter((product) => product.stock > 0 && String(product.categoryId) !== ACCESSORY_CATEGORY && (!budget || product.price <= budget))
         .filter(
             (product) =>
@@ -190,7 +190,7 @@ function sellAnswer(own) {
     if (!match) return null;
     const wanted = sectionWords(match[2]).filter((word) => !['cay', 'loai', 'nao'].includes(word));
     if (!wanted.length) return null;
-    const found = db.products
+    const found = visibleProducts()
         .filter((product) => {
             const words = new Set(normalize(`${product.name} ${categoryOf(product)?.name || ''}`).split(' '));
             return product.stock > 0 && wanted.every((word) => words.has(word));
@@ -203,7 +203,7 @@ function sellAnswer(own) {
 
 // Câu hỏi về một sản phẩm cụ thể
 function findProduct(q) {
-    return [...db.products].sort((a, b) => b.name.length - a.name.length).find((product) => q.includes(normalize(product.name)));
+    return [...visibleProducts()].sort((a, b) => b.name.length - a.name.length).find((product) => q.includes(normalize(product.name)));
 }
 
 // Cây đang nói tới khi khách hỏi tiếp ngắn: tên cây trong câu trước của khách, hoặc câu trả lời gần nhất có link sản phẩm.
@@ -214,7 +214,7 @@ export function topicProduct(context, replies) {
     for (const reply of replies) {
         const ids = [...new Set([...String(reply).matchAll(/product-detail\.html\?id=([^)\s]+)/g)].map((match) => match[1]))];
         if (ids.length > 1) return null;
-        if (ids.length === 1) return db.products.find((item) => String(item.id) === ids[0]) || null;
+        if (ids.length === 1) return visibleProducts().find((item) => String(item.id) === ids[0]) || null;
     }
     return null;
 }
@@ -441,10 +441,11 @@ export function quickAnswer(message, { hits = [], user = null, context = '', rep
         )
     ) {
         const rows = db.categories.map(
-            (category) => `- ${category.name}: ${db.products.filter((item) => Number(item.categoryId) === Number(category.id)).length}`
+            (category) =>
+                `- ${category.name}: ${visibleProducts().filter((item) => Number(item.categoryId) === Number(category.id)).length}`
         );
         return [
-            `Cửa hàng có ${db.products.length} sản phẩm (${db.products.filter((item) => item.stock > 0).length} còn hàng), gồm:`,
+            `Cửa hàng có ${visibleProducts().length} sản phẩm (${visibleProducts().filter((item) => item.stock > 0).length} còn hàng), gồm:`,
             ...rows,
             'Xem tất cả ở trang [Sản phẩm](./products.html).'
         ].join('\n');

@@ -35,7 +35,7 @@ export function unitsSold({ from, to }) {
 export function bestSellers(limit = 8) {
     const thisMonth = unitsSold(monthWindow(0));
     const lastMonth = unitsSold(monthWindow(-1));
-    const available = db.products.filter((product) => product.stock > 0);
+    const available = db.products.filter((product) => product.stock > 0 && !product.hidden);
     const byScore = (map) => (a, b) => (map.get(String(b.id)) || 0) - (map.get(String(a.id)) || 0) || arrivalTime(b) - arrivalTime(a);
 
     const picked = [];

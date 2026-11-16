@@ -70,4 +70,12 @@ export function newId() {
     return randomBytes(6).toString('base64url');
 }
 
+// Sản phẩm bị ẩn (hidden: true): khách và chatbot không thấy; đơn cũ và trang quản trị vẫn dùng bình thường.
+export const isVisible = (product) => Boolean(product) && !product.hidden;
+export const visibleProducts = () => db.products.filter(isVisible);
+export const visibleProduct = (id) => {
+    const product = db.products.find((item) => String(item.id) === String(id));
+    return isVisible(product) ? product : undefined;
+};
+
 export const byId = (collection, id) => db[collection].find((item) => String(item.id) === String(id));

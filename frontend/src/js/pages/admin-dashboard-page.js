@@ -138,10 +138,12 @@ function renderRevenueHero(data) {
     const { summary, previous, filter } = data;
     const vs = previous.label.toLowerCase();
     el('revenueHero').innerHTML = heroCard({
-        label: `Doanh thu thực nhận · ${periodText(filter)}`,
+        label: `Doanh thu (tiền bán − giá vốn) · ${periodText(filter)}`,
         value: formatPrice(summary.revenue),
         sub: deltaPill(summary.revenue, previous.revenue, vs),
         stats: [
+            { label: 'Tiền bán (đã trừ giảm giá)', value: formatPrice(summary.sales || 0) },
+            { label: 'Giá vốn hàng bán', value: formatPrice(summary.cost || 0) },
             { label: 'Đơn đã giao', value: summary.deliveredOrders, note: statDelta(summary.deliveredOrders, previous.orders) },
             { label: 'Sản phẩm đã bán', value: summary.units, note: statDelta(summary.units, previous.units) },
             {
@@ -376,7 +378,7 @@ function renderLists(data) {
               .join('')
         : emptyRow('Chưa có đơn đã giao trong kỳ này.');
     el('topProductsTable').innerHTML =
-        `<thead><tr><th>Sản phẩm</th><th>Số lượng đã giao</th><th>Doanh thu hàng</th></tr></thead><tbody>${topProducts.length ? topProducts.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${row.qty}</td><td>${formatPrice(row.revenue)}</td></tr>`).join('') : '<tr><td colspan="3">Chưa có dữ liệu.</td></tr>'}</tbody>`;
+        `<thead><tr><th>Sản phẩm</th><th>Số lượng đã giao</th><th>Tiền bán</th><th>Doanh thu (bán − vốn)</th></tr></thead><tbody>${topProducts.length ? topProducts.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${row.qty}</td><td>${formatPrice(row.sales)}</td><td>${formatPrice(row.revenue)}</td></tr>`).join('') : '<tr><td colspan="4">Chưa có dữ liệu.</td></tr>'}</tbody>`;
 }
 
 el('quarterList').addEventListener('click', (event) => {
@@ -527,8 +529,10 @@ async function exportRevenueReport() {
                 rows: [
                     ['Chỉ số', 'Giá trị'],
                     ['Kỳ', periodText(filter)],
-                    ['Doanh thu thực nhận', summary.revenue],
-                    ['Doanh thu hàng', summary.goods],
+                    ['Doanh thu (tiền bán - giá vốn)', summary.revenue],
+                    ['Tiền bán (đã trừ giảm giá, không gồm phí ship)', summary.sales],
+                    ['Giá vốn hàng bán', summary.cost],
+                    ['Tiền hàng trước giảm giá', summary.goods],
                     ['Phí vận chuyển', summary.shipping],
                     ['Giảm giá', summary.discount],
                     ['Đơn đã giao', summary.deliveredOrders],
@@ -580,7 +584,10 @@ async function exportRevenueReport() {
             },
             {
                 name: 'San pham',
-                rows: [['Sản phẩm', 'Số lượng', 'Doanh thu hàng'], ...topProducts.map((row) => [row.name, row.qty, row.revenue])]
+                rows: [
+                    ['Sản phẩm', 'Số lượng', 'Tiền bán', 'Doanh thu (bán - vốn)'],
+                    ...topProducts.map((row) => [row.name, row.qty, row.sales, row.revenue])
+                ]
             },
             {
                 name: 'Danh gia',

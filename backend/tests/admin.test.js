@@ -15,16 +15,20 @@ before(async () => {
 after(() => ctx.stop());
 
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
-const product = (patch = {}) => ({
-    name: 'Cây trầu bà Nam Mỹ',
-    categoryId: 3,
-    price: 210000,
-    stock: 10,
-    image: 'p2.png',
-    description: 'Lá xẻ to, hợp phòng khách',
-    specs: { color: 'Xanh đậm', size: 'Cao 60 cm', bogus: 'bị bỏ' },
-    ...patch
-});
+const product = (patch = {}) => {
+    const base = {
+        name: 'Cây trầu bà Nam Mỹ',
+        categoryId: 3,
+        price: 210000,
+        stock: 10,
+        image: 'p2.png',
+        description: 'Lá xẻ to, hợp phòng khách',
+        specs: { color: 'Xanh đậm', size: 'Cao 60 cm', bogus: 'bị bỏ' },
+        ...patch
+    };
+    // giá vốn mặc định bằng 60% giá bán (làm tròn nghìn)
+    return { costPrice: Math.round((base.price * 0.6) / 1000) * 1000, ...base };
+};
 
 describe('Quản lý sản phẩm', () => {
     test('thêm sản phẩm: kiểm tra dữ liệu, nhãn Mới, thông số chỉ nhận trường của danh mục, ghi nhật ký nhập lần đầu', async () => {
@@ -133,21 +137,26 @@ describe('Thống kê và vận hành', () => {
             stats.days.reduce((sum, row) => sum + row.revenue, 0),
             stats.summary.revenue
         );
-        assert.ok(stats.days[now.getUTCDate() - 1].revenue >= order.total);
+        assert.ok(stats.days[now.getUTCDate() - 1].revenue > 0);
         assert.deepEqual((await call(ctx, 'GET', '/admin/stats?period=year', { token: admin })).body.days, []);
     });
 
-    test('doanh thu = tiền khách thực trả của đơn đã giao trong kỳ', async () => {
+    test('doanh thu = tiền bán - giá vốn của đơn đã giao trong kỳ (không tính phí vận chuyển)', async () => {
         const before = (await call(ctx, 'GET', '/admin/stats?period=year', { token: admin })).body.summary;
         const { token } = await newCustomer(ctx);
         const order = (await placeOrder(ctx, token, await addAddress(ctx, token), [['3', 1]])).body;
         for (const status of ['confirmed', 'shipping', 'delivered'])
             await call(ctx, 'PATCH', `/orders/${order.id}/status`, { token: admin, body: { status } });
         const stats = (await call(ctx, 'GET', '/admin/stats?period=year', { token: admin })).body;
-        assert.equal(stats.summary.revenue - before.revenue, order.total);
+        const cost = ctx.db.products.find((item) => item.id === '3').costPrice;
+        const sales = order.subtotal - order.discount;
+        assert.equal(stats.summary.sales - before.sales, sales, 'tiền bán = hàng - giảm giá, không gồm phí ship');
+        assert.equal(stats.summary.cost - before.cost, cost, 'giá vốn của 1 sản phẩm');
+        assert.equal(stats.summary.revenue - before.revenue, sales - cost, 'doanh thu = tiền bán - giá vốn');
+        assert.notEqual(stats.summary.revenue - before.revenue, order.total);
         assert.equal(stats.summary.deliveredOrders - before.deliveredOrders, 1);
         const month = new Date(Date.now() + 7 * 3600000).getUTCMonth();
-        assert.ok(stats.months[month].revenue >= order.total);
+        assert.ok(stats.months[month].revenue >= sales - cost);
     });
 
     test('kho & vận hành: việc cần làm, đối soát dữ liệu, giao dịch bất thường đánh dấu đã xử lý', async () => {
@@ -452,6 +461,7 @@ describe('Nhập sản phẩm từ Excel', () => {
         name: 'Cây nhập từ file',
         category: 'Cây để bàn',
         price: 150000,
+        costPrice: 90000,
         oldPrice: '',
         stock: 5,
         image: 'p1.png',

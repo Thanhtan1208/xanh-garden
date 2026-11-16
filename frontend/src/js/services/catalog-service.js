@@ -26,6 +26,23 @@ export function getCategories() {
     return pending;
 }
 
+// Admin thêm hoặc xóa danh mục: bỏ bản nhớ để các trang khác tải lại từ server
+export function forgetCategories() {
+    pending = null;
+    try {
+        sessionStorage.removeItem(KEY);
+    } catch {
+        // bị chặn lưu trữ: bỏ qua
+    }
+}
+
+// Mã dùng trên đường dẫn (?category=) cho các sản phẩm không thuộc danh mục nào; khách thấy tên "Khác".
+export const NO_CATEGORY = 'none';
+
+// Ảnh danh mục: ảnh có sẵn cho 5 danh mục đầu, danh mục admin mới thêm thì lấy ảnh của sản phẩm đầu tiên trong đó.
+export const categoryImage = (category, products = []) =>
+    CATEGORY_INFO[category.id]?.image || products.find((product) => String(product.categoryId) === String(category.id))?.image;
+
 // Ảnh minh họa cho từng danh mục (sản phẩm tiêu biểu) và câu mô tả ngắn hiển thị ở trang chủ/trang sản phẩm.
 export const CATEGORY_INFO = {
     1: { image: 'p10.png', text: 'Nhỏ gọn cho bàn học, bàn làm việc' },

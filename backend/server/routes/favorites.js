@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { byId, save } from '../core/store.js';
+import { byId, save, visibleProduct } from '../core/store.js';
 import { fail, handle, requireRole } from '../core/http.js';
 import { presentProduct } from '../services/inventory.js';
 
@@ -15,7 +15,7 @@ router.get(
     '/',
     handle((req, res) => {
         const products = listOf(req)
-            .map((id) => byId('products', id))
+            .map((id) => visibleProduct(id))
             .filter(Boolean)
             .map(presentProduct);
         res.json(products);
@@ -25,12 +25,12 @@ router.get(
 router.put(
     '/:productId',
     handle((req, res) => {
-        const product = byId('products', req.params.productId) || fail(404, 'Không tìm thấy sản phẩm.');
+        const product = visibleProduct(req.params.productId) || fail(404, 'Không tìm thấy sản phẩm.');
         const list = listOf(req);
         const id = String(product.id);
         if (!list.includes(id)) {
             // Danh sách đầy: bỏ những mã sản phẩm không còn bán trước khi báo đầy.
-            if (list.length >= MAX_FAVORITES) list.splice(0, list.length, ...list.filter((item) => byId('products', item)));
+            if (list.length >= MAX_FAVORITES) list.splice(0, list.length, ...list.filter((item) => visibleProduct(item)));
             if (list.length >= MAX_FAVORITES) fail(409, `Danh sách yêu thích tối đa ${MAX_FAVORITES} sản phẩm.`);
             list.unshift(id);
             save();

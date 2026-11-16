@@ -1,4 +1,4 @@
-import { db } from '../core/store.js';
+import { db, visibleProducts } from '../core/store.js';
 import { FREE_SHIPPING_FROM, MAX_LINE_QUANTITY, PAYMENT_TTL_MS, SHIPPING_FEES } from '../core/rules.js';
 import { getShop } from '../services/settings.js';
 import { normalize } from './kb.js';
@@ -62,7 +62,7 @@ const ACTIONS = [
 
 // Sản phẩm khách nhắc tới (tên dài khớp trước) và số lượng muốn mua
 function mentionedProduct(q) {
-    return [...db.products].sort((a, b) => b.name.length - a.name.length).find((product) => q.includes(normalize(product.name)));
+    return [...visibleProducts()].sort((a, b) => b.name.length - a.name.length).find((product) => q.includes(normalize(product.name)));
 }
 
 function orderReply(q) {

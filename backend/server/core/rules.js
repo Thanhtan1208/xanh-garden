@@ -12,6 +12,9 @@ export const PAYMENT_TTL_MS = 30 * 60 * 1000; // hạn chuyển khoản; quá h�
 export const MAX_ADDRESSES = 10;
 export const MAX_PRODUCT_PRICE = 100000000;
 export const MAX_PRODUCT_STOCK = 100000;
+export const MAX_CATEGORIES = 30;
+// Tên hiện cho sản phẩm không thuộc danh mục nào (danh mục của nó đã bị xóa, hoặc cột Danh mục để trống khi nhập Excel)
+export const UNCATEGORIZED = 'Chưa có danh mục';
 export const LOW_STOCK_AT = 5;
 export const FEEDBACK_TYPES = ['suggestion', 'complaint', 'praise', 'other'];
 export const MAX_LINE_QUANTITY = 20;
@@ -182,15 +185,29 @@ function parseSpecs(raw, category) {
     return specs;
 }
 
+export const parseCategoryName = (body = {}) => textField(body.name, 'Tên danh mục', 2, 40);
+
 export function parseProduct(body = {}, categories = []) {
     const price = Number(body.price);
     if (!Number.isInteger(price) || price < 1000 || price > MAX_PRODUCT_PRICE)
         fail(400, `Giá phải là số nguyên từ 1.000 đến ${MAX_PRODUCT_PRICE.toLocaleString('vi-VN')} ₫.`);
+    // Giá vốn (giá nhập) để tính doanh thu = tiền bán - giá vốn; không cao hơn giá bán
+    const costPrice = Number(body.costPrice);
+    if (
+        body.costPrice === undefined ||
+        body.costPrice === null ||
+        body.costPrice === '' ||
+        !Number.isInteger(costPrice) ||
+        costPrice < 1000 ||
+        costPrice > price
+    )
+        fail(400, 'Giá vốn (giá nhập) phải là số nguyên từ 1.000 ₫ đến không cao hơn giá bán.');
     const stock = Number(body.stock);
     if (!Number.isInteger(stock) || stock < 0 || stock > MAX_PRODUCT_STOCK)
         fail(400, `Tồn kho phải là số nguyên từ 0 đến ${MAX_PRODUCT_STOCK}.`);
-    const categoryId = Number(body.categoryId);
-    if (!Number.isInteger(categoryId)) fail(400, 'Vui lòng chọn danh mục.');
+    // null = chưa có danh mục (VD danh mục của sản phẩm đã bị xóa)
+    const categoryId = body.categoryId === null ? null : Number(body.categoryId);
+    if (categoryId !== null && !Number.isInteger(categoryId)) fail(400, 'Vui lòng chọn danh mục.');
     // Ảnh: ảnh admin tải lên (/uploads/products/...) hoặc tên ảnh có sẵn trong src/static/IMAGES.
     const rawImage = text(body.image);
     const image = rawImage.startsWith('/uploads/') ? rawImage : rawImage.split('/').pop();
@@ -205,6 +222,7 @@ export function parseProduct(body = {}, categories = []) {
     return {
         name: textField(body.name, 'Tên sản phẩm', 2, 80),
         price,
+        costPrice,
         oldPrice,
         stock,
         categoryId,

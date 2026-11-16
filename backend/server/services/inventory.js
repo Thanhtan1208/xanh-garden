@@ -50,7 +50,7 @@ function productStats() {
 }
 
 // Sản phẩm trả cho client: thêm cờ isNew (vừa tạo), restocked (vừa nhập thêm), số đã bán và điểm đánh giá.
-export function presentProduct(product) {
+export function presentProduct({ costPrice, costEstimated, ...product }) {
     const isNew = isNewProduct(product);
     const restocked = !isNew && within(product.lastImportedAt, getSettings().restockDays);
     const promo = newPromoOf(product);
@@ -91,7 +91,7 @@ export function assertPromoShorter(product) {
 // N sản phẩm tạo gần nhất. Nhập thêm hàng cho sản phẩm cũ không tính là sản phẩm mới.
 export const newestProducts = (limit) =>
     db.products
-        .filter((product) => product.createdAt)
+        .filter((product) => product.createdAt && !product.hidden)
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
         .slice(0, limit);
 

@@ -48,6 +48,11 @@ function migrate() {
     });
     db.products.forEach((product) => {
         product.image = imageName(product.image);
+        // Sản phẩm cũ chưa có giá vốn: tạm tính bằng 70% giá bán (làm tròn nghìn) và đánh dấu "ước tính" để admin nhập giá thật
+        if (!Number.isInteger(product.costPrice)) {
+            product.costPrice = Math.min(product.price, Math.max(1000, Math.round((product.price * 0.7) / 1000) * 1000));
+            product.costEstimated = true;
+        }
     });
     seedSpecs(db); // thông số theo loại cây (màu sắc, kích thước, hương thơm...), chỉ thêm khi chưa có
     db.orders.forEach((order) => {

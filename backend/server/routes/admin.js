@@ -4,7 +4,18 @@ import { ApiError, fail, handle, hashPassword, requirePermission } from '../core
 import { randomInt } from 'node:crypto';
 import { clearLoginFailures } from './auth.js';
 import { hasPermission, ROLE_LABEL, ROLES } from '../core/permissions.js';
-import { LOW_STOCK_AT, MAX_PRODUCT_STOCK, parseProduct, parseSettings, parseShop, passwordProblem } from '../core/rules.js';
+import {
+    LOW_STOCK_AT,
+    MAX_CATEGORIES,
+    MAX_PRODUCT_PRICE,
+    MAX_PRODUCT_STOCK,
+    UNCATEGORIZED,
+    parseCategoryName,
+    parseProduct,
+    parseSettings,
+    parseShop,
+    passwordProblem
+} from '../core/rules.js';
 import { sweepExpired } from '../services/orders.js';
 import { buildDemand } from '../services/demand.js';
 import { assertPromoShorter, logStock } from '../services/inventory.js';
@@ -24,8 +35,17 @@ const vnDate = (iso) => new Date(Date.parse(iso) + VN_OFFSET_MS);
 
 // Doanh thu tính từ chi tiết đơn (items) của đơn đã giao, không dùng số liệu sinh sẵn.
 const goodsOf = (order) => order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-// Doanh thu = tiền khách thực trả: hàng - giảm giá + phí ship - giảm phí ship (đơn cũ không có voucher thì như trước).
-const revenueOf = (order) => goodsOf(order) - (order.discount || 0) + (order.shippingFee || 0) - (order.shippingDiscount || 0);
+// Tiền khách thực trả: hàng - giảm giá + phí ship - giảm phí ship (đối chiếu với order.total).
+const paidOf = (order) => goodsOf(order) - (order.discount || 0) + (order.shippingFee || 0) - (order.shippingDiscount || 0);
+// Giá vốn một dòng hàng: giá vốn chụp lúc đặt; đơn cũ chưa có thì lấy giá vốn hiện tại của sản phẩm.
+const unitCostOf = (item) => item.cost ?? byId('products', item.id)?.costPrice ?? 0;
+const costOf = (order) => order.items.reduce((sum, item) => sum + unitCostOf(item) * item.qty, 0);
+// Tiền bán hàng = hàng - giảm giá (không tính phí vận chuyển, vì đó là tiền trả cho đơn vị vận chuyển).
+const salesOf = (order) => goodsOf(order) - (order.discount || 0);
+// DOANH THU = tiền bán - giá vốn (giá nhập).
+const revenueOf = (order) => salesOf(order) - costOf(order);
+// Doanh thu một dòng hàng (chưa chia giảm giá của đơn).
+const itemRevenue = (item) => (item.price - unitCostOf(item)) * item.qty;
 const unitsOf = (order) => order.items.reduce((sum, item) => sum + item.qty, 0);
 
 function deliveredAt(order) {
@@ -313,9 +333,10 @@ router.get(
         const sold = new Map();
         selectedOrders.forEach((order) =>
             order.items.forEach((item) => {
-                const row = sold.get(item.id) || { id: item.id, name: item.name, qty: 0, revenue: 0 };
+                const row = sold.get(item.id) || { id: item.id, name: item.name, qty: 0, sales: 0, revenue: 0 };
                 row.qty += item.qty;
-                row.revenue += item.price * item.qty;
+                row.sales += item.price * item.qty;
+                row.revenue += itemRevenue(item);
                 sold.set(item.id, row);
             })
         );
@@ -326,7 +347,7 @@ router.get(
             order.items.forEach((item) => {
                 const categoryId = byId('products', item.id)?.categoryId;
                 const name = db.categories.find((category) => Number(category.id) === Number(categoryId))?.name || 'Khác';
-                categoryRevenue.set(name, (categoryRevenue.get(name) || 0) + item.price * item.qty);
+                categoryRevenue.set(name, (categoryRevenue.get(name) || 0) + itemRevenue(item));
             })
         );
         const byCategory = [...categoryRevenue].map(([name, value]) => ({ name, revenue: value })).sort((a, b) => b.revenue - a.revenue);
@@ -431,6 +452,8 @@ router.get(
             months,
             summary: {
                 revenue,
+                sales: selectedOrders.reduce((s, o) => s + salesOf(o), 0),
+                cost: selectedOrders.reduce((s, o) => s + costOf(o), 0),
                 goods: selectedOrders.reduce((s, o) => s + goodsOf(o), 0),
                 shipping: selectedOrders.reduce((s, o) => s + (o.shippingFee || 0), 0),
                 discount: selectedOrders.reduce((s, o) => s + (o.discount || 0) + (o.shippingDiscount || 0), 0),
@@ -460,7 +483,7 @@ function integrityIssues() {
     });
     db.orders.forEach((order) => {
         const goods = goodsOf(order);
-        if (goods !== order.subtotal || revenueOf(order) !== order.total) {
+        if (goods !== order.subtotal || paidOf(order) !== order.total) {
             issues.push(`Đơn ${order.code}: tổng tiền (${order.total.toLocaleString('vi-VN')} ₫) không khớp chi tiết đơn.`);
         }
         if (order.status === 'delivered' && order.paymentStatus !== 'paid')
@@ -490,6 +513,8 @@ router.get(
                 rows.set(id, {
                     id,
                     delivered: 0,
+                    sales: 0,
+                    cost: 0,
                     revenue: 0,
                     inFlight: 0,
                     cancelled: 0,
@@ -504,14 +529,16 @@ router.get(
                 const row = rowOf(String(item.id));
                 if (order.status === 'delivered') {
                     row.delivered += item.qty;
-                    row.revenue += item.price * item.qty;
+                    row.sales += item.price * item.qty;
+                    row.cost += unitCostOf(item) * item.qty;
+                    row.revenue += itemRevenue(item);
                     row.orders += 1;
                     const at = vnDate(deliveredAt(order));
                     const key = `${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, '0')}`;
                     const month = row.months.find((m) => m.key === key);
                     if (month) {
                         month.units += item.qty;
-                        month.revenue += item.price * item.qty;
+                        month.revenue += itemRevenue(item);
                     }
                 } else if (IN_FLIGHT.includes(order.status)) row.inFlight += item.qty;
                 else if (order.status === 'cancelled') row.cancelled += item.qty;
@@ -631,10 +658,23 @@ router.patch(
         if (!Number.isInteger(add) || add < 1 || add > MAX_PRODUCT_STOCK)
             fail(400, `Số lượng nhập thêm phải là số nguyên từ 1 đến ${MAX_PRODUCT_STOCK}.`);
         if (product.stock + add > MAX_PRODUCT_STOCK) fail(400, `Tồn kho tối đa ${MAX_PRODUCT_STOCK}. Hiện còn ${product.stock}.`);
+        // Giá nhập của lô hàng (không bắt buộc): giá vốn mới = bình quân gia quyền của hàng đang tồn và lô mới
+        const rawCost = req.body?.unitCost;
+        const hasCost = rawCost !== undefined && rawCost !== null && rawCost !== '';
+        const unitCost = Number(rawCost);
+        if (hasCost && (!Number.isInteger(unitCost) || unitCost < 1000 || unitCost > MAX_PRODUCT_PRICE))
+            fail(400, 'Giá nhập phải là số nguyên từ 1.000 ₫.');
+        const before = product.stock;
+        if (hasCost) {
+            const oldCost = product.costPrice ?? unitCost;
+            product.costPrice = Math.round((before * oldCost + add * unitCost) / (before + add));
+            delete product.costEstimated;
+        }
         product.stock += add;
-        logStock(product, 'import', add, { note: String(req.body?.note || '').slice(0, 200), by: req.user.name });
+        const entry = logStock(product, 'import', add, { note: String(req.body?.note || '').slice(0, 200), by: req.user.name });
+        if (entry && hasCost) entry.unitCost = unitCost;
         save();
-        res.json({ id: String(product.id), stock: product.stock, lastImportedAt: product.lastImportedAt });
+        res.json({ id: String(product.id), stock: product.stock, costPrice: product.costPrice, lastImportedAt: product.lastImportedAt });
     })
 );
 
@@ -712,12 +752,79 @@ router.put(
     })
 );
 
+// Danh mục sản phẩm: thêm, xóa. Xóa danh mục thì sản phẩm của nó chuyển sang "chưa có danh mục" (categoryId null),
+// voucher theo danh mục bỏ danh mục đó ra khỏi phạm vi (hết danh mục nào thì tắt voucher).
+router.post(
+    '/categories',
+    requirePermission('products.manage'),
+    handle((req, res) => {
+        const name = parseCategoryName(req.body);
+        if (db.categories.length >= MAX_CATEGORIES) fail(409, `Tối đa ${MAX_CATEGORIES} danh mục.`);
+        if (db.categories.some((category) => category.name.toLowerCase() === name.toLowerCase())) fail(409, 'Danh mục này đã tồn tại.');
+        // Số tăng dần và không dùng lại mã của danh mục đã xóa (voucher cũ không bị trỏ nhầm sang danh mục mới)
+        const ids = db.categories.map((category) => Number(category.id) || 0);
+        const id = Math.max(Number(db.settings.lastCategoryId) || 0, ...ids) + 1;
+        db.settings.lastCategoryId = id;
+        const category = { id: String(id), name, specFields: [] };
+        db.categories.push(category);
+        save();
+        res.status(201).json(category);
+    })
+);
+
+router.delete(
+    '/categories/:id',
+    requirePermission('products.manage'),
+    handle((req, res) => {
+        const category = byId('categories', req.params.id) || fail(404, 'Không tìm thấy danh mục.');
+        const id = String(category.id);
+        const moved = db.products.filter((product) => String(product.categoryId) === id);
+        // Admin chọn sản phẩm nào bị ẩn cùng danh mục (không xóa hẳn: đơn cũ và dữ liệu vẫn còn, hiện lại được); còn lại chuyển sang "chưa có danh mục"
+        const wanted = Array.isArray(req.body?.hideProductIds) ? [...new Set(req.body.hideProductIds.map(String))] : [];
+        if (wanted.some((productId) => !moved.some((product) => String(product.id) === productId)))
+            fail(400, 'Có sản phẩm không thuộc danh mục này.');
+        moved.forEach((product) => {
+            product.categoryId = null;
+            if (wanted.includes(String(product.id))) product.hidden = true;
+        });
+        let vouchersUpdated = 0;
+        let vouchersDisabled = 0;
+        db.vouchers.forEach((voucher) => {
+            if (voucher.scope !== 'category' || !voucher.scopeIds.includes(id)) return;
+            voucher.scopeIds = voucher.scopeIds.filter((item) => item !== id);
+            vouchersUpdated += 1;
+            if (!voucher.scopeIds.length && voucher.active) {
+                voucher.active = false;
+                vouchersDisabled += 1;
+            }
+        });
+        db.categories.splice(db.categories.indexOf(category), 1);
+        save();
+        res.json({ moved: moved.length, hidden: wanted.length, vouchersUpdated, vouchersDisabled });
+    })
+);
+
+// Ẩn hoặc hiện lại một sản phẩm: sản phẩm ẩn khách và chatbot không thấy, không mua được; admin vẫn thấy và hiện lại được.
+router.patch(
+    '/products/:id/visibility',
+    requirePermission('products.manage'),
+    handle((req, res) => {
+        const product = byId('products', req.params.id) || fail(404, 'Không tìm thấy sản phẩm.');
+        if (typeof req.body?.hidden !== 'boolean') fail(400, 'Thiếu trạng thái ẩn hoặc hiện.');
+        if (req.body.hidden) product.hidden = true;
+        else delete product.hidden;
+        save();
+        res.json({ id: String(product.id), hidden: Boolean(product.hidden) });
+    })
+);
+
 router.post(
     '/products',
     requirePermission('products.manage'),
     handle((req, res) => {
         const data = parseProduct(req.body, db.categories);
-        if (!db.categories.some((category) => Number(category.id) === data.categoryId)) fail(400, 'Danh mục không tồn tại.');
+        if (data.categoryId !== null && !db.categories.some((category) => Number(category.id) === data.categoryId))
+            fail(400, 'Danh mục không tồn tại.');
         if (db.products.some((product) => product.name.toLowerCase() === data.name.toLowerCase())) fail(409, 'Tên sản phẩm đã tồn tại.');
         const product = { id: newId(), ...data, care: [], createdAt: new Date().toISOString() };
         assertPromoShorter(product);
@@ -744,21 +851,25 @@ router.post(
         const errors = [];
         rows.forEach((row, index) => {
             try {
+                if (!row || typeof row !== 'object') fail(400, 'Dòng này không có dữ liệu.');
                 const id = String(row?.id ?? '').trim();
                 const product = id ? byId('products', id) || fail(400, `Không tìm thấy sản phẩm có ID ${id}.`) : null;
                 if (product && seen.has(product)) fail(400, 'ID này xuất hiện nhiều lần trong file.');
                 const categoryText = String(row?.category ?? '')
                     .trim()
                     .toLowerCase();
-                const category =
-                    db.categories.find((item) => item.name.toLowerCase() === categoryText) ||
-                    fail(400, `Không có danh mục "${row?.category ?? ''}".`);
+                // Cột Danh mục để trống hoặc ghi "Chưa có danh mục" (đúng như file xuất ra) thì sản phẩm không thuộc danh mục nào
+                const category = [UNCATEGORIZED.toLowerCase(), ''].includes(categoryText)
+                    ? null
+                    : db.categories.find((item) => item.name.toLowerCase() === categoryText) ||
+                      fail(400, `Không có danh mục "${row?.category ?? ''}".`);
                 const data = parseProduct(
                     {
                         ...product,
                         ...row,
-                        categoryId: category.id,
+                        categoryId: category ? category.id : null,
                         image: row.image || product?.image,
+                        costPrice: row.costPrice === undefined || row.costPrice === '' ? product?.costPrice : row.costPrice,
                         stock: product ? product.stock : row.stock
                     },
                     db.categories
@@ -779,6 +890,7 @@ router.post(
         valid.forEach(({ product, data }) => {
             if (product) {
                 Object.assign(product, data);
+                delete product.costEstimated;
                 return;
             }
             const created = { id: newId(), ...data, care: [], createdAt: new Date().toISOString() };
@@ -797,12 +909,14 @@ router.put(
     handle((req, res) => {
         const product = byId('products', req.params.id) || fail(404, 'Không tìm thấy sản phẩm.');
         const data = parseProduct(req.body, db.categories);
-        if (!db.categories.some((category) => Number(category.id) === data.categoryId)) fail(400, 'Danh mục không tồn tại.');
+        if (data.categoryId !== null && !db.categories.some((category) => Number(category.id) === data.categoryId))
+            fail(400, 'Danh mục không tồn tại.');
         if (db.products.some((other) => other !== product && other.name.toLowerCase() === data.name.toLowerCase()))
             fail(409, 'Tên sản phẩm đã tồn tại.');
         assertPromoShorter({ ...product, ...data });
         const before = product.stock;
         Object.assign(product, data);
+        delete product.costEstimated;
         // Sửa tồn kho trực tiếp trong form là điều chỉnh (kiểm kê), khác với nhập hàng mới ở tab Kho.
         logStock(product, 'adjust', product.stock - before, { note: 'Điều chỉnh tồn kho khi sửa sản phẩm', by: req.user.name });
         save();

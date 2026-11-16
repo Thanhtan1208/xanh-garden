@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { byId, db, save } from '../core/store.js';
+import { byId, db, save, visibleProduct } from '../core/store.js';
 import { fail, handle, requireRole } from '../core/http.js';
 import { MAX_LINE_QUANTITY } from '../core/rules.js';
 
@@ -25,7 +25,7 @@ function clean(rawItems) {
     const items = [];
     const removed = [];
     quantities.forEach((qty, id) => {
-        const product = byId('products', id);
+        const product = visibleProduct(id);
         if (!product) {
             removed.push({ id, reason: 'removed' });
             return;

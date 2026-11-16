@@ -1,6 +1,6 @@
 import { api } from '../services/api-service.js';
 import { cachedSite, getSite } from '../services/site-service.js';
-import { CATEGORY_INFO, cachedCategories } from '../services/catalog-service.js';
+import { categoryImage, cachedCategories } from '../services/catalog-service.js';
 import { bindAddToCart, ratingStars, renderProductCard } from '../components/product-card.js';
 import { escapeHtml, formatPrice } from '../utils/format.js';
 import { RULES, SHOP } from '../config/shop.js';
@@ -134,7 +134,7 @@ function renderCategories(categories, all) {
             .map(
                 (category) => `
         <a href="./products.html?category=${encodeURIComponent(category.id)}">
-            <img src="${productImage(CATEGORY_INFO[category.id]?.image)}" alt="">
+            <img src="${productImage(categoryImage(category, all || []))}" alt="">
             <span>${escapeHtml(category.name)}</span><small>${count(category.id)}</small>
         </a>`
             )

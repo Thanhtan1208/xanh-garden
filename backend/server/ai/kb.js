@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { db } from '../core/store.js';
+import { db, visibleProducts } from '../core/store.js';
 import {
     AUTO_RECEIVE_DAYS,
     CANCEL_REQUEST_TTL_MS,
@@ -76,7 +76,7 @@ export const docChunks = () => DOC_CHUNKS;
 const categoryName = (id) => db.categories.find((category) => Number(category.id) === Number(id))?.name || 'Khác';
 
 function productChunks() {
-    return db.products.map((product) => {
+    return visibleProducts().map((product) => {
         const specs = (db.categories.find((category) => Number(category.id) === Number(product.categoryId))?.specFields || [])
             .map(({ key, label }) => (product.specs?.[key] ? `${label}: ${product.specs[key]}` : null))
             .filter(Boolean);
@@ -108,7 +108,9 @@ function productChunks() {
 function liveChunks() {
     const chunks = [];
     const byCategory = db.categories.map((category) => {
-        const names = db.products.filter((product) => Number(product.categoryId) === Number(category.id)).map((product) => product.name);
+        const names = visibleProducts()
+            .filter((product) => Number(product.categoryId) === Number(category.id))
+            .map((product) => product.name);
         return `${category.name}: ${names.join(', ') || '(chưa có sản phẩm)'}`;
     });
     chunks.push({

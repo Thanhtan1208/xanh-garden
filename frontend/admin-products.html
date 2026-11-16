@@ -27,6 +27,7 @@
             <nav class="pill-tabs prod-tabs" id="prodTabs" role="tablist">
                 <button type="button" class="active" data-tab="list" role="tab">Danh sách sản phẩm</button>
                 <button type="button" id="addTab" data-tab="add" role="tab">Thêm sản phẩm</button>
+                <button type="button" id="categoriesTab" data-tab="categories" role="tab">Danh mục</button>
             </nav>
 
             <!-- Tab 1: danh sách, nhập kho, lịch sử, doanh thu -->
@@ -63,6 +64,7 @@
                     <div class="form-grid">
                         <label>Sản phẩm <select name="productId"></select></label>
                         <label>Số lượng nhập <input type="number" name="add" min="1" max="100000" step="1"></label>
+                        <label>Giá nhập mỗi sản phẩm của lô này (₫, bỏ trống để giữ giá vốn hiện tại) <input type="number" name="unitCost" min="1000" max="100000000" step="1"></label>
                         <label class="full-column">Ghi chú (nhà cung cấp, lô hàng...) <input type="text" name="note" maxlength="200"></label>
                     </div>
                     <p id="importMessage" class="error-message" role="alert"></p>
@@ -76,7 +78,7 @@
                 <section id="salesBox" class="form-section hidden">
                     <div class="section-header"><h2 id="salesTitle">Doanh thu sản phẩm</h2><button type="button" id="closeSalesBtn" class="btn btn-sm btn-outline">Đóng</button></div>
                     <div id="salesSummary" class="sales-summary"></div>
-                    <div class="table-wrap"><table class="data-table"><thead><tr><th>Tháng</th><th>Số lượng đã giao</th><th>Doanh thu hàng</th></tr></thead><tbody id="salesBody"></tbody></table></div>
+                    <div class="table-wrap"><table class="data-table"><thead><tr><th>Tháng</th><th>Số lượng đã giao</th><th>Doanh thu (bán − vốn)</th></tr></thead><tbody id="salesBody"></tbody></table></div>
                 </section>
                 <section id="historyBox" class="form-section hidden">
                     <div class="section-header"><h2 id="historyTitle">Lịch sử nhập/xuất</h2><button type="button" id="closeHistoryBtn" class="btn btn-sm btn-outline">Đóng</button></div>
@@ -113,6 +115,7 @@
                         <label>Tên sản phẩm <input type="text" id="name" maxlength="80" required></label>
                         <label>Danh mục <select id="productCategory" required></select></label>
                         <label>Giá bán (₫) <input type="number" id="price" min="1000" max="100000000" required></label>
+                        <label>Giá vốn / giá nhập (₫, không cao hơn giá bán) <input type="number" id="costPrice" min="1000" max="100000000" required></label>
                         <label>Giá gốc trước giảm (₫, bỏ trống nếu không giảm) <input type="number" id="oldPrice" min="1000" max="100000000"></label>
                         <label>Tồn kho <input type="number" id="stock" min="0" max="100000" required></label>
                         <label>Hiện nhãn "Mới" đến (để trống = theo số ngày chung) <input type="datetime-local" id="newUntil"></label>
@@ -132,6 +135,25 @@
                         <button type="button" id="cancelBtn" class="btn btn-outline" hidden>Hủy sửa</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Tab 3: thêm, xóa danh mục -->
+            <div class="tab-panel hidden" data-panel="categories">
+                <form id="categoryForm" class="form-section" novalidate>
+                    <h2>Thêm danh mục</h2>
+                    <div class="form-grid">
+                        <label>Tên danh mục <input type="text" id="categoryName" maxlength="40" autocomplete="off" required></label>
+                    </div>
+                    <p id="categoryMessage" class="error-message" role="alert"></p>
+                    <div class="button-row"><button type="submit" id="categoryBtn" class="btn btn-sm">Thêm danh mục</button></div>
+                </form>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Danh mục</th><th>Số sản phẩm</th><th>Thao tác</th></tr></thead>
+                        <tbody id="categoryRows"></tbody>
+                    </table>
+                </div>
+                <p class="muted">Xóa danh mục thì sản phẩm trong đó không bị xóa mà chuyển sang "Chưa có danh mục"; sửa từng sản phẩm để xếp lại.</p>
             </div>
         </main>
         <!-- jsPDF + AutoTable để xuất danh sách sản phẩm ra PDF -->

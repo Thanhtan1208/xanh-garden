@@ -1,5 +1,5 @@
 import { api } from '../services/api-service.js';
-import { CATEGORY_INFO, cachedCategories } from '../services/catalog-service.js';
+import { CATEGORY_INFO, NO_CATEGORY, cachedCategories } from '../services/catalog-service.js';
 import { bindAddToCart, discountPercent, renderProductCard } from '../components/product-card.js';
 import '../components/header.js';
 import { escapeHtml } from '../utils/format.js';
@@ -59,15 +59,21 @@ filterToggle.addEventListener('click', () => {
 });
 
 const arrivalTime = (product) => Date.parse(product.lastImportedAt || product.createdAt || 0) || 0;
-const categoryOf = (id) => categories.find((item) => String(item.id) === String(id));
+// Sản phẩm của danh mục đã bị xóa không thuộc danh mục nào: khách thấy chúng trong mục "Khác"
+const NO_CATEGORY_ENTRY = { id: NO_CATEGORY, name: 'Khác' };
+const isUncategorized = (product) => product.categoryId === null || product.categoryId === undefined;
+const categoryOf = (id) => (id === NO_CATEGORY ? NO_CATEGORY_ENTRY : categories.find((item) => String(item.id) === String(id)));
 
 // Chưa có sản phẩm thì để trống số đếm (danh mục vẫn hiện đủ để cột trái không bị nhảy)
 function renderCategories() {
-    $('#categoryList').innerHTML = [{ id: '', name: 'Tất cả sản phẩm' }, ...categories]
+    const hasOthers = products.some(isUncategorized);
+    $('#categoryList').innerHTML = [{ id: '', name: 'Tất cả sản phẩm' }, ...categories, ...(hasOthers ? [NO_CATEGORY_ENTRY] : [])]
         .map((category) => {
-            const count = category.id
-                ? products.filter((product) => String(product.categoryId) === String(category.id)).length
-                : products.length;
+            const count = !category.id
+                ? products.length
+                : category.id === NO_CATEGORY
+                  ? products.filter(isUncategorized).length
+                  : products.filter((product) => String(product.categoryId) === String(category.id)).length;
             return `<button type="button" class="side-item${String(category.id) === state.categoryId ? ' active' : ''}" data-category="${escapeHtml(category.id)}">
                 <span>${escapeHtml(category.name)}</span><small>${products.length ? count : ''}</small>
             </button>`;
@@ -113,7 +119,8 @@ function filterProducts() {
     const result = products.filter((product) => {
         const haystack = plain(`${product.name} ${product.description || ''} ${categoryOf(product.categoryId)?.name || ''}`);
         return (
-            (!state.categoryId || String(product.categoryId) === state.categoryId) &&
+            (!state.categoryId ||
+                (state.categoryId === NO_CATEGORY ? isUncategorized(product) : String(product.categoryId) === state.categoryId)) &&
             (!state.sale || discountPercent(product) > 0) &&
             (!min || product.price >= Number(min)) &&
             (!max || product.price < Number(max)) &&
@@ -239,6 +246,14 @@ async function initialize() {
             render();
             $('#loading').classList.add('hidden');
         });
+        // Đường dẫn ?category= trỏ tới danh mục đã bị xóa (hoặc mục Khác không còn sản phẩm): về tất cả sản phẩm
+        const known = state.categoryId === NO_CATEGORY ? products.some(isUncategorized) : categoryOf(state.categoryId);
+        if (state.categoryId && !known) {
+            state.categoryId = '';
+            setUrlParam('category', '');
+            renderCategories();
+            render();
+        }
         if (state.search) trackSearch(state.search.toLowerCase(), filterProducts().length);
     } catch (error) {
         $('#error').textContent = error.message;
