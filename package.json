@@ -7,7 +7,7 @@
         "node": ">=22"
     },
     "scripts": {
-        "build": "npm ci --prefix frontend && npm run build --prefix frontend && npm ci --omit=dev --prefix backend",
+        "build": "npm ci --include=dev --prefix frontend && npm run build --prefix frontend && npm ci --omit=dev --prefix backend",
         "start": "npm start --prefix backend",
         "format": "prettier --write \"backend/**/*.{js,mjs}\" \"frontend/src/js/**/*.js\" frontend/vite.config.js",
         "format:check": "prettier --check \"backend/**/*.{js,mjs}\" \"frontend/src/js/**/*.js\" frontend/vite.config.js"
