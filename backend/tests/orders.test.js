@@ -120,7 +120,7 @@ describe('Đặt hàng', () => {
         const info = await call(ctx, 'GET', `/orders/${qr.body.id}/payment-info`, { token });
         assert.equal(info.body.amount, qr.body.total);
         assert.equal(info.body.content, content(qr.body));
-        assert.match(info.body.qrUrl, /qr\.sepay\.vn/);
+        assert.match(info.body.qrUrl, /^data:image\/svg\+xml;base64,/); // server tự vẽ QR, không tải từ trang ngoài
     });
 
     test('nút "Đã chuyển khoản (demo)": ghi nhận thanh toán, đơn tự xác nhận; không bấm lại được, người khác không bấm được', async () => {

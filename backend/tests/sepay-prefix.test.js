@@ -19,7 +19,7 @@ describe('Tiền tố nội dung chuyển khoản', () => {
 
         const info = await call(ctx, 'GET', `/orders/${made.body.id}/payment-info`, { token });
         assert.equal(info.body.content, `SEVQR ${code}`);
-        assert.match(info.body.qrUrl, new RegExp(`des=SEVQR%20${code}`));
+        assert.match(info.body.qrUrl, /^data:image\/svg\+xml;base64,/);
 
         // ngân hàng thường thêm mã giao dịch phía trước, bỏ dấu cách
         await webhook(ctx, {

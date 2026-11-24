@@ -1,5 +1,7 @@
 // Cấu hình tài khoản nhận tiền SePay. Đặt biến môi trường khi triển khai thật;
 // giá trị mặc định chỉ để chạy thử trên máy (production bắt buộc đặt SEPAY_API_KEY, xem core/config.js).
+import { bankBin, qrDataUrl, vietQrPayload } from './vietqr.js';
+
 export const DEV_SEPAY_KEY = 'dev-sepay-key';
 
 export const normalizeText = (value) =>
@@ -28,8 +30,11 @@ export const transferContent = (order) => normalizeText(order.code);
 export function paymentInfo(order) {
     // Nội dung khách chuyển = [tiền tố] + mã đơn; webhook chỉ cần thấy mã đơn trong nội dung
     const content = [SEPAY.contentPrefix, transferContent(order)].filter(Boolean).join(' ');
-    const qrUrl =
-        `https://qr.sepay.vn/img?acc=${encodeURIComponent(SEPAY.account)}&bank=${encodeURIComponent(SEPAY.bank)}` +
-        `&amount=${order.total}&des=${encodeURIComponent(content)}`;
+    // Server tự vẽ QR VietQR; ngân hàng chưa có mã BIN trong bảng thì nhờ qr.sepay.vn vẽ
+    const bin = bankBin(SEPAY.bank);
+    const qrUrl = bin
+        ? qrDataUrl(vietQrPayload({ bin, account: SEPAY.account, amount: order.total, content }))
+        : `https://qr.sepay.vn/img?acc=${encodeURIComponent(SEPAY.account)}&bank=${encodeURIComponent(SEPAY.bank)}` +
+          `&amount=${order.total}&des=${encodeURIComponent(content)}`;
     return { bank: SEPAY.bank, account: SEPAY.account, accountName: SEPAY.accountName, amount: order.total, content, qrUrl };
 }

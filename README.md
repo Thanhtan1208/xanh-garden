@@ -220,7 +220,7 @@ Environment variables live in `backend/.env` (template: `backend/.env.example`).
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Send real emails over SMTP. `MAIL_FROM` (`Name <email>`) is also the Brevo sender and must be a verified sender there. Without a mail setting, email content is printed to the server console. |
 | `SEPAY_API_KEY` | SePay webhook key (defaults to `dev-sepay-key` for local testing; required in production) |
 | `PAYMENT_DEMO` | `on`/`off`: show the "Thanh toán … (demo)" button on the QR payment page (default: on locally, off when `NODE_ENV=production`) |
-| `SEPAY_BANK`, `SEPAY_ACCOUNT`, `SEPAY_ACCOUNT_NAME` | Receiving bank account shown on the QR code |
+| `SEPAY_BANK`, `SEPAY_ACCOUNT`, `SEPAY_ACCOUNT_NAME` | Receiving bank account shown on the QR code. `SEPAY_BANK` is the short bank name (`VietinBank`, `MBBank`, `Vietcombank`, `ACB`…); the server looks up its NAPAS code and draws the VietQR code itself. For a bank not in the list (`backend/server/services/vietqr.js`) the image comes from qr.sepay.vn |
 | `SEPAY_CONTENT_PREFIX` | Word put before the order code in the transfer content. Some banks connected through SePay only report transfers whose content starts with a keyword (VietinBank: `SEVQR`, set in `render.yaml`). Empty: the content is the order code only |
 | `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_EMBED_MODEL` | Chatbot. Without a valid key the chatbot uses the offline knowledge-base mode. With `npm run server` (`server/start.js`), values in `backend/.env` take priority over system environment variables of the same name, so an old system `OPENAI_API_KEY` no longer overrides the project key; the server log names any variable it replaced (names only, never values). Without a `.env` file (deploy), normal environment variables are used. |
 | `AUTH_SECRET` | Key used to sign login tokens, at least 32 random characters. Required in production. |
@@ -367,6 +367,7 @@ Newest first. Add a line here with every change.
 
 | Date | Change |
 |---|---|
+| 2026-11-24 | The server draws the payment QR code itself (VietQR / NAPAS standard, SVG embedded in the page) instead of loading it from qr.sepay.vn, which ad blockers could block. The data is identical, character for character, to the SePay QR for the same account, amount and content. New dependency `qrcode`; new tests (223 tests). |
 | 2026-11-24 | Transfer content can start with a keyword (`SEPAY_CONTENT_PREFIX`, `SEVQR` on Render) because SePay only reports VietinBank transfers that start with it. The QR code and the payment page show `SEVQR <order code>`; the webhook still finds the order by its code. New test (220 tests). |
 | 2026-11-24 | Build on Render fixed: Render sets `NODE_ENV=production` during the build, so `npm ci` skipped the frontend dev tools and failed with `vite: not found`. The root `npm run build` now installs them with `--include=dev`. |
 | 2026-11-24 | `npm run db:reset -- --yes` backs up the PostgreSQL data (tables, behavior log, uploaded files), drops the shop tables and imports the local data again. `db:push` now prints the row count of all 22 tables. Ran it on Supabase: 381 of 381 records read back equal to `db.json`. |
