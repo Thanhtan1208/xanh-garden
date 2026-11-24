@@ -32,6 +32,11 @@ form.addEventListener('submit', async (event) => {
         field(problem.field).focus();
         return;
     }
+    if (!field('acceptTerms').checked) {
+        message.textContent = 'Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật.';
+        field('acceptTerms').focus();
+        return;
+    }
 
     submitButton.disabled = true;
     submitButton.textContent = 'Đang đăng ký...';
@@ -40,7 +45,8 @@ form.addEventListener('submit', async (event) => {
             name: values.name,
             email: values.email,
             password: values.password,
-            birthday: field('birthday').value || undefined
+            birthday: field('birthday').value || undefined,
+            acceptTerms: true
         });
         window.location.assign(`./verify-email.html?email=${encodeURIComponent(values.email)}&sent=1`);
     } catch (error) {

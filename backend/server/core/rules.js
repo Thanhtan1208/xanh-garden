@@ -3,6 +3,29 @@ import { addressProblem, joinAddress, normalizePhone } from './address.js';
 
 export const FREE_SHIPPING_FROM = 500000;
 export const SHIPPING_FEES = { standard: 30000, express: 50000 };
+// Số ngày giao dự kiến [sớm nhất, muộn nhất] tính từ lúc đặt hàng, theo cách giao
+export const DELIVERY_DAYS = Object.freeze({ standard: [3, 5], express: [1, 2] });
+export function deliveryWindow(method, from = Date.now()) {
+    const [min, max] = DELIVERY_DAYS[method];
+    const day = 24 * 60 * 60 * 1000;
+    return { from: new Date(from + min * day).toISOString(), to: new Date(from + max * day).toISOString() };
+}
+// Hãng vận chuyển nhân viên chọn khi giao; "shop" là cửa hàng tự giao (không có mã vận đơn)
+export const CARRIERS = Object.freeze({
+    ghn: 'Giao Hàng Nhanh',
+    ghtk: 'Giao Hàng Tiết Kiệm',
+    vtp: 'Viettel Post',
+    jt: 'J&T Express',
+    spx: 'SPX Express',
+    shop: 'Cửa hàng tự giao'
+});
+// Mã vận đơn do hãng cấp (nhân viên tạo đơn trên trang của hãng rồi dán mã vào)
+export function parseShipment(body = {}) {
+    const carrier = Object.hasOwn(CARRIERS, body.carrier) ? body.carrier : 'shop';
+    const trackingCode = text(body.trackingCode).toUpperCase();
+    if (carrier !== 'shop' && !/^[A-Z0-9-]{6,30}$/.test(trackingCode)) fail(400, 'Mã vận đơn gồm 6–30 chữ cái, chữ số hoặc dấu gạch nối.');
+    return { carrier: CARRIERS[carrier], trackingCode: carrier === 'shop' ? '' : trackingCode };
+}
 export const PAYMENT_METHODS = ['cod', 'sepay'];
 export const HIGH_VALUE_FROM = 1000000; // Tiền hàng lớn hơn mức này phải chuyển khoản trước; đơn được xác nhận tự động qua webhook SePay
 export const MAX_ORDER_TOTAL = 50000000; // Chặn đơn quá lớn (nhập nhầm/gian lận)
@@ -463,7 +486,8 @@ export const SHOP_DEFAULTS = Object.freeze({
     hours: '8:00 – 21:00, tất cả các ngày',
     facebook: 'https://facebook.com/',
     zalo: 'https://zalo.me/0901234567',
-    warrantyDays: 7
+    warrantyDays: 7,
+    taxCode: ''
 });
 
 export function parseShop(body = {}) {
@@ -476,7 +500,11 @@ export function parseShop(body = {}) {
     if (!/^[0-9 .+()-]{8,20}$/.test(hotline)) fail(400, 'Hotline chỉ gồm số, từ 8 đến 20 ký tự.');
     const email = text(body.email).toLowerCase();
     if (!EMAIL_PATTERN.test(email) || email.length > 80) fail(400, 'Email cửa hàng không hợp lệ.');
+    // Mã số thuế người bán in trên hóa đơn: 10 chữ số (hoặc 13 chữ số có gạch nối cho chi nhánh); có thể để trống
+    const taxCode = text(body.taxCode);
+    if (taxCode && !/^\d{10}(-\d{3})?$/.test(taxCode)) fail(400, 'Mã số thuế gồm 10 chữ số (hoặc 13 chữ số dạng 0123456789-001).');
     return {
+        taxCode,
         name: textField(body.name, 'Tên cửa hàng', 2, 40),
         tagline: textField(body.tagline, 'Khẩu hiệu', 2, 80),
         hotline,

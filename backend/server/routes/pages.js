@@ -14,7 +14,9 @@ const PAGES = {
     'doi-tra': { title: 'Bảo hành & đổi trả', files: ['04-chinh-sach-bao-hanh-doi-tra.md'] },
     'cham-soc': { title: 'Cẩm nang chăm cây', files: ['05-cham-soc-cay-co-ban.md', '07-cham-soc-theo-loai-cay.md'] },
     'chon-cay': { title: 'Chọn cây theo nhu cầu', files: ['06-tu-van-chon-cay.md'] },
-    'hoi-dap': { title: 'Câu hỏi thường gặp', files: ['08-cau-hoi-thuong-gap.md'] }
+    'hoi-dap': { title: 'Câu hỏi thường gặp', files: ['08-cau-hoi-thuong-gap.md'] },
+    'bao-mat': { title: 'Chính sách bảo mật', files: ['10-chinh-sach-bao-mat.md'] },
+    'dieu-khoan': { title: 'Điều khoản sử dụng', files: ['11-dieu-khoan-su-dung.md'] }
 };
 // Mục chỉ dành cho chatbot (cách hỏi lại khách, giới hạn của chatbot...) thì không hiện cho khách.
 const BOT_ONLY = /chatbot|hỏi lại khách|cửa hàng thực tế/i;

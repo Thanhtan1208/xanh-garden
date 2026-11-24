@@ -118,13 +118,14 @@ describe('Đăng ký', () => {
 
     test('đăng ký -> gửi mã -> chưa xác minh thì không đăng nhập được', async () => {
         const result = await call(ctx, 'POST', '/auth/register', {
-            body: { name: 'lan_anh', email: 'Lan.Anh@Test.vn', password: PASSWORD }
+            body: { name: 'lan_anh', email: 'Lan.Anh@Test.vn', password: PASSWORD, acceptTerms: true }
         });
         assert.equal(result.status, 201);
         assert.equal(result.body.email, 'lan.anh@test.vn', 'email được chuẩn hóa chữ thường');
         assert.match(ctx.lastCode('lan.anh@test.vn'), /^\d{6}$/);
         const stored = ctx.db.user.find((user) => user.name === 'lan_anh');
         assert.ok(!JSON.stringify(stored).includes(ctx.lastCode('lan.anh@test.vn')), 'db chỉ lưu bản băm của mã');
+        assert.equal(stored.termsAcceptedAt, stored.createdAt, 'lưu thời điểm đồng ý điều khoản');
 
         const loginBefore = await call(ctx, 'POST', '/auth/login', { body: { username: 'lan_anh', password: PASSWORD } });
         assert.equal(loginBefore.status, 403);

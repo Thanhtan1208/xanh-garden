@@ -13,13 +13,24 @@ import {
     ORDER_TRANSITIONS,
     PAYMENT_TTL_MS,
     parseCancelReason,
-    parseOrderOptions
+    deliveryWindow,
+    parseOrderOptions,
+    parseShipment
 } from '../core/rules.js';
 import { PAYMENT_DEMO, paymentInfo } from '../services/sepay.js';
 import { logStock } from '../services/inventory.js';
 import { quote, walletFor } from '../services/pricing.js';
 import { consumeVouchers } from '../services/vouchers.js';
-import { approveCancelRequest, cancelOrder, markDelivered, markPaid, publicOrder, setStatus, sweepExpired } from '../services/orders.js';
+import {
+    approveCancelRequest,
+    cancelOrder,
+    issueInvoiceNo,
+    markDelivered,
+    markPaid,
+    publicOrder,
+    setStatus,
+    sweepExpired
+} from '../services/orders.js';
 import { sendAutoInvoice, sendInvoiceMail } from '../services/order-mail.js';
 import { getShop } from '../services/settings.js';
 
@@ -250,6 +261,7 @@ router.post(
         const order = {
             id: newId(),
             code: createCode(),
+            invoiceNo: issueInvoiceNo(),
             userId: req.user.id,
             customer,
             items: lines.map(({ product, qty }) => ({
@@ -276,6 +288,7 @@ router.post(
                 ...(promo ? [{ id: null, code: promo.code, name: promo.name, kind: promo.kind, amount: promo.amount, auto: true }] : [])
             ],
             ...options,
+            delivery: deliveryWindow(options.shippingMethod, Date.parse(now)),
             paymentStatus: 'unpaid',
             status,
             history: [{ status, at: now, by: req.user.name }],
@@ -345,6 +358,13 @@ router.patch(
         } else if (next === 'delivered') {
             // Khách bấm "Đã nhận được hàng" hoặc nhân viên xác nhận đã giao (COD coi như đã thu tiền, gửi email cảm ơn)
             markDelivered(order, req.user.name, actor === 'customer' ? 'Khách xác nhận đã nhận được hàng' : undefined);
+        } else if (next === 'shipping') {
+            // Hãng và mã vận đơn thật do nhân viên nhập (kiểm tra trước khi đổi trạng thái)
+            const shipment = parseShipment(req.body);
+            setStatus(order, next, req.user.name);
+            order.carrier = shipment.carrier;
+            if (shipment.trackingCode) order.trackingCode = shipment.trackingCode;
+            else delete order.trackingCode;
         } else {
             setStatus(order, next, req.user.name);
         }

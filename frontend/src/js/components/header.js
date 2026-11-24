@@ -165,6 +165,8 @@ function footer() {
                         <a href="./info.html?page=mua-hang">Vận chuyển & thanh toán</a>
                         <a href="./info.html?page=doi-tra">Bảo hành & đổi trả</a>
                         <a href="./info.html?page=hoi-dap">Câu hỏi thường gặp</a>
+                        <a href="./info.html?page=bao-mat">Chính sách bảo mật</a>
+                        <a href="./info.html?page=dieu-khoan">Điều khoản sử dụng</a>
                         <a href="./vouchers.html">Voucher</a>
                     </nav>
                 </div>
@@ -185,7 +187,7 @@ function footer() {
         </div>
         <div class="footer-bottom">
             <div class="container">
-                <span>© ${new Date().getFullYear()} ${escapeHtml(SHOP.name)}. Cây xanh giao tận nơi.</span>
+                <span>© ${new Date().getFullYear()} ${escapeHtml(SHOP.name)}${SHOP.taxCode ? ` · MST ${escapeHtml(SHOP.taxCode)}` : ''}. Cây xanh giao tận nơi.</span>
             </div>
         </div>`;
 }

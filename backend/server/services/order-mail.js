@@ -9,6 +9,21 @@ const CELL = 'padding:8px;border:1px solid #e1e5df;';
 // Hóa đơn gửi qua email
 // Dựng hoàn toàn từ dữ liệu đơn trên server (khách hay nhân viên đều không gửi được nội dung tùy ý).
 const PAYMENT_TEXT = { cod: 'Thanh toán khi nhận hàng (COD)', sepay: 'Chuyển khoản QR (SePay)' };
+const SHIPPING_TEXT = { standard: 'Giao tiêu chuẩn', express: 'Giao nhanh' };
+// dd/MM theo giờ Việt Nam
+const shortDate = (iso) => {
+    const at = new Date(Date.parse(iso) + 7 * 60 * 60 * 1000);
+    return `${String(at.getUTCDate()).padStart(2, '0')}/${String(at.getUTCMonth() + 1).padStart(2, '0')}`;
+};
+// Vận chuyển: cách giao, dự kiến nhận hàng và (khi đã giao cho vận chuyển) mã vận đơn
+function shippingText(order) {
+    const parts = [SHIPPING_TEXT[order.shippingMethod] || ''];
+    if (order.delivery) parts.push(`dự kiến nhận hàng ${shortDate(order.delivery.from)} – ${shortDate(order.delivery.to)}`);
+    return {
+        line: parts.filter(Boolean).join(' · '),
+        tracking: order.trackingCode ? `${order.carrier || ''} · ${order.trackingCode}`.replace(/^ · /, '') : ''
+    };
+}
 const PAY_STATUS_TEXT = { unpaid: 'Chưa thanh toán', paid: 'Đã thanh toán', refund_pending: 'Cần hoàn tiền', refunded: 'Đã hoàn tiền' };
 
 function invoiceMail(order, shop, note = '') {
@@ -34,6 +49,7 @@ function invoiceMail(order, shop, note = '') {
         order.shippingDiscount ? ['Giảm phí vận chuyển', `- ${money(order.shippingDiscount)}`] : null
     ].filter(Boolean);
     const payment = `${PAYMENT_TEXT[order.paymentMethod] || ''} · ${PAY_STATUS_TEXT[order.paymentStatus] || ''}`;
+    const shipping = shippingText(order);
 
     const text = [
         `HÓA ĐƠN ${order.code}`,
@@ -41,10 +57,13 @@ function invoiceMail(order, shop, note = '') {
         `${shop.address} · Hotline ${shop.hotline}`,
         '',
         ...(note ? [note, ''] : []),
+        ...(order.invoiceNo ? [`Số phiếu bán hàng: ${order.invoiceNo}`] : []),
         `Ngày đặt: ${date}`,
         `Khách hàng: ${customer.fullName} - ${customer.phone}`,
         `Địa chỉ: ${customer.address}`,
         `Thanh toán: ${payment}`,
+        `Vận chuyển: ${shipping.line}`,
+        ...(shipping.tracking ? [`Mã vận đơn: ${shipping.tracking}`] : []),
         '',
         ...order.items.map((item) => `- ${item.name} x ${item.qty} (${money(item.price)}): ${money(item.price * item.qty)}`),
         ...lines.map(([label, value]) => `${label}: ${value}`),
@@ -57,12 +76,18 @@ function invoiceMail(order, shop, note = '') {
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;padding:24px 12px;background:#f3f5f2;font-family:Arial,Helvetica,sans-serif;color:#222222;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e1e5df;border-radius:8px;">
 <tr><td style="padding:20px 24px;border-bottom:3px solid #2e7d32;"><div style="font-size:18px;font-weight:bold;color:#2e7d32;">${esc(shop.name)}</div><div style="font-size:12px;color:#777777;margin-top:4px;">${esc(shop.address)} · Hotline ${esc(shop.hotline)} · ${esc(shop.email)}</div></td></tr>
-<tr><td style="padding:20px 24px 8px;"><p style="margin:0 0 6px;font-size:20px;font-weight:bold;">Hóa đơn ${esc(order.code)}</p><p style="margin:0;font-size:13px;color:#666666;">Ngày đặt: ${esc(date)}</p>${note ? `<p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:#444444;">${esc(note)}</p>` : ''}</td></tr>
+<tr><td style="padding:20px 24px 8px;"><p style="margin:0 0 6px;font-size:20px;font-weight:bold;">Hóa đơn ${esc(order.code)}</p><p style="margin:0;font-size:13px;color:#666666;">${order.invoiceNo ? `Số phiếu: ${esc(order.invoiceNo)} · ` : ''}Ngày đặt: ${esc(date)}</p>${note ? `<p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:#444444;">${esc(note)}</p>` : ''}</td></tr>
 <tr><td style="padding:8px 24px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;border-collapse:collapse;">
 <tr><td style="padding:6px 8px;border:1px solid #e1e5df;background:#f3f5f2;width:110px;">Khách hàng</td><td style="padding:6px 8px;border:1px solid #e1e5df;">${esc(customer.fullName)} - ${esc(customer.phone)}</td></tr>
 <tr><td style="padding:6px 8px;border:1px solid #e1e5df;background:#f3f5f2;">Địa chỉ</td><td style="padding:6px 8px;border:1px solid #e1e5df;">${esc(customer.address)}</td></tr>
 <tr><td style="padding:6px 8px;border:1px solid #e1e5df;background:#f3f5f2;">Thanh toán</td><td style="padding:6px 8px;border:1px solid #e1e5df;">${esc(payment)}</td></tr>
+<tr><td style="padding:6px 8px;border:1px solid #e1e5df;background:#f3f5f2;">Vận chuyển</td><td style="padding:6px 8px;border:1px solid #e1e5df;">${esc(shipping.line)}</td></tr>${
+        shipping.tracking
+            ? `
+<tr><td style="padding:6px 8px;border:1px solid #e1e5df;background:#f3f5f2;">Mã vận đơn</td><td style="padding:6px 8px;border:1px solid #e1e5df;"><b>${esc(shipping.tracking)}</b></td></tr>`
+            : ''
+    }
 </table></td></tr>
 <tr><td style="padding:8px 24px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;border-collapse:collapse;">

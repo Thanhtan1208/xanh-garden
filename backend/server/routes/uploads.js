@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { writeFile } from 'node:fs/promises';
+import { saveUpload } from '../core/files.js';
 import { join } from 'node:path';
 import { db, newId, save } from '../core/store.js';
 import { fail, handle, requireRole } from '../core/http.js';
@@ -29,7 +29,7 @@ router.post(
 
         const id = newId();
         const file = `${id.replace(/[^A-Za-z0-9]/g, 'x')}${Date.now().toString(36)}.${kind.ext}`;
-        await writeFile(join(REVIEW_DIR, file), buffer, { flag: 'wx' });
+        await saveUpload(join(REVIEW_DIR, file), buffer);
         db.uploads.push({
             id,
             userId: req.user.id,

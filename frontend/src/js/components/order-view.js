@@ -1,4 +1,13 @@
-import { ORDER_STATUS, PAYMENT_METHODS, PAYMENT_STATUS, SHIPPING_METHODS, escapeHtml, formatDate, formatPrice } from '../utils/format.js';
+import {
+    ORDER_STATUS,
+    PAYMENT_METHODS,
+    PAYMENT_STATUS,
+    SHIPPING_METHODS,
+    deliveryText,
+    escapeHtml,
+    formatDate,
+    formatPrice
+} from '../utils/format.js';
 import { productImage } from '../utils/images.js';
 
 const STATUS_FLOW = ['pending', 'confirmed', 'shipping', 'delivered'];
@@ -87,6 +96,9 @@ const voucherCodes = (order, kind) => {
     return codes.length ? ` (${codes.join(', ')})` : '';
 };
 
+// Nhãn nhỏ cho đơn giao nhanh (hiện cạnh mã đơn để nhân viên ưu tiên xử lý)
+export const expressTag = (order) => (order.shippingMethod === 'express' ? '<em class="tag tag-express">Giao nhanh</em>' : '');
+
 export function renderOrderDetails(order, options = {}) {
     const customer = order.customer;
     return `
@@ -101,7 +113,9 @@ export function renderOrderDetails(order, options = {}) {
             <div>
                 <h4>Thanh toán và vận chuyển</h4>
                 <p>${PAYMENT_METHODS[order.paymentMethod]} · ${paymentBadge(order)}</p>
-                <p>${SHIPPING_METHODS[order.shippingMethod]}</p>
+                <p>${SHIPPING_METHODS[order.shippingMethod]} ${expressTag(order)}</p>
+                ${order.delivery && !['delivered', 'cancelled'].includes(order.status) ? `<p>Dự kiến nhận hàng: <b>${deliveryText(order.shippingMethod, order.delivery)}</b></p>` : ''}
+                ${order.trackingCode ? `<p>Mã vận đơn: <b>${escapeHtml(order.trackingCode)}</b>${order.carrier ? ` · ${escapeHtml(order.carrier)}` : ''}</p>` : ''}
                 <p class="muted">Đặt lúc ${formatDate(order.createdAt)}</p>
             </div>
         </div>

@@ -1,0 +1,40 @@
+# Render Blueprint: Render đọc file này khi tạo dịch vụ từ repo GitHub (New > Blueprint).
+# Dữ liệu nằm ở PostgreSQL ngoài (Supabase) vì ổ đĩa bản miễn phí bị xóa mỗi lần khởi động lại.
+services:
+  - type: web
+    name: xanh-garden
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      # Render tự tạo chuỗi ngẫu nhiên
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: SEPAY_API_KEY
+        generateValue: true
+      # Bạn tự nhập trên trang Render (không ghi vào git)
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Render bản miễn phí chặn cổng SMTP: gửi email qua Brevo (HTTPS)
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: SEPAY_BANK
+        sync: false
+      - key: SEPAY_ACCOUNT
+        sync: false
+      - key: SEPAY_ACCOUNT_NAME
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

@@ -125,6 +125,7 @@ function render(order) {
         <p class="eyebrow">${order.paymentStatus === 'paid' ? 'Đã nhận thanh toán' : 'Đặt hàng thành công'}</p>
         <h1>${order.paymentStatus === 'paid' ? 'Đơn hàng đã được xác nhận' : 'Cảm ơn bạn đã đặt hàng'}</h1>
         <p>Mã đơn hàng: <b>${escapeHtml(order.code)}</b></p>
+        ${order.delivery ? `<p>${order.shippingMethod === 'express' ? 'Giao nhanh' : 'Giao tiêu chuẩn'}: dự kiến nhận hàng <b>${deliveryText(order.shippingMethod, order.delivery)}</b></p>` : ''}
         <p>Tổng thanh toán: <b>${formatPrice(order.total)}</b> · ${order.paymentStatus === 'paid' ? 'đã thanh toán' : 'thanh toán khi nhận hàng'}</p>
         <p>${
             order.paymentStatus === 'paid'

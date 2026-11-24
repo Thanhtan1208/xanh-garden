@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { writeFile } from 'node:fs/promises';
+import { saveUpload } from '../core/files.js';
 import { join } from 'node:path';
 import { byId, db, newId, save } from '../core/store.js';
 import { createToken, fail, handle, hashPassword, publicUser, requireRole, verifyPassword } from '../core/http.js';
@@ -85,6 +85,7 @@ router.post(
             addresses: [],
             createdAt: new Date().toISOString()
         };
+        if (req.body?.acceptTerms === true) user.termsAcceptedAt = user.createdAt;
         if (birthday) {
             user.birthday = birthday;
             user.birthdaySetAt = user.createdAt;
@@ -252,7 +253,7 @@ router.post(
         if (kind?.type !== 'image') fail(400, 'Tệp không phải ảnh hợp lệ (JPG, PNG, WebP, GIF).');
         if (buffer.length > MAX_AVATAR_BYTES) fail(413, 'Ảnh đại diện tối đa 2 MB.');
         const file = `${newId().replace(/[^A-Za-z0-9]/g, 'x')}${Date.now().toString(36)}.${kind.ext}`;
-        await writeFile(join(AVATAR_DIR, file), buffer, { flag: 'wx' });
+        await saveUpload(join(AVATAR_DIR, file), buffer);
         const user = byId('user', req.user.id);
         removeAvatarFile(user.avatar);
         user.avatar = `/uploads/avatars/${file}`;

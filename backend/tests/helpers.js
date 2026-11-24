@@ -9,6 +9,8 @@ import { randomBytes, scryptSync } from 'node:crypto';
 
 export const PASSWORD = 'Cay@Canh2026';
 export const SEPAY_KEY = 'test-sepay-key';
+// TEST_DATABASE_URL: chạy cả bộ test trên PostgreSQL (mỗi file test một schema riêng, xóa khi xong)
+export const ON_PG = Boolean(process.env.TEST_DATABASE_URL);
 const DAY = 24 * 60 * 60 * 1000;
 
 const hash = (password) => {
@@ -84,7 +86,11 @@ export async function startServer({ data = fixture() } = {}) {
     const dir = mkdtempSync(join(tmpdir(), 'xanhgarden-test-'));
     writeFileSync(join(dir, 'db.json'), JSON.stringify(data));
     Object.assign(process.env, { DATA_DIR: dir, PORT: '0', SEPAY_API_KEY: SEPAY_KEY, AUTH_SECRET: 'test-secret' });
-    ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM', 'OPENAI_API_KEY'].forEach((name) => delete process.env[name]);
+    ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM', 'OPENAI_API_KEY', 'DATABASE_URL', 'DB_SCHEMA', 'BREVO_API_KEY', 'RENDER'].forEach(
+        (name) => delete process.env[name]
+    );
+    if (ON_PG)
+        Object.assign(process.env, { DATABASE_URL: process.env.TEST_DATABASE_URL, DB_SCHEMA: `test_${randomBytes(6).toString('hex')}` });
 
     // Email ở chế độ chạy thử được in ra console: bắt lại để đọc mã xác minh / mã đặt lại mật khẩu.
     const mails = [];
@@ -109,9 +115,15 @@ export async function startServer({ data = fixture() } = {}) {
         mails,
         logs,
         base,
-        stop: () => {
+        stop: async () => {
             server.close();
             rmSync(dir, { recursive: true, force: true });
+            if (!ON_PG) return;
+            const { flushStore } = await import('../server/core/store.js');
+            const { closePool, query } = await import('../server/core/pg.js');
+            await flushStore();
+            await query(`DROP SCHEMA IF EXISTS "${process.env.DB_SCHEMA}" CASCADE`);
+            await closePool();
         },
         // Mã 6 số trong email gần nhất gửi tới `to`.
         lastCode(to) {

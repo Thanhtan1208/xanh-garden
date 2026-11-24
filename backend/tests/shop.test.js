@@ -115,13 +115,15 @@ describe('Trang thông tin (chính sách, cẩm nang)', () => {
         const list = await call(ctx, 'GET', '/pages');
         assert.deepEqual(
             list.body.map((page) => page.slug),
-            ['mua-hang', 'doi-tra', 'cham-soc', 'chon-cay', 'hoi-dap']
+            ['mua-hang', 'doi-tra', 'cham-soc', 'chon-cay', 'hoi-dap', 'bao-mat', 'dieu-khoan']
         );
         const faq = await call(ctx, 'GET', '/pages/hoi-dap');
         assert.ok(faq.body.sections.length > 5);
         assert.ok(faq.body.sections.every((section) => !/chatbot/i.test(section.title)));
         const policy = await call(ctx, 'GET', '/pages/mua-hang');
         assert.ok(policy.body.sections.some((section) => section.body.includes('1.000.000')));
+        for (const slug of ['bao-mat', 'dieu-khoan'])
+            assert.ok((await call(ctx, 'GET', `/pages/${slug}`)).body.sections.length >= 4, `có trang ${slug}`);
         assert.equal((await call(ctx, 'GET', '/pages/khong-co')).status, 404);
         assert.equal((await call(ctx, 'GET', '/pages/__proto__')).status, 404);
     });

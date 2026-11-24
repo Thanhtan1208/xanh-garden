@@ -28,7 +28,18 @@ function fakeDist() {
 function childEnv(extra) {
     const env = { ...process.env };
     ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'AUTH_SECRET', 'SEPAY_API_KEY']
-        .concat(['ADMIN_PASSWORD', 'PAYMENT_DEMO', 'TRUST_PROXY', 'FRONTEND_DIST', 'DATA_DIR', 'PORT'])
+        .concat([
+            'ADMIN_PASSWORD',
+            'PAYMENT_DEMO',
+            'TRUST_PROXY',
+            'FRONTEND_DIST',
+            'DATA_DIR',
+            'PORT',
+            'DATABASE_URL',
+            'DB_SCHEMA',
+            'RENDER',
+            'BREVO_API_KEY'
+        ])
         .forEach((name) => delete env[name]);
     return { ...env, NODE_ENV: 'production', PORT: '0', ...extra };
 }
@@ -113,6 +124,23 @@ describe('Kiểm tra cấu hình production', () => {
         assert.match(result.errors[0], /admin/);
         const customer = { name: 'khach', role: 'user', passwordHash: http.hashPassword(config.DEMO_PASSWORD) };
         assert.deepEqual(config.checkConfig({ env: goodEnv, users: [customer], dist }).errors, []);
+    });
+
+    test('thông tin cửa hàng còn là mẫu hoặc thiếu MST thì cảnh báo (không chặn khởi động)', () => {
+        const sample = config.checkConfig({ env: goodEnv, users: [], dist, shop: {} });
+        assert.deepEqual(sample.errors, []);
+        assert.match(sample.warnings.join(' '), /hotline, email, zalo/);
+        assert.match(sample.warnings.join(' '), /mã số thuế/);
+        const real = { hotline: '0987 654 321', email: 'shop@gmail.com', zalo: 'https://zalo.me/0987654321', taxCode: '0312345678' };
+        assert.ok(!/mẫu|mã số thuế/.test(config.checkConfig({ env: goodEnv, users: [], dist, shop: real }).warnings.join(' ')));
+    });
+
+    test('chạy trên Render: thiếu DATABASE_URL (ổ đĩa bị xóa) hoặc gửi mail qua SMTP (bị chặn cổng) là lỗi', () => {
+        const render = config.checkConfig({ env: { ...goodEnv, RENDER: 'true' }, users: [], dist });
+        assert.match(render.errors.join(' '), /DATABASE_URL/);
+        assert.match(render.errors.join(' '), /BREVO_API_KEY/);
+        const ready = { ...goodEnv, RENDER: 'true', DATABASE_URL: 'postgres://x', BREVO_API_KEY: 'k' };
+        assert.deepEqual(config.checkConfig({ env: ready, users: [], dist }).errors, []);
     });
 
     test('ADMIN_PASSWORD thay mật khẩu mẫu đúng một lần, mật khẩu yếu hoặc trùng mẫu thì báo lỗi', () => {

@@ -12,12 +12,14 @@ export const SHOP = {
     hours: '8:00 – 21:00, tất cả các ngày',
     facebook: 'https://facebook.com/',
     zalo: 'https://zalo.me/0901234567',
+    taxCode: '',
     warrantyDays: 7
 };
 
 export const RULES = {
     freeShippingFrom: 500000,
     shippingFees: { standard: 30000, express: 50000 },
+    deliveryDays: { standard: [3, 5], express: [1, 2] },
     highValueFrom: 1000000,
     maxCodTotal: 5000000,
     paymentMinutes: 30,

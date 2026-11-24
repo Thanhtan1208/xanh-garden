@@ -1,6 +1,8 @@
 import { existsSync } from 'node:fs';
 import express from 'express';
-import { backupDaily, db, save } from './core/store.js';
+import { backupDaily, db, flushStore, save, storeStatus } from './core/store.js';
+import { loadFileIndex, restoreFromDb } from './core/files.js';
+import { closePool } from './core/pg.js';
 import { IS_PRODUCTION, applyAdminPassword, checkConfig, trustProxy } from './core/config.js';
 import { FRONTEND_DIST } from './core/paths.js';
 import { ApiError, authenticate, hashPassword } from './core/http.js';
@@ -26,7 +28,7 @@ import { sweepAutoVouchers } from './services/vouchers.js';
 import { seedEvents, seedVouchers } from './data/seed.js';
 import { warmUp } from './ai/kb.js';
 import { UPLOAD_ROOT, sweepUploads } from './services/uploads.js';
-import { sweepExpired } from './services/orders.js';
+import { issueInvoiceNo, sweepExpired } from './services/orders.js';
 import { seedSpecs } from './data/specs-data.js';
 
 // PORT=0: hệ điều hành tự chọn cổng trống (bộ test dùng).
@@ -69,6 +71,13 @@ function migrate() {
         delete order.emailChanges;
         if (order.status !== 'unconfirmed') delete order.confirmExpiresAt;
     });
+    // Đơn cũ chưa có số hóa đơn: đánh số tăng dần theo thời gian đặt
+    [...db.orders]
+        .filter((order) => !order.invoiceNo)
+        .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+        .forEach((order) => {
+            order.invoiceNo = issueInvoiceNo();
+        });
     db.carts = db.carts.filter((cart) => db.user.some((user) => user.id === cart.userId));
     seedVouchers();
     seedEvents();
@@ -94,6 +103,7 @@ if (IS_PRODUCTION) {
     }
 }
 
+await loadFileIndex();
 backupDaily();
 sweepExpired();
 sweepVouchers();
@@ -109,13 +119,38 @@ const app = express();
 app.disable('x-powered-by');
 // Đứng sau proxy (Caddy, Nginx, Render...): đọc IP thật của khách từ X-Forwarded-For để giới hạn tần suất đúng người
 app.set('trust proxy', trustProxy());
+// CSP: chỉ chạy script của site và jsDelivr (jsPDF, JsBarcode), chặn script chèn lén (XSS) đọc token đăng nhập
+const CSP = [
+    "default-src 'self'",
+    "script-src 'self' https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://qr.sepay.vn",
+    "media-src 'self' blob:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'"
+].join('; ');
 // Header bảo mật cơ bản: không cho site khác nhúng trang vào iframe, trình duyệt không đoán sai loại tệp
-app.use((_req, res, next) => {
-    res.set({ 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin' });
+app.use((req, res, next) => {
+    res.set({
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Content-Security-Policy': CSP
+    });
+    // HTTPS (qua Cloudflare/Caddy): trình duyệt nhớ chỉ dùng HTTPS trong 180 ngày
+    if (IS_PRODUCTION && req.secure) res.set('Strict-Transport-Security', 'max-age=15552000');
     next();
 });
 // Kiểm tra server còn sống (PM2, Render, UptimeRobot gọi định kỳ)
-app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: Math.round(process.uptime()) }));
+app.get('/api/health', (_req, res) =>
+    res
+        .status(storeStatus.lastError ? 503 : 200)
+        .json({ ok: !storeStatus.lastError, db: storeStatus.mode, uptime: Math.round(process.uptime()) })
+);
 // Nhập sản phẩm từ Excel gửi nhiều dòng nên cho phép lớn hơn các API khác
 app.use('/api/admin/products/import', express.json({ limit: '2mb' }));
 app.use(express.json({ limit: '50kb' }));
@@ -137,7 +172,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api', pageRoutes);
 // Ảnh/video khách đã tải lên (header nosniff đã đặt chung ở trên)
-app.use('/uploads', express.static(UPLOAD_ROOT, { maxAge: '7d', index: false }));
+app.use('/uploads', restoreFromDb(), express.static(UPLOAD_ROOT, { maxAge: '7d', index: false }));
 app.use('/api', siteRoutes); // phải đứng trước shopRoutes: /products/featured không bị hiểu là /products/:id
 app.use('/api', shopRoutes);
 
@@ -166,7 +201,12 @@ export const server = app.listen(PORT, () => console.log(`API đang chạy tại
 // hành vi đang chờ (services/analytics.js). db.json luôn ghi ngay mỗi lần đổi nên không mất dữ liệu.
 ['SIGTERM', 'SIGINT'].forEach((signal) =>
     process.once(signal, () => {
-        server.close(() => process.exit(0));
-        setTimeout(() => process.exit(0), 5000).unref();
+        // ghi nốt thay đổi còn chờ xuống PostgreSQL rồi mới thoát
+        const exit = () =>
+            flushStore()
+                .catch((error) => console.error('[db]', error.message))
+                .finally(() => closePool().finally(() => process.exit(0)));
+        server.close(exit);
+        setTimeout(() => process.exit(0), 8000).unref();
     })
 );

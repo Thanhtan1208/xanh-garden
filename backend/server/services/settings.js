@@ -3,6 +3,7 @@ import {
     AUTO_RECEIVE_DAYS,
     CANCEL_REASONS,
     CANCEL_REQUEST_TTL_MS,
+    DELIVERY_DAYS,
     FREE_SHIPPING_FROM,
     HIGH_VALUE_FROM,
     MAX_COD_TOTAL,
@@ -30,6 +31,7 @@ export function publicRules() {
     return {
         freeShippingFrom: FREE_SHIPPING_FROM,
         shippingFees: SHIPPING_FEES,
+        deliveryDays: DELIVERY_DAYS,
         highValueFrom: HIGH_VALUE_FROM,
         maxCodTotal: MAX_COD_TOTAL,
         paymentMinutes: Math.round(PAYMENT_TTL_MS / 60000),

@@ -3,6 +3,7 @@ import '../components/table-view.js';
 import {
     NEXT_STATUS_LABEL,
     canAdminCancel,
+    expressTag,
     hasPendingCancelRequest,
     nextStatus,
     paymentBadge,
@@ -20,6 +21,16 @@ import { choiceDialog, confirmDialog, toast } from '../components/notify.js';
 import { heroCard } from '../components/bank-ui.js';
 import { icon, iconButton } from '../utils/icons.js';
 import { downloadWorkbook } from '../services/excel-service.js';
+
+// Hãng vận chuyển (khớp CARRIERS trong backend/server/core/rules.js)
+const CARRIER_CHOICES = {
+    ghn: 'Giao Hàng Nhanh (GHN)',
+    ghtk: 'Giao Hàng Tiết Kiệm (GHTK)',
+    vtp: 'Viettel Post',
+    jt: 'J&T Express',
+    spx: 'SPX Express',
+    shop: 'Cửa hàng tự giao'
+};
 
 const orderBody = document.querySelector('#orderBody');
 const orderTable = document.querySelector('#orderTable');
@@ -114,7 +125,9 @@ function visibleOrders() {
         return (
             inPeriod(order) &&
             (!statusFilter.value || order.status === statusFilter.value) &&
-            `${order.code} ${fullName} ${phone} ${email}`.toLowerCase().includes(keyword)
+            `${order.code} ${order.invoiceNo || ''} ${order.trackingCode || ''} ${fullName} ${phone} ${email}`
+                .toLowerCase()
+                .includes(keyword)
         );
     });
 
@@ -135,7 +148,7 @@ function renderOrders() {
         .map(
             (order) => `
         <tr data-id="${order.id}">
-            <td><b>${escapeHtml(order.code)}</b></td>
+            <td><b>${escapeHtml(order.code)}</b>${expressTag(order) ? `<br>${expressTag(order)}` : ''}</td>
             <td>${escapeHtml(order.customer.fullName)}<br><small class="muted">${escapeHtml(order.customer.phone)}</small></td>
             <td>${formatDate(order.createdAt)}</td>
             <td><b>${formatPrice(order.total)}</b></td>
@@ -238,6 +251,16 @@ document.querySelector('#orderSearch').addEventListener('input', (event) => {
     keyword = event.target.value.trim().toLowerCase();
     renderOrders();
 });
+// Máy quét mã vạch gõ số hóa đơn rồi nhấn Enter: chỉ có một đơn khớp thì mở chi tiết đơn đó
+document.querySelector('#orderSearch').addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const matches = visibleOrders();
+    if (matches.length === 1) {
+        expanded.add(matches[0].id);
+        renderOrders();
+    }
+});
 statusFilter.addEventListener('change', renderOrders);
 document.querySelector('#sortSelect').addEventListener('change', (event) => {
     sortMode = event.target.value;
@@ -339,6 +362,24 @@ orderBody.addEventListener('click', async (event) => {
               confirmText: 'Hủy đơn'
           };
     let reason = '';
+    let shipment = {};
+    if (!isCancel && nextStatus(order) === 'shipping') {
+        // Tạo vận đơn trên trang của hãng trước, rồi chọn hãng và dán mã vận đơn vào đây
+        const choice = await choiceDialog({
+            title: `Giao đơn ${order.code}`,
+            message: 'Chọn hãng vận chuyển và nhập mã vận đơn hãng đã cấp. Cửa hàng tự giao thì không cần mã.',
+            choices: CARRIER_CHOICES,
+            noteAlways: true,
+            noteRequiredFor: 'shop',
+            noteLabel: 'Mã vận đơn (VD GHN: LKXXXXXX)',
+            noteMin: 6,
+            noteMax: 30,
+            noteError: 'Mã vận đơn gồm 6–30 ký tự.',
+            confirmText: 'Bắt đầu giao'
+        });
+        if (!choice) return;
+        shipment = { carrier: choice.reasonId, trackingCode: choice.note };
+    }
     if (isCancel && failedDelivery) {
         if (!(await confirmDialog({ ...dialog, cancelText: 'Quay lại', tone: 'danger' }))) return;
     } else if (isCancel) {
@@ -358,7 +399,7 @@ orderBody.addEventListener('click', async (event) => {
     button.disabled = true;
     try {
         const status = isCancel ? 'cancelled' : nextStatus(order);
-        Object.assign(order, await api.patch(`/orders/${order.id}/status`, { status, ...(reason ? { reason } : {}) }));
+        Object.assign(order, await api.patch(`/orders/${order.id}/status`, { status, ...shipment, ...(reason ? { reason } : {}) }));
         toast(`Đơn ${order.code}: ${ORDER_STATUS[order.status]}.`, { type: 'success', title: 'Đã cập nhật đơn hàng' });
     } catch (error) {
         toast(error.message, { type: 'error' });

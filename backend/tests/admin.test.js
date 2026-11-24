@@ -4,7 +4,7 @@ import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { addAddress, call, login, newCustomer, PASSWORD, placeOrder, startServer, webhook } from './helpers.js';
+import { ON_PG, addAddress, call, login, newCustomer, PASSWORD, placeOrder, startServer, webhook } from './helpers.js';
 
 let ctx;
 let admin;
@@ -242,6 +242,16 @@ describe('Sự kiện và banner', () => {
 
 describe('Lưu trữ dữ liệu', () => {
     test('dữ liệu ghi vào thư mục data riêng, có sao lưu hằng ngày, ghi nguyên tử (không còn file tạm)', async () => {
+        if (ON_PG) {
+            // chế độ PostgreSQL: đơn hàng và dòng hàng đã nằm trong bảng
+            const { flushStore } = await import('../server/core/store.js');
+            const { query } = await import('../server/core/pg.js');
+            await flushStore();
+            const count = async (table) => (await query(`SELECT count(*)::int AS n FROM ${table}`)).rows[0].n;
+            assert.equal(await count('orders'), ctx.db.orders.length);
+            assert.ok((await count('order_items')) > 0);
+            return;
+        }
         const saved = JSON.parse(readFileSync(join(ctx.dir, 'db.json'), 'utf8'));
         assert.ok(saved.orders.length > 0);
         assert.ok(existsSync(join(ctx.dir, 'uploads', 'products')));
@@ -250,7 +260,11 @@ describe('Lưu trữ dữ liệu', () => {
     });
 
     test('không lưu mật khẩu/mã xác minh dạng rõ', async () => {
-        const raw = readFileSync(join(ctx.dir, 'db.json'), 'utf8');
+        let raw;
+        if (ON_PG) {
+            const { query } = await import('../server/core/pg.js');
+            raw = (await query('SELECT json_agg(u)::text AS raw FROM users u')).rows[0].raw;
+        } else raw = readFileSync(join(ctx.dir, 'db.json'), 'utf8');
         assert.ok(!raw.includes('Cay@Canh2026'));
         assert.ok(!/"password"\s*:/.test(raw));
     });

@@ -741,6 +741,9 @@ input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in 
 .tag-complaint { background: #f8d7d4; color: var(--danger); }
 .tag-suggestion { background: #d9e8f8; color: #134a85; }
 .tag-hidden { background: #e4e6e3; color: #5c635d; }
+/* Giao nhanh: nhãn ưu tiên và dòng ngày nhận hàng dự kiến dưới từng cách giao */
+.tag-express { background: #fff0d6; color: #a35a00; }
+.eta { color: var(--green-dark); font-weight: 500; }
 /* Hộp thoại chọn sản phẩm cần ẩn khi xóa danh mục */
 .modal-wide { width: min(560px, 100%); }
 .pick-all { margin: 4px 0 8px; }

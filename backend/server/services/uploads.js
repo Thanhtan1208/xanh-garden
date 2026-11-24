@@ -1,8 +1,8 @@
-import { mkdirSync, readdirSync, statSync, unlinkSync } from 'node:fs';
-import { unlink } from 'node:fs/promises';
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { UPLOAD_ROOT } from '../core/paths.js';
 import { db, save } from '../core/store.js';
+import { deleteUpload, listUploads } from '../core/files.js';
 
 // Tệp tải lên nằm ở data/uploads/ (ảnh/video đánh giá, ảnh banner, ảnh sản phẩm), db.json chỉ lưu đường dẫn.
 export { UPLOAD_ROOT };
@@ -38,33 +38,21 @@ export function sniff(buffer) {
 }
 
 export async function removeFile(file) {
-    try {
-        await unlink(join(REVIEW_DIR, file));
-    } catch {
-        // tệp đã mất thì bỏ qua
-    }
+    if (/^[w.-]+$/.test(file)) await deleteUpload(join(REVIEW_DIR, file));
 }
 
 // Xóa ảnh banner đã tải lên khi không còn banner nào dùng.
 export async function removeBannerFile(url) {
     const file = String(url).split('/').pop();
     if (!String(url).startsWith('/uploads/banners/') || !/^[\w.-]+$/.test(file)) return;
-    try {
-        await unlink(join(BANNER_DIR, file));
-    } catch {
-        // tệp đã mất thì bỏ qua
-    }
+    await deleteUpload(join(BANNER_DIR, file));
 }
 
 // Xóa ảnh đại diện cũ khi khách đổi ảnh hoặc tài khoản bị xóa.
 export async function removeAvatarFile(url) {
     const file = String(url).split('/').pop();
     if (!String(url).startsWith('/uploads/avatars/') || !/^[\w.-]+$/.test(file)) return;
-    try {
-        await unlink(join(AVATAR_DIR, file));
-    } catch {
-        // tệp đã mất thì bỏ qua
-    }
+    await deleteUpload(join(AVATAR_DIR, file));
 }
 
 // Xóa tệp (và bản ghi) của một đánh giá bị xóa.
@@ -89,13 +77,8 @@ function sweepAdminImages(cutoff) {
         [BANNER_DIR, '/uploads/banners/'],
         [PRODUCT_DIR, '/uploads/products/']
     ].forEach(([dir, prefix]) => {
-        readdirSync(dir).forEach((file) => {
-            if (used.has(prefix + file)) return;
-            try {
-                if (statSync(join(dir, file)).mtimeMs < cutoff) unlinkSync(join(dir, file));
-            } catch {
-                // tệp vừa bị xóa: bỏ qua
-            }
+        listUploads(dir).forEach(({ name, time }) => {
+            if (!used.has(prefix + name) && time < cutoff) deleteUpload(join(dir, name));
         });
     });
 }

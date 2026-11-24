@@ -178,6 +178,10 @@ export function choiceDialog({
     noteLabel = 'Ghi chú',
     noteRequiredFor = 'other',
     noteOptional = false,
+    noteAlways = false,
+    noteMin = 3,
+    noteMax = 200,
+    noteError = 'Vui lòng ghi rõ lý do.',
     confirmText = 'Xác nhận',
     cancelText = 'Quay lại',
     tone = 'primary'
@@ -208,7 +212,7 @@ export function choiceDialog({
         }
         const noteBox = node('textarea');
         noteBox.rows = 2;
-        noteBox.maxLength = 200;
+        noteBox.maxLength = noteMax;
         noteBox.placeholder = noteLabel;
         form.append(noteBox);
         const error = node('p', 'error-message');
@@ -217,7 +221,7 @@ export function choiceDialog({
 
         const syncNote = () => {
             const chosen = radios.find((radio) => radio.checked)?.value;
-            noteBox.hidden = Boolean(choices) && chosen !== noteRequiredFor;
+            noteBox.hidden = Boolean(choices) && !noteAlways && chosen !== noteRequiredFor;
         };
         radios.forEach((radio) => radio.addEventListener('change', syncNote));
         syncNote();
@@ -248,8 +252,9 @@ export function choiceDialog({
         ok.addEventListener('click', () => {
             const reasonId = radios.find((radio) => radio.checked)?.value || '';
             const note = noteBox.value.trim();
-            if (choices && reasonId === noteRequiredFor && note.length < 3) {
-                error.textContent = 'Vui lòng ghi rõ lý do.';
+            const needNote = noteAlways ? reasonId !== noteRequiredFor : reasonId === noteRequiredFor;
+            if (choices && needNote && note.length < noteMin) {
+                error.textContent = noteError;
                 noteBox.focus();
                 return;
             }

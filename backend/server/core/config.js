@@ -5,7 +5,7 @@ import { db, save } from './store.js';
 import { DEV_SECRET, hashPassword, verifyPassword } from './http.js';
 import { FRONTEND_DIST } from './paths.js';
 import { isManagementRole } from './permissions.js';
-import { passwordProblem } from './rules.js';
+import { SHOP_DEFAULTS, passwordProblem } from './rules.js';
 import { DEV_SEPAY_KEY } from '../services/sepay.js';
 
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -44,7 +44,7 @@ export function applyAdminPassword(password = process.env.ADMIN_PASSWORD, users 
 }
 
 // errors: phải sửa mới chạy được. warnings: vẫn chạy nhưng có chức năng không dùng được.
-export function checkConfig({ env = process.env, users = db.user, dist = FRONTEND_DIST } = {}) {
+export function checkConfig({ env = process.env, users = db.user, dist = FRONTEND_DIST, shop = db.settings?.shop || {} } = {}) {
     const errors = [];
     const warnings = [];
     const secret = env.AUTH_SECRET || '';
@@ -60,7 +60,21 @@ export function checkConfig({ env = process.env, users = db.user, dist = FRONTEN
     if (demo.length) {
         errors.push(`Tài khoản ${demo.join(', ')} còn dùng mật khẩu mẫu: đặt ADMIN_PASSWORD để server tự thay khi khởi động.`);
     }
-    if (!env.SMTP_HOST) warnings.push('Chưa đặt SMTP_HOST: email (mã xác minh, mã đặt lại mật khẩu) chỉ in ra log, khách không nhận được.');
+    // Render bản miễn phí xóa ổ đĩa mỗi lần khởi động lại: lưu vào db.json là mất hết dữ liệu
+    if (!env.DATABASE_URL && env.RENDER)
+        errors.push('DATABASE_URL: chạy trên Render phải dùng PostgreSQL (VD Supabase), ổ đĩa không giữ được db.json.');
+    else if (!env.DATABASE_URL) warnings.push('Chưa đặt DATABASE_URL: dữ liệu lưu trong data/db.json trên máy này.');
+    if (!env.SMTP_HOST && !env.BREVO_API_KEY)
+        warnings.push(
+            'Chưa đặt SMTP_HOST hoặc BREVO_API_KEY: email (mã xác minh, mã đặt lại mật khẩu) chỉ in ra log, khách không nhận được.'
+        );
+    // Render bản miễn phí chặn cổng SMTP: phải gửi qua Brevo (HTTPS)
+    else if (env.RENDER && !env.BREVO_API_KEY)
+        errors.push('BREVO_API_KEY: Render bản miễn phí chặn cổng SMTP, khách sẽ không nhận được email.');
+    // Thông tin liên hệ còn là số liệu mẫu: khách gọi nhầm số. Chỉ cảnh báo để admin còn vào trang Cài đặt sửa được
+    const sample = ['hotline', 'email', 'zalo'].filter((key) => !shop[key] || shop[key] === SHOP_DEFAULTS[key]);
+    if (sample.length) warnings.push(`Thông tin cửa hàng còn là mẫu (${sample.join(', ')}): sửa ở trang Admin > Cài đặt.`);
+    if (!shop.taxCode) warnings.push('Chưa nhập mã số thuế cửa hàng: phiếu bán hàng sẽ không có MST.');
     if (!existsSync(dist)) warnings.push(`Không thấy bản build frontend (${dist}): server chỉ phục vụ API.`);
     return { errors, warnings };
 }

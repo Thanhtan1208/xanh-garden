@@ -10,11 +10,16 @@
     "start": "node server/start.js",
     "server": "node server/start.js",
     "test": "node --test --test-reporter=spec \"tests/*.test.js\"",
-    "mail": "node scripts/mail-ao.mjs"
+    "mail": "node scripts/mail-ao.mjs",
+    "reset-data": "node scripts/reset-data.mjs",
+    "db:push": "node scripts/db.mjs push",
+    "db:export": "node scripts/db.mjs export",
+    "db:reset": "node scripts/db.mjs reset"
   },
   "dependencies": {
     "express": "^4.21.0",
-    "nodemailer": "^10.0.16"
+    "nodemailer": "^10.0.16",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "mailparser": "^3.14.1",

@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { writeFile } from 'node:fs/promises';
+import { saveUpload } from '../core/files.js';
 import { join } from 'node:path';
 import { byId, db, newId, save } from '../core/store.js';
 import { fail, handle, requirePermission, requireRole } from '../core/http.js';
@@ -67,7 +67,7 @@ const imageUpload = (dir, urlPrefix) => [
         if (!kind || kind.type !== 'image') fail(400, 'Tệp không phải ảnh hợp lệ (JPG, PNG, WebP, GIF).');
         if (buffer.length > MAX_IMAGE_BYTES) fail(413, `Ảnh quá lớn (tối đa ${MAX_IMAGE_BYTES / 1024 / 1024} MB).`);
         const file = `${newId().replace(/[^A-Za-z0-9]/g, 'x')}${Date.now().toString(36)}.${kind.ext}`;
-        await writeFile(join(dir, file), buffer, { flag: 'wx' });
+        await saveUpload(join(dir, file), buffer);
         res.status(201).json({ url: `${urlPrefix}/${file}` });
     })
 ];

@@ -4,6 +4,14 @@ import { logStock } from './inventory.js';
 import { releaseVouchers } from './vouchers.js';
 import { sendThanksMail } from './order-mail.js';
 
+// Số hóa đơn: dãy số 8 chữ số tăng dần, mỗi đơn một số duy nhất (số đã cấp không bao giờ dùng lại)
+export function issueInvoiceNo() {
+    const used = db.orders.reduce((max, order) => Math.max(max, Number(order.invoiceNo) || 0), 0);
+    const next = Math.max(Number(db.settings.lastInvoiceNo) || 0, used) + 1;
+    db.settings.lastInvoiceNo = next;
+    return String(next).padStart(8, '0');
+}
+
 // Bản trả về client: không lộ dữ liệu nội bộ (bản băm mã xác nhận email của đơn cũ).
 export function publicOrder(order) {
     // Giá vốn của từng dòng hàng là số nội bộ, không trả cho khách

@@ -3,6 +3,7 @@ import { addToCart, selectOnly } from '../services/cart-service.js';
 import {
     canRequestCancel,
     canUserCancel,
+    expressTag,
     needsAttention,
     renderOrderDetails,
     renderTimeline,
@@ -57,7 +58,7 @@ function orderCard(order) {
     return `
         <article class="order-card" data-id="${order.id}">
             <div class="order-card-head">
-                <div><b>${escapeHtml(order.code)}</b><small class="muted">${formatDate(order.createdAt)}</small></div>
+                <div><b>${escapeHtml(order.code)}</b> ${expressTag(order)}<small class="muted">${formatDate(order.createdAt)}</small></div>
                 ${statusBadge(needsAttention(order) ? 'unconfirmed' : order.status)}
             </div>
             ${renderTimeline(order)}

@@ -28,6 +28,19 @@ export const SHIPPING_METHODS = {
     express: 'Giao nhanh'
 };
 
+// dd/MM của một thời điểm
+export function shortDay(value) {
+    const date = new Date(value);
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Khoảng nhận hàng dự kiến, ví dụ "17/11 – 18/11": đơn đã đặt thì lấy số đã lưu trên đơn, chưa đặt thì tính từ hôm nay
+export function deliveryText(method, delivery) {
+    const days = RULES.deliveryDays?.[method] || [3, 5];
+    const range = delivery || { from: Date.now() + days[0] * 86400000, to: Date.now() + days[1] * 86400000 };
+    return `${shortDay(range.from)} – ${shortDay(range.to)}`;
+}
+
 export function formatPrice(price) {
     return Number(price).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 }

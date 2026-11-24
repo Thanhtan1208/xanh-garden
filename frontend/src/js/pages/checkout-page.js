@@ -3,7 +3,7 @@ import { api } from '../services/api-service.js';
 import { cartReady, removeFromCart, selectedCart } from '../services/cart-service.js';
 import { updateCartBadge } from '../components/header.js';
 import { requireCustomer } from '../utils/auth.js';
-import { escapeHtml, formatDate, formatPrice, shippingFee } from '../utils/format.js';
+import { deliveryText, escapeHtml, formatDate, formatPrice, shippingFee } from '../utils/format.js';
 import { RULES } from '../config/shop.js';
 import { icon, iconButton } from '../utils/icons.js';
 import { productImage } from '../utils/images.js';
@@ -287,6 +287,14 @@ addressList.addEventListener('click', async (event) => {
         toast(error.message, { type: 'error' });
     }
 });
+
+// Ngày nhận hàng dự kiến dưới từng cách giao (tính từ hôm nay)
+const showEta = () =>
+    document.querySelectorAll('[data-eta]').forEach((node) => {
+        const days = RULES.deliveryDays?.[node.dataset.eta] || [3, 5];
+        node.textContent = `Nhận hàng trong ${days[0]}–${days[1]} ngày, dự kiến ${deliveryText(node.dataset.eta)}`;
+    });
+showEta();
 
 form.addEventListener('change', (event) => {
     if (event.target.name === 'shippingMethod')

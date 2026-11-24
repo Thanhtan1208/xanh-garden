@@ -9,9 +9,7 @@ The UI text is in Vietnamese. Documentation is in [`docs/`](docs):
 
 | File | Content |
 |---|---|
-| [docs/HUONG_DAN_CODE_XANH_GARDEN.docx](docs/HUONG_DAN_CODE_XANH_GARDEN.docx) | What each folder and file contains and does |
 | [docs/SRS_XANH_GARDEN.docx](docs/SRS_XANH_GARDEN.docx) | Software Requirements Specification (SRS) |
-| [docs/USECASE_XANH_GARDEN.docx](docs/USECASE_XANH_GARDEN.docx) | Use case diagram and use case descriptions |
 | [docs/SDS_XANH_GARDEN.docx](docs/SDS_XANH_GARDEN.docx) | Software Design Specification (SDS), includes the data dictionary |
 | [docs/ERD_XANH_GARDEN.png](docs/ERD_XANH_GARDEN.png) | Database diagram (ERD), full resolution |
 
@@ -49,6 +47,9 @@ The UI text is in Vietnamese. Documentation is in [`docs/`](docs):
 - Delivery address (like TikTok Shop), in this order: Province/City first, then Ward/Commune of that province, then house number and street (free text, only required). Uses the current administrative units (since 1 July 2025: 34 provinces, 3,321 wards and communes, no district level), stored in `backend/server/data/vn-divisions.json` (source: provinces.open-api.vn v2) and served by `GET /api/divisions`. Both boxes suggest while typing (accents optional, matching letters in bold, aliases such as hcm, hn). The ward box stays locked until a province is picked, then lists only that province's wards; changing the province clears the ward. Leaving a box after typing part of a name keeps the previous choice. The address line on orders still reads house number, ward, province. Province, ward and house number/street are all required (marked with a red *): the browser blocks saving, outlines the missing boxes in red and names them; the server (`addressProblem` in `backend/server/core/address.js`) checks the same three again, both when saving an address and when placing an order. The province and ward boxes look and work like dropdowns (arrow, click to open or close, type to search) and only accept a value picked from the list. The server also checks that the ward exists and belongs to the province. The phone must be a Vietnamese mobile number (10 digits, `0` or `+84` prefix, saved as `0xxxxxxxxx`). Addresses saved before this change must be edited before the next order.
 - Email codes are valid for 3 minutes. The page shows the address the code is sent to, a countdown, and a paste button.
 - Invoice emailed automatically (right after a COD order, or after a transfer is received). Customers have no "send invoice" button; only staff, owner and admin can resend it from order management (`POST /orders/:id/invoice-email`, permission `orders.manage`, max 3 per order per hour).
+- Fast delivery ("Giao nhanh", 50.000 ₫, never free shipping): shown at checkout with a priority tag and the expected arrival date under each method (express 1–2 days, standard 3–5 days, from the number of days in `DELIVERY_DAYS` in `backend/server/core/rules.js`). The window is saved on the order (`delivery`), shown on the order page, the success page, in the invoice email and the PDF. When staff move an order to "Đang giao" they pick the real carrier (GHN, GHTK, Viettel Post, J&T, SPX or "Cửa hàng tự giao", `CARRIERS` in `backend/server/core/rules.js`) and paste the tracking code the carrier issued (`trackingCode`, 6–30 letters, digits or dashes, required except for self delivery); the site never makes up tracking codes; express orders carry a "Giao nhanh" tag in the staff order list so they are handled first.
+- PDF **sales slip** ("Phiếu bán hàng") in the layout of a TikTok Shop order slip. It is not a legal VAT e-invoice (those must be issued through a licensed provider under Decree 123/2020), and the slip says so in its footer. It has a sequential 8-digit **slip number** (`invoiceNo`, issued to every order, never reused, old orders are numbered by date when the server starts), the seller tax code (`taxCode`, set in "Thông tin cửa hàng", optional, 10 digits or 13 digits like `0123456789-001`), seller and recipient boxes, order number, order date, payment and shipping method, expected delivery and tracking code, the product table, discount and shipping lines, the total in figures and in Vietnamese words, a COD "amount to collect" box and signature lines. The **Code 128 barcode encodes the 8-digit invoice number** (short and numeric so the bars are wide: decoded with a real barcode reader at 72, 100, 150 and 300 dpi). JsBarcode comes from a CDN and is skipped when offline.
+- Scan to find an order: in the staff order list the search box also matches the invoice number, the tracking code and the order code; a barcode scanner types the number and presses Enter, and when exactly one order matches it opens at once.
 - Shopping assistant chatbot (OpenAI with retrieval); falls back to a knowledge-base lookup when no valid API key is set.
   - It only advises. Requests to do something for the customer (place or cancel an order, pay, refund, change the account or address, apply a voucher, check a balance, haggle) are caught by `backend/server/ai/guard.js` before the AI is called. The bot says it cannot do that and gives the steps and links; an order request also shows the product link, price, stock and the per-order limit. Questions about how to do it ("hủy đơn thế nào?") still get a normal answer.
   - Retrieval covers the Markdown files in `backend/server/ai/kb/` (including `09-huong-dan-su-dung-website.md`, a step-by-step guide to every page) plus live data: products, categories, promotions, store contact and the current rules (fees, limits, deadlines) read from `core/rules.js` and the store settings.
@@ -57,6 +58,7 @@ The UI text is in Vietnamese. Documentation is in [`docs/`](docs):
 **Back office** (staff, owner, admin)
 
 - Dashboard: revenue by month, quarter or year, inventory, demand, reviews, customer analytics. **Revenue = selling price − cost price** of the delivered items (after discounts; shipping fees are not counted because they go to the carrier); the dashboard also shows "Tiền bán" and "Giá vốn hàng bán" next to it, and the same formula is used for every chart, quarter, category, top product and the per-product panel.
+- Policy pages: shipping and payment, warranty and returns, FAQ, **privacy policy** (`kb/10`) and **terms of use** (`kb/11`), linked in the footer. Registration needs the "I agree" box ticked; the time is saved as `termsAcceptedAt`. The footer shows the tax code when it is set.
 - Orders: confirm, ship, cancel, record payments and refunds, handle cancel requests, send or export invoices (PDF).
 - Products and stock: create, edit, import stock, Excel export and import, PDF export, "new product" label and discount settings.
 - Cost price (`costPrice`, owner and admin only): every product has a cost (giá vốn / giá nhập) that is required when creating or editing (whole VND, at least 1.000 and not above the selling price; also a "Giá vốn" column in the Excel file, empty = keep the current cost). "Nhập hàng" takes an optional import price for the batch and sets the new cost to the **weighted average** of the stock on hand and the new batch. The cost of each line is copied into the order when it is placed (`items[].cost`), so later cost changes do not rewrite old revenue; orders from before this feature use the product's current cost. Customers and staff never receive the cost (public API, order responses, staff product list). Products from before this feature get an estimate of 70% of the price, marked "(ước tính)" in the admin table until an owner or admin saves the real cost.
@@ -96,10 +98,10 @@ Permissions are enforced on the server. The frontend only hides what a role cann
 | Part | Technology |
 |---|---|
 | Frontend | HTML5, CSS3, JavaScript (ES Modules), Vite 6, SheetJS (`xlsx`), jsPDF and jsPDF-AutoTable |
-| Backend | Node.js 22, Express 4, Nodemailer |
-| Storage | JSON file (`db.json`); newline-delimited JSON for analytics |
+| Backend | Node.js 22, Express 4, node-postgres (`pg`), Nodemailer |
+| Storage | **PostgreSQL** (Supabase) when `DATABASE_URL` is set: relational tables, uploaded files and analytics in the database. Without it: JSON file (`db.json`) and newline-delimited JSON for analytics |
 | Auth | HMAC-SHA256 signed tokens, scrypt password hashing, email codes |
-| External services | SMTP (Gmail or a local fake mailbox), SePay (QR payments and webhook), OpenAI (chatbot) |
+| External services | Brevo email API or SMTP (Gmail or a local fake mailbox), SePay (QR payments and webhook), OpenAI (chatbot) |
 | Tests | Node built-in test runner (`node:test`) |
 | Formatting | Prettier, EditorConfig |
 
@@ -143,7 +145,7 @@ Permissions are enforced on the server. The frontend only hides what a role cann
 │   ├── vite.config.js        Dev server, proxy for /api and /uploads, list of pages to build
 │   └── package.json
 │
-├── docs/                     SRS, use case, SDS, deploy guide (Word) and diagrams (ERD, use case, architecture)
+├── docs/                     SRS and SDS (Word) and the database diagram (ERD)
 ├── .github/workflows/ci.yml  CI: Prettier check, backend tests, frontend build
 ├── .editorconfig             Editor settings shared by everyone (4 spaces, LF, UTF-8)
 ├── .gitattributes            LF line endings on every machine
@@ -185,6 +187,10 @@ If you see `EADDRINUSE :3000`, an old server is still running: `netstat -ano | f
 | `backend/` | `npm run server` (or `npm start`) | Start the API on port 3000 |
 | `backend/` | `npm test` | Run the API test suite (uses temporary data, never touches `db.json`) |
 | `backend/` | `npm run mail` | Start the fake mailbox (SMTP 1025, web 1080) |
+| `backend/` | `npm run db:push` | Create the PostgreSQL tables from `DATABASE_URL` in `backend/.env`; if the database is empty, import `data/db.json`, the files in `data/uploads/` and the behavior log |
+| `backend/` | `npm run db:export` | Download the whole PostgreSQL database to `data/backups/db-pg-<time>.json` |
+| `backend/` | `npm run db:reset -- --yes` | Back up the PostgreSQL data (tables and behavior log to `data/backups/db-pg-truoc-khi-reset-<time>.json`, files to `data/backups/files-truoc-khi-reset-<time>/`), drop every shop table, then import `data/db.json`, `data/uploads/` and the behavior log again. Stop the server first. Setting `DATABASE_URL` on the command line overrides `backend/.env` for the `db:*` commands |
+| `backend/` | `TEST_DATABASE_URL=postgres://… npm test` | Run the whole test suite on PostgreSQL (one schema per test file, dropped afterwards) |
 | `frontend/` | `npm run dev` | Start the website on port 5173 |
 | `frontend/` | `npm run build` | Production build into `frontend/dist/` |
 | root | `npm install` then `npm run format` | Format all JavaScript with Prettier |
@@ -194,13 +200,14 @@ If you see `EADDRINUSE :3000`, an old server is still running: `netstat -ano | f
 
 ### Continuous integration
 
-GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on every pull request, in three parallel jobs on Node 22:
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on every pull request, in four parallel jobs on Node 22:
 
 1. **Định dạng code**: `npm run format:check` at the root.
 2. **Test backend**: `npm test` in `backend/`. No secrets needed: the suite uses temporary data, sends no real mail and does not call OpenAI.
-3. **Build và chạy thử production**: root `npm run build` (the deploy command), then the server is started with `NODE_ENV=production` and the job checks `/api/health`, the home page, `/products` and `/api/products`.
+3. **Test backend trên PostgreSQL**: the same suite with `TEST_DATABASE_URL` pointing at a `postgres:16` service container.
+4. **Build và chạy thử production**: root `npm run build` (the deploy command), then the server is started with `NODE_ENV=production` and the job checks `/api/health`, the home page, `/products` and `/api/products`.
 
-A pull request shows ✅ or ❌ for each job. Merge only when all three pass.
+A pull request shows ✅ or ❌ for each job. Merge only when all four pass.
 
 ## Configuration
 
@@ -208,7 +215,9 @@ Environment variables live in `backend/.env` (template: `backend/.env.example`).
 
 | Variable | Meaning |
 |---|---|
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Send real emails. Without them, email content is printed to the server console. |
+| `DATABASE_URL` | PostgreSQL connection string (Supabase: Connect > Session pooler). When set, all data is stored in PostgreSQL; when empty, in `data/db.json`. |
+| `BREVO_API_KEY` | Send email through the Brevo HTTPS API. Required on Render free, which blocks the SMTP ports. When set, SMTP is not used. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Send real emails over SMTP. `MAIL_FROM` (`Name <email>`) is also the Brevo sender and must be a verified sender there. Without a mail setting, email content is printed to the server console. |
 | `SEPAY_API_KEY` | SePay webhook key (defaults to `dev-sepay-key` for local testing; required in production) |
 | `PAYMENT_DEMO` | `on`/`off`: show the "Thanh toán … (demo)" button on the QR payment page (default: on locally, off when `NODE_ENV=production`) |
 | `SEPAY_BANK`, `SEPAY_ACCOUNT`, `SEPAY_ACCOUNT_NAME` | Receiving bank account shown on the QR code |
@@ -223,9 +232,22 @@ The built-in defaults of `AUTH_SECRET` and `SEPAY_API_KEY` are public in the sou
 
 ## Data and backups
 
+### PostgreSQL (when `DATABASE_URL` is set)
+
+- Tables are created on startup (`backend/server/core/pg-store.js`, one place describes every table and column). Main tables: `users`, `user_addresses`, `categories`, `products`, `orders`, `order_items`, `order_history`, `payments`, `reviews`, `feedbacks`, `vouchers`, `user_vouchers`, `stock_logs`, `carts`, `cart_items`, `chats`, `events`, `banners`, `uploads`, plus `app_state` (shop settings, last slip number), `files` (uploaded images and videos as `bytea`) and `analytics_events`.
+- Each table has typed columns for the main fields (text, integer, boolean, timestamptz, date, json), a primary key, indexes on the fields used for lookups (order code, slip number, user, product, status, date) and an `extra` json column for rare fields, so a record reads back exactly as it was written. Child tables (`order_items`, `order_history`, `user_addresses`, `cart_items`) use a foreign key with `ON DELETE CASCADE`. Orders keep a copy of the product name and price, so they have no foreign key to products: deleting a product never breaks an old order.
+- On startup the server loads all tables into memory, and the business code reads them as before. `save()` collects the changes of the current moment and writes only the changed rows in one transaction. If the database is unreachable, the data stays in memory, `/api/health` answers 503 and the write is retried every 5 seconds. Stopping the server (SIGTERM, Ctrl+C) waits for pending writes. A hard crash can lose the changes of the last few milliseconds.
+- First start on an empty database: the data of `data/db.json` (or the sample) is imported. To move a running shop to Supabase, stop the server, put `DATABASE_URL` in `backend/.env` and run `npm run db:push` once.
+- Uploaded files are written to `data/uploads/` and to the `files` table. When the disk is wiped (Render restarts), a requested file is read back from the database and cached on disk again.
+- Backups: Supabase free has no downloadable backups, so run `npm run db:export` from time to time.
+
+### JSON file (no `DATABASE_URL`)
+
 - Runtime data lives in `backend/data/` (see the structure above).
 - When `db.json` does not exist (first run, new server), the server starts from `db.sample.json` and writes `db.json` right away.
 - Once a day the server copies `db.json` to `backend/data/backups/db-YYYY-MM-DD.json` and keeps the last 7 copies. If the data is damaged, stop the server and copy a backup over `db.json`.
+- `BACKUP_COPY_DIR` (optional): each day's backup and new uploaded files are also copied to this folder. Point it at a synced Google Drive or OneDrive folder or another disk so the data survives a broken disk.
+- Before going live: stop the server and run `npm run reset-data -- --yes` in `backend/`. It backs up `db.json`, then removes test customers, staff and owner accounts, orders, reviews, feedback, carts, chats, stock logs, analytics and review uploads. Products, categories, banners, events, vouchers, shop settings and the admin account are kept, and slip numbers restart at 00000001.
 - `backend/` is outside the Vite root, so the browser cannot download `db.json` or `.env`.
 - The server loads `db.json` into memory and overwrites the file on every save. To edit `db.json` by hand or run a script from `backend/scripts/`, stop the server first.
 - `db.json`, `analytics.ndjson`, `uploads/` and `backups/` contain customer data and are not committed. `db.sample.json` is the committed sample.
@@ -263,7 +285,6 @@ The app is one Node.js process. It keeps its data in files (`backend/data/`) and
 
 - **Serverless platforms (Vercel, Netlify Functions) cannot run the backend**: their file system is temporary and nothing runs between requests. Vercel can host the built frontend alone, but the backend still needs a server.
 - In production Express serves the built website (`frontend/dist`) and the API on the same address, so one process and one port is enough.
-- Step-by-step guide in Vietnamese, with the settings to choose at each step and a troubleshooting table: `docs/HUONG_DAN_DEPLOY.docx` (Azure for Students VM, or own computer + Cloudflare Tunnel).
 
 ### Checklist
 
@@ -273,8 +294,32 @@ The app is one Node.js process. It keeps its data in files (`backend/data/`) and
 4. Open `https://<domain>/api/health`, which should answer `{"ok":true,...}`.
 5. In SePay, set the webhook to `https://<domain>/api/payments/sepay/webhook` with the same API key.
 6. To keep current data instead of the sample, copy your `db.json` and `uploads/` into `backend/data/` before the first start.
+7. Remove test data (`npm run reset-data -- --yes`), then in Admin > Cài đặt enter the real hotline, email, Zalo, address and tax code. The server log warns while these are still the sample values. Enter the real cost price of every product still marked as estimated.
+8. Responses carry a Content-Security-Policy (scripts only from the site and jsDelivr) and, in production over HTTPS, Strict-Transport-Security.
 
-### Option A: VPS (recommended)
+### Before selling to real customers (outside the code)
+
+- Business registration (a household business is enough) and a tax code.
+- Notify the e-commerce website to the Ministry of Industry and Trade at online.gov.vn (Decree 52/2013, amended by Decree 85/2021) and add the badge to the footer.
+- VAT e-invoices through a licensed provider (MISA meInvoice, VNPT, Viettel S-Invoice) when customers ask for one.
+- A carrier account (GHN or GHTK). Create the shipment on the carrier site and paste the code into the order.
+- A VPS and a domain so the shop runs 24/7, a transactional email service with SPF and DKIM, and SePay linked to the shop's own bank account.
+- Revoke and replace any API key that was ever pasted into a chat or committed.
+
+### Option A: Render + Supabase + Brevo (free)
+
+Everything below is free and needs no credit card. Create the accounts yourself.
+
+1. **Supabase** (database): New project, region Southeast Asia (Singapore), choose a database password. Open **Connect**, copy the **Session pooler** URI (`postgresql://postgres.<ref>:<password>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`) and replace the password placeholder. The direct connection is IPv6 only and does not work from Render.
+2. **Move the current data** (optional; otherwise the sample data is used): put `DATABASE_URL=<that URI>` in `backend/.env`, then `cd backend && npm run db:push`. It prints the row count of each table.
+3. **Brevo** (email): sign up, add and verify the sender address under Senders, then create a key under SMTP & API > API Keys.
+4. **Render** (server): push the repository to GitHub. In Render choose New > Blueprint and pick the repository. Render reads `render.yaml` (free web service in Singapore, `npm run build`, `npm start`, health check `/api/health`, random `AUTH_SECRET` and `SEPAY_API_KEY`). Fill in `DATABASE_URL`, `ADMIN_PASSWORD`, `BREVO_API_KEY`, `MAIL_FROM` (`Xanh Garden <verified sender>`), the `SEPAY_*` account and optionally `OPENAI_API_KEY`.
+5. After the first deploy open `https://<name>.onrender.com/api/health`, which should answer `{"ok":true,"db":"postgres",…}`. In SePay set the webhook to `https://<name>.onrender.com/api/payments/sepay/webhook` with the `SEPAY_API_KEY` value shown in Render.
+6. Every push to `main` deploys again.
+
+Limits of the free plans: the Render service sleeps after 15 minutes without visits and the next visit waits about a minute (a monitor such as UptimeRobot calling `/api/health` every 10 minutes keeps it awake; 750 free hours a month cover one service). A Supabase free project is paused after a week without any request and has 500 MB (uploaded videos count). Brevo free sends 300 emails a day. The chatbot rebuilds its embedding cache after each restart (a few OpenAI embedding calls).
+
+### Option B: VPS
 
 Ubuntu with Node.js 22, PM2 and Caddy (automatic HTTPS):
 
@@ -297,13 +342,10 @@ shop.example.com {
 
 Update: `git pull && npm run build && pm2 restart xanh-garden`. Copy `backend/data/` off the server from time to time: the daily backups stay on the same disk.
 
-### Option B: own computer + Cloudflare Tunnel (free, demo only)
+### Option C: own computer + Cloudflare Tunnel (free, demo only)
 
 Build, start the server with the production `.env`, then run `cloudflared tunnel --url http://localhost:3000`. It prints a temporary `https://….trycloudflare.com` address. The site is online only while the computer and the tunnel are running, and the address changes on every run.
 
-### Option C: Render (paid)
-
-Web Service on Node, build command `npm run build`, start command `npm start`. Add a Disk (for example mounted at `/var/data`), set `DATA_DIR=/var/data` and `TRUST_PROXY=1`, plus the variables from the checklist. The free instance type does not work: it has no disk, sleeps when idle and blocks SMTP.
 
 ## Code style
 
@@ -313,8 +355,8 @@ Web Service on Node, build command `npm run build`, start command `npm start`. A
 
 ## Known limits
 
-- One server process only: data is held in memory and the whole file is rewritten on every save. Fine for a small shop, not for heavy traffic.
-- Cannot run on serverless platforms (Vercel, Netlify Functions): it needs a server that runs all the time and a disk that keeps `db.json` and uploads.
+- One server process only: data is held in memory (also with PostgreSQL, where only changed rows are written). Fine for a small shop; two server instances at once would overwrite each other.
+- Cannot run on serverless platforms (Vercel, Netlify Functions): it needs a server that runs all the time.
 - SePay can only call the webhook when the backend has a public address.
 - Login hashing (scrypt) runs on the main thread, so very many simultaneous logins slow the server.
 
@@ -324,6 +366,12 @@ Newest first. Add a line here with every change.
 
 | Date | Change |
 |---|---|
+| 2026-11-24 | `npm run db:reset -- --yes` backs up the PostgreSQL data (tables, behavior log, uploaded files), drops the shop tables and imports the local data again. `db:push` now prints the row count of all 22 tables. Ran it on Supabase: 381 of 381 records read back equal to `db.json`. |
+| 2026-11-23 | PostgreSQL and free hosting. With `DATABASE_URL` the data lives in PostgreSQL: relational tables with primary keys, indexes and cascading child tables (`order_items`, `order_history`, `user_addresses`, `cart_items`), uploaded files in a `files` table and the behavior log in `analytics_events`. The server still keeps the data in memory and writes only changed rows per transaction, retrying when the database is unreachable. Cart writes went from 24–165 to about 1,500 per second in the benchmark. The first start on an empty database imports `db.json`, and `npm run db:push` / `db:export` move data in and out. Email can go through the Brevo HTTPS API (`BREVO_API_KEY`) because Render free blocks SMTP. `render.yaml` deploys to Render free with Supabase. The startup check refuses Render without `DATABASE_URL` or `BREVO_API_KEY`. The whole suite also runs on PostgreSQL (`TEST_DATABASE_URL`, new CI job). New tests for the database, files and Brevo (219 tests on the file store, 222 on PostgreSQL). |
+| 2026-11-23 | Ready for real sales. Tracking codes are no longer invented: staff choose the carrier and paste the real tracking code when shipping. The PDF is now a "Phiếu bán hàng" (not a VAT invoice) with a note in the footer. New privacy policy and terms pages, a consent box on registration (`termsAcceptedAt`), and the tax code in the footer. Content-Security-Policy and HSTS headers. Startup warnings for sample shop contact data and a missing tax code. `npm run reset-data` removes test data. `BACKUP_COPY_DIR` copies daily backups off the machine. 216 tests. |
+| 2026-11-17 | Documentation reduced to the SRS, the SDS and the ERD image in `docs/`: removed the use case document and diagram, the architecture image, the work report, the code guide and the deploy guide (the deployment steps stay in the Deployment section above). |
+| 2026-11-17 | Invoice closer to a real one. Every order gets a sequential 8-digit invoice number (old orders are numbered by date on startup) and the invoice shows symbol, number and the seller tax code (new optional field in Thông tin cửa hàng). The barcode now encodes the invoice number; before it encoded the 14-character order code and could only be decoded at 300 dpi, now it decodes at 72 dpi too. The staff order list finds an order by invoice number, tracking code or order code, and a scanner + Enter opens the order. 4 new tests (215 in total). |
+| 2026-11-17 | Fast delivery and a new invoice. Checkout shows the expected arrival date for "Giao nhanh" (1–2 days, tagged priority) and standard delivery (3–5 days); the order keeps the window (`delivery`) and gets a tracking code and carrier when it starts shipping; express orders have a "Giao nhanh" tag in the staff and customer lists; the invoice email lists the shipping method, expected dates and tracking code. The PDF invoice was redesigned like a TikTok Shop order slip (barcode, seller and recipient boxes, tracking code, amount in words, COD amount to collect, signatures). 7 new tests (211 in total). |
 | 2026-11-17 | Less personal data sent to OpenAI: the chatbot no longer sends the login name, and emails, phone numbers, API keys and long digit runs typed by the customer are masked in messages, history and the knowledge-base search; the AI business analysis drops hand-typed cancel reasons and personal-looking search keywords. 4 new tests; a few redundant tests were removed (204 in total). |
 | 2026-11-17 | Cleanup before handing in: removed the one-off bulk product import (`backend/scripts/them-san-pham.mjs` and `san-pham-them.json`): nothing referenced it, it was undocumented and it no longer worked because products now require a cost price. The OpenAI key in `backend/.env` was replaced (the file is git-ignored). |
 | 2026-11-17 | New tab "Gợi ý AI" on the Thống kê page (owner and admin only): rule-based findings with suggested actions plus an optional OpenAI written analysis (`GET /admin/insights`, `POST /admin/insights/ai`). Statistics audit: the revenue formulas moved to `services/finance.js` (single source for statistics and insights), a new test recomputes revenue independently from the raw orders and compares it with the day, week, year, quarter, month, category, payment, per-product and insights figures; fixed the category share in the dashboard, which still divided by the gross goods and no longer added up to 100% after revenue became selling price − cost price. 11 new tests (209 in total). |

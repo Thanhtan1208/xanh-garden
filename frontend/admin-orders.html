@@ -32,7 +32,7 @@
             <section id="stats" class="bank-hero"></section>
 
             <div class="filter-bar">
-                <input type="search" id="orderSearch" placeholder="Tìm mã đơn, tên khách, số điện thoại" aria-label="Tìm đơn hàng">
+                <input type="search" id="orderSearch" placeholder="Quét mã vạch hóa đơn hoặc gõ mã đơn, tên khách, số điện thoại" aria-label="Tìm đơn hàng">
                 <select id="statusFilter" aria-label="Lọc trạng thái"></select>
                 <select id="sortSelect" aria-label="Sắp xếp">
                     <option value="newest">Mới nhất</option>
@@ -59,6 +59,7 @@
         <!-- jsPDF + AutoTable để xuất hóa đơn PDF -->
         <script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js" defer></script>
         <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@5.0.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/barcodes/JsBarcode.code128.min.js" defer></script>
         <script type="module" src="./src/js/pages/admin-orders-page.js"></script>
     </body>
 </html>

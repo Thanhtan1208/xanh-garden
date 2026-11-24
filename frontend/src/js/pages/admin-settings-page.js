@@ -7,7 +7,7 @@ import { SHOP } from '../config/shop.js';
 // Thông tin cửa hàng hiển thị trên website: admin và chủ cửa hàng sửa, lưu ở server (db.settings.shop)
 const form = document.getElementById('shopForm');
 const field = (name) => form.elements.namedItem(name);
-const FIELDS = ['name', 'tagline', 'hotline', 'email', 'address', 'hours', 'facebook', 'zalo', 'warrantyDays'];
+const FIELDS = ['name', 'tagline', 'hotline', 'email', 'address', 'hours', 'facebook', 'zalo', 'warrantyDays', 'taxCode'];
 
 function fill(shop) {
     FIELDS.forEach((name) => {

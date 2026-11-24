@@ -50,6 +50,35 @@ jobs:
             # Bộ test tự tạo dữ liệu tạm, không gửi mail thật, không gọi OpenAI nên không cần secret
             - run: npm test
 
+    postgres:
+        name: Test backend trên PostgreSQL
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: backend
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_PASSWORD: ci-only
+                    POSTGRES_DB: xanhgarden
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+                  cache: npm
+                  cache-dependency-path: backend/package-lock.json
+            - run: npm ci
+            # Cả bộ test chạy với dữ liệu lưu trong PostgreSQL (mỗi file test một schema riêng)
+            - run: npm test
+              env:
+                  TEST_DATABASE_URL: postgres://postgres:ci-only@localhost:5432/xanhgarden
+
     production:
         name: Build và chạy thử production
         runs-on: ubuntu-latest
