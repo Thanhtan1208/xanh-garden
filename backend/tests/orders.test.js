@@ -309,8 +309,10 @@ describe('Đổi phương thức thanh toán', () => {
         assert.equal(toQr.status, 200);
         assert.equal(toQr.body.paymentMethod, 'sepay');
         assert.ok(toQr.body.payExpiresAt > Date.now());
+        // bấm lặp: không lỗi, giữ nguyên hạn thanh toán
         const same = await call(ctx, 'PATCH', `/orders/${order.id}/payment-method`, { token, body: { paymentMethod: 'sepay' } });
-        assert.equal(same.status, 409);
+        assert.equal(same.status, 200);
+        assert.equal(same.body.payExpiresAt, toQr.body.payExpiresAt);
         const toCod = await call(ctx, 'PATCH', `/orders/${order.id}/payment-method`, { token, body: { paymentMethod: 'cod' } });
         assert.equal(toCod.body.payExpiresAt, undefined);
     });

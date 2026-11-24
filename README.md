@@ -367,6 +367,8 @@ Newest first. Add a line here with every change.
 
 | Date | Change |
 |---|---|
+| 2026-11-24 | Spaces pasted around `SEPAY_BANK`, `SEPAY_ACCOUNT` and `SEPAY_ACCOUNT_NAME` are removed, so they no longer end up inside the QR code (bank apps reject such a code). |
+| 2026-11-24 | Changing the payment method twice no longer shows the error "Đơn đang dùng phương thức thanh toán này": the payment page opens only one confirm box at a time, and asking for the method the order already uses returns the order unchanged (the payment deadline is not extended). |
 | 2026-11-24 | The server draws the payment QR code itself (VietQR / NAPAS standard, SVG embedded in the page) instead of loading it from qr.sepay.vn, which ad blockers could block. The data is identical, character for character, to the SePay QR for the same account, amount and content. New dependency `qrcode`; new tests (223 tests). |
 | 2026-11-24 | Transfer content can start with a keyword (`SEPAY_CONTENT_PREFIX`, `SEVQR` on Render) because SePay only reports VietinBank transfers that start with it. The QR code and the payment page show `SEVQR <order code>`; the webhook still finds the order by its code. New test (220 tests). |
 | 2026-11-24 | Build on Render fixed: Render sets `NODE_ENV=production` during the build, so `npm ci` skipped the frontend dev tools and failed with `vite: not found`. The root `npm run build` now installs them with `--include=dev`. |

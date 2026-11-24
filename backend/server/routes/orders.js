@@ -465,10 +465,11 @@ router.patch(
         const order = findOrder(req.params.id, req.user);
         if (!isOwner(req.user, order)) fail(403, 'Chỉ người đặt hàng mới đổi được phương thức thanh toán.');
         const { paymentMethod } = parseOrderOptions({ shippingMethod: order.shippingMethod, paymentMethod: req.body?.paymentMethod });
+        // Bấm lặp (đơn đã dùng phương thức này): trả đơn như hiện tại, không báo lỗi, không gia hạn thời gian trả tiền
+        if (paymentMethod === order.paymentMethod) return res.json(publicOrder(order));
         if (!['unconfirmed', 'pending'].includes(order.status) || order.paymentStatus !== 'unpaid') {
             fail(409, 'Đơn đã được xác nhận hoặc đã thanh toán nên không thể đổi phương thức thanh toán.');
         }
-        if (paymentMethod === order.paymentMethod) fail(409, 'Đơn đang dùng phương thức thanh toán này.');
         // Đổi sang chuyển khoản thì đơn thành "chưa thanh toán": vẫn phải nằm trong giới hạn số đơn chưa thanh toán
         if (
             paymentMethod === 'sepay' &&

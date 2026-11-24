@@ -5,7 +5,8 @@ import { addAddress, call, newCustomer, placeOrder, startServer, webhook } from 
 
 let ctx;
 before(async () => {
-    ctx = await startServer({ env: { SEPAY_CONTENT_PREFIX: 'SEVQR' } });
+    // số tài khoản dán có dấu cách thừa
+    ctx = await startServer({ env: { SEPAY_CONTENT_PREFIX: 'SEVQR', SEPAY_BANK: ' VietinBank ', SEPAY_ACCOUNT: ' 1234 5678 9012 ' } });
 });
 after(() => ctx.stop());
 
@@ -20,6 +21,8 @@ describe('Tiền tố nội dung chuyển khoản', () => {
         const info = await call(ctx, 'GET', `/orders/${made.body.id}/payment-info`, { token });
         assert.equal(info.body.content, `SEVQR ${code}`);
         assert.match(info.body.qrUrl, /^data:image\/svg\+xml;base64,/);
+        assert.equal(info.body.account, '123456789012');
+        assert.equal(info.body.bank, 'VietinBank');
 
         // ngân hàng thường thêm mã giao dịch phía trước, bỏ dấu cách
         await webhook(ctx, {

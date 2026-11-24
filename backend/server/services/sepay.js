@@ -10,9 +10,10 @@ export const normalizeText = (value) =>
         .replace(/[^A-Z0-9]/g, '');
 
 export const SEPAY = {
-    bank: process.env.SEPAY_BANK || 'MBBank',
-    account: process.env.SEPAY_ACCOUNT || '0000000000',
-    accountName: process.env.SEPAY_ACCOUNT_NAME || 'XANH GARDEN',
+    // bỏ khoảng trắng thừa khi dán giá trị vào trang cấu hình (nằm trong mã QR thì app ngân hàng báo lỗi)
+    bank: process.env.SEPAY_BANK?.trim() || 'MBBank',
+    account: process.env.SEPAY_ACCOUNT?.replace(/\s/g, '') || '0000000000',
+    accountName: process.env.SEPAY_ACCOUNT_NAME?.trim() || 'XANH GARDEN',
     apiKey: process.env.SEPAY_API_KEY || DEV_SEPAY_KEY,
     // Tiền tố một số ngân hàng bắt buộc có ở đầu nội dung chuyển khoản thì SePay mới nhận được (VD VietinBank: SEVQR)
     contentPrefix: normalizeText(process.env.SEPAY_CONTENT_PREFIX)

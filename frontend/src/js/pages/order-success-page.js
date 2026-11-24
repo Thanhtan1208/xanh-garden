@@ -24,23 +24,28 @@ const card = (inner) => {
     container.innerHTML = `<div class="success-card">${inner}</div>`;
 };
 
+// Đang mở hộp xác nhận hoặc đang gửi yêu cầu đổi: bấm thêm thì bỏ qua (tránh mở nhiều hộp chồng nhau)
+let switching = false;
+
 // Đổi COD <-> chuyển khoản QR khi đơn chưa thanh toán và cửa hàng chưa xác nhận (server kiểm tra lại).
 async function switchPayment(order, paymentMethod) {
+    if (switching) return;
+    switching = true;
     const label = paymentMethod === 'cod' ? 'thanh toán khi nhận hàng (COD)' : 'chuyển khoản QR';
-    if (
-        !(await confirmDialog({
+    try {
+        const ok = await confirmDialog({
             title: 'Đổi phương thức thanh toán?',
             message: `Đơn ${order.code} sẽ chuyển sang ${label}.`,
             confirmText: 'Đổi phương thức',
             cancelText: 'Giữ nguyên'
-        }))
-    )
-        return;
-    try {
+        });
+        if (!ok) return;
         render(await api.patch(`/orders/${order.id}/payment-method`, { paymentMethod }));
         toast(`Đã chuyển sang ${label}.`, { type: 'success' });
     } catch (error) {
         toast(error.message, { type: 'error' });
+    } finally {
+        switching = false;
     }
 }
 
