@@ -82,13 +82,24 @@ export function fixture() {
 }
 
 // Khởi động server trên dữ liệu mẫu. Gọi một lần ở đầu mỗi file test.
-export async function startServer({ data = fixture() } = {}) {
+// env: biến môi trường riêng của file test (đặt sau khi đã xóa biến của máy)
+export async function startServer({ data = fixture(), env = {} } = {}) {
     const dir = mkdtempSync(join(tmpdir(), 'xanhgarden-test-'));
     writeFileSync(join(dir, 'db.json'), JSON.stringify(data));
     Object.assign(process.env, { DATA_DIR: dir, PORT: '0', SEPAY_API_KEY: SEPAY_KEY, AUTH_SECRET: 'test-secret' });
-    ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM', 'OPENAI_API_KEY', 'DATABASE_URL', 'DB_SCHEMA', 'BREVO_API_KEY', 'RENDER'].forEach(
-        (name) => delete process.env[name]
-    );
+    [
+        'SMTP_HOST',
+        'SMTP_USER',
+        'SMTP_PASS',
+        'MAIL_FROM',
+        'OPENAI_API_KEY',
+        'DATABASE_URL',
+        'DB_SCHEMA',
+        'BREVO_API_KEY',
+        'RENDER',
+        'SEPAY_CONTENT_PREFIX'
+    ].forEach((name) => delete process.env[name]);
+    Object.assign(process.env, env);
     if (ON_PG)
         Object.assign(process.env, { DATABASE_URL: process.env.TEST_DATABASE_URL, DB_SCHEMA: `test_${randomBytes(6).toString('hex')}` });
 

@@ -15,6 +15,9 @@ services:
         value: production
       - key: TRUST_PROXY
         value: "1"
+      # VietinBank nối qua SePay chỉ báo giao dịch có nội dung bắt đầu bằng SEVQR (ngân hàng khác để trống cũng được)
+      - key: SEPAY_CONTENT_PREFIX
+        value: SEVQR
       # Render tự tạo chuỗi ngẫu nhiên
       - key: AUTH_SECRET
         generateValue: true
